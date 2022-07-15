@@ -1,0 +1,1816 @@
+---
+title: "Asia CHELSA Check"
+author: "Grace Kumaishi"
+date: "7/15/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(spocc)
+library(spThin)
+library(dismo)
+library(rgeos)
+library(ENMeval)
+library(dplyr)
+library(sf)
+library(terra)
+library(patchwork)
+```
+
+### DESCRIPTION
+
+This document was created to perform visual checks on individual projected chelsa layers. We found some issues (holes and incorrect units) with some of the Africa variables, so we wanted to do the same here. We also wanted to see if we could visually explain some of the projected SDM outputs with individual variables included in the analysis. 
+
+```{r}
+## Elements required for each scenario
+#indomalay region, which rasters will be cropped to
+indomalay_region <- st_read("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/indomalay_region/indomalay_region.shp", crs = 4326)
+```
+
+DONE
+```{r}
+#### Historic ####
+historic_chelsa_01 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Data/Chelsa_Data/asia_masked_CHELSA_data/asia_masked_CHELSA_layer01.tif") 
+
+historic_chelsa_02 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Data/Chelsa_Data/asia_masked_CHELSA_data/asia_masked_CHELSA_layer02.tif")
+
+historic_chelsa_04 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Data/Chelsa_Data/asia_masked_CHELSA_data/asia_masked_CHELSA_layer04.tif")
+
+historic_chelsa_06 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Data/Chelsa_Data/asia_masked_CHELSA_data/asia_masked_CHELSA_layer06.tif")
+
+historic_chelsa_07 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Data/Chelsa_Data/asia_masked_CHELSA_data/asia_masked_CHELSA_layer07.tif")
+
+historic_chelsa_12 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Data/Chelsa_Data/asia_masked_CHELSA_data/asia_masked_CHELSA_layer12.tif")
+
+historic_chelsa_14 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Data/Chelsa_Data/asia_masked_CHELSA_data/asia_masked_CHELSA_layer14.tif")
+
+historic_chelsa_15 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Data/Chelsa_Data/asia_masked_CHELSA_data/asia_masked_CHELSA_layer15.tif")
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(historic_chelsa_01)
+plot(historic_chelsa_02)
+plot(historic_chelsa_04)
+plot(historic_chelsa_06)
+plot(historic_chelsa_07)
+plot(historic_chelsa_12)
+plot(historic_chelsa_14)
+plot(historic_chelsa_15)
+```
+
+############ 2011 - 2041 ############
+
+####### 126 #######
+
+## GFDL_ESM4 ##
+DONE
+```{r}
+gfdl_2011_2040_126_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/GFDL_ESM4/gfdl_2011_2040_126_bio1.tif")
+
+gfdl_2011_2040_126_bio2 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/GFDL_ESM4/gfdl_2011_2040_126_bio2.tif")
+
+gfdl_2011_2040_126_bio4 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/GFDL_ESM4/gfdl_2011_2040_126_bio4.tif")
+
+gfdl_2011_2040_126_bio6 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/GFDL_ESM4/gfdl_2011_2040_126_bio6.tif")
+
+gfdl_2011_2040_126_bio7 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/GFDL_ESM4/gfdl_2011_2040_126_bio7.tif")
+
+gfdl_2011_2040_126_bio12 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/GFDL_ESM4/gfdl_2011_2040_126_bio12.tif")
+
+gfdl_2011_2040_126_bio14 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/GFDL_ESM4/gfdl_2011_2040_126_bio14.tif")
+
+gfdl_2011_2040_126_bio15 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/GFDL_ESM4/gfdl_2011_2040_126_bio15.tif")
+
+gfdl_2011_2040_126_bio1 <- terra::mask(gfdl_2011_2040_126_bio1, indomalay_region)
+gfdl_2011_2040_126_bio2 <- terra::mask(gfdl_2011_2040_126_bio2, indomalay_region)
+gfdl_2011_2040_126_bio4 <- terra::mask(gfdl_2011_2040_126_bio4, indomalay_region)
+gfdl_2011_2040_126_bio6 <- terra::mask(gfdl_2011_2040_126_bio6, indomalay_region)
+gfdl_2011_2040_126_bio7 <- terra::mask(gfdl_2011_2040_126_bio7, indomalay_region)
+gfdl_2011_2040_126_bio12 <- terra::mask(gfdl_2011_2040_126_bio12, indomalay_region)
+gfdl_2011_2040_126_bio14 <- terra::mask(gfdl_2011_2040_126_bio14, indomalay_region)
+gfdl_2011_2040_126_bio15 <- terra::mask(gfdl_2011_2040_126_bio15, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(gfdl_2011_2040_126_bio1)
+plot(gfdl_2011_2040_126_bio2)
+plot(gfdl_2011_2040_126_bio4)
+plot(gfdl_2011_2040_126_bio6)
+plot(gfdl_2011_2040_126_bio7)
+plot(gfdl_2011_2040_126_bio12)
+plot(gfdl_2011_2040_126_bio14)
+plot(gfdl_2011_2040_126_bio15)
+```
+
+## IPSL_CM6A_LR ##
+DONE
+```{r}
+ipsl_2011_2040_126_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/IPSL_CM6A_LR/ipsl_2011_2040_126_bio1.tif")
+
+ipsl_2011_2040_126_bio2 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/IPSL_CM6A_LR/ipsl_2011_2040_126_bio2.tif")
+
+ipsl_2011_2040_126_bio4 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/IPSL_CM6A_LR/ipsl_2011_2040_126_bio4.tif")
+
+ipsl_2011_2040_126_bio6 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/IPSL_CM6A_LR/ipsl_2011_2040_126_bio6.tif")
+
+ipsl_2011_2040_126_bio7 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/IPSL_CM6A_LR/ipsl_2011_2040_126_bio7.tif")
+
+ipsl_2011_2040_126_bio12 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/IPSL_CM6A_LR/ipsl_2011_2040_126_bio12.tif")
+
+ipsl_2011_2040_126_bio14 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/IPSL_CM6A_LR/ipsl_2011_2040_126_bio14.tif")
+
+ipsl_2011_2040_126_bio15 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/IPSL_CM6A_LR/ipsl_2011_2040_126_bio15.tif")
+
+ipsl_2011_2040_126_bio1 <- terra::mask(ipsl_2011_2040_126_bio1, indomalay_region)
+ipsl_2011_2040_126_bio2 <- terra::mask(ipsl_2011_2040_126_bio2, indomalay_region)
+ipsl_2011_2040_126_bio4 <- terra::mask(ipsl_2011_2040_126_bio4, indomalay_region)
+ipsl_2011_2040_126_bio6 <- terra::mask(ipsl_2011_2040_126_bio6, indomalay_region)
+ipsl_2011_2040_126_bio7 <- terra::mask(ipsl_2011_2040_126_bio7, indomalay_region)
+ipsl_2011_2040_126_bio12 <- terra::mask(ipsl_2011_2040_126_bio12, indomalay_region)
+ipsl_2011_2040_126_bio14 <- terra::mask(ipsl_2011_2040_126_bio14, indomalay_region)
+ipsl_2011_2040_126_bio15 <- terra::mask(ipsl_2011_2040_126_bio15, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(ipsl_2011_2040_126_bio1)
+plot(ipsl_2011_2040_126_bio2)
+plot(ipsl_2011_2040_126_bio4)
+plot(ipsl_2011_2040_126_bio6)
+plot(ipsl_2011_2040_126_bio7)
+plot(ipsl_2011_2040_126_bio12)
+plot(ipsl_2011_2040_126_bio14)
+plot(ipsl_2011_2040_126_bio15)
+```
+
+## MPI_ESM1_2_HR ##
+DONE
+```{r}
+mpi_2011_2040_126_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/MPI_ESM1_2_HR/mpi_2011_2040_126_bio1.tif")
+
+mpi_2011_2040_126_bio2 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/MPI_ESM1_2_HR/mpi_2011_2040_126_bio2.tif")
+
+mpi_2011_2040_126_bio4 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/MPI_ESM1_2_HR/mpi_2011_2040_126_bio4.tif")
+
+mpi_2011_2040_126_bio6 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/MPI_ESM1_2_HR/mpi_2011_2040_126_bio6.tif")
+
+mpi_2011_2040_126_bio7 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/MPI_ESM1_2_HR/mpi_2011_2040_126_bio7.tif")
+
+mpi_2011_2040_126_bio12 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/MPI_ESM1_2_HR/mpi_2011_2040_126_bio12.tif")
+
+mpi_2011_2040_126_bio14 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/MPI_ESM1_2_HR/mpi_2011_2040_126_bio14.tif")
+
+mpi_2011_2040_126_bio15 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/MPI_ESM1_2_HR/mpi_2011_2040_126_bio15.tif")
+
+mpi_2011_2040_126_bio1 <- terra::mask(mpi_2011_2040_126_bio1, indomalay_region)
+mpi_2011_2040_126_bio2 <- terra::mask(mpi_2011_2040_126_bio2, indomalay_region)
+mpi_2011_2040_126_bio4 <- terra::mask(mpi_2011_2040_126_bio4, indomalay_region)
+mpi_2011_2040_126_bio6 <- terra::mask(mpi_2011_2040_126_bio6, indomalay_region)
+mpi_2011_2040_126_bio7 <- terra::mask(mpi_2011_2040_126_bio7, indomalay_region)
+mpi_2011_2040_126_bio12 <- terra::mask(mpi_2011_2040_126_bio12, indomalay_region)
+mpi_2011_2040_126_bio14 <- terra::mask(mpi_2011_2040_126_bio14, indomalay_region)
+mpi_2011_2040_126_bio15 <- terra::mask(mpi_2011_2040_126_bio15, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(mpi_2011_2040_126_bio1)
+plot(mpi_2011_2040_126_bio2)
+plot(mpi_2011_2040_126_bio4)
+plot(mpi_2011_2040_126_bio6)
+plot(mpi_2011_2040_126_bio7)
+plot(mpi_2011_2040_126_bio12)
+plot(mpi_2011_2040_126_bio14)
+plot(mpi_2011_2040_126_bio15)
+```
+
+## MRI_ESM2_0 ##
+DONE
+```{r}
+mri_2011_2040_126_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/MRI_ESM2_0/mri_2011_2040_126_bio1.tif") 
+
+mri_2011_2040_126_bio2 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/MRI_ESM2_0/mri_2011_2040_126_bio2.tif") 
+
+mri_2011_2040_126_bio4 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/MRI_ESM2_0/mri_2011_2040_126_bio4.tif") 
+
+mri_2011_2040_126_bio6 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/MRI_ESM2_0/mri_2011_2040_126_bio6.tif") 
+
+mri_2011_2040_126_bio7 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/MRI_ESM2_0/mri_2011_2040_126_bio7.tif") 
+
+mri_2011_2040_126_bio12 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/MRI_ESM2_0/mri_2011_2040_126_bio12.tif") 
+
+mri_2011_2040_126_bio14 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/MRI_ESM2_0/mri_2011_2040_126_bio14.tif") 
+
+mri_2011_2040_126_bio15 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/MRI_ESM2_0/mri_2011_2040_126_bio15.tif") 
+
+mri_2011_2040_126_bio1 <- terra::mask(mri_2011_2040_126_bio1, indomalay_region)
+mri_2011_2040_126_bio2 <- terra::mask(mri_2011_2040_126_bio2, indomalay_region)
+mri_2011_2040_126_bio4 <- terra::mask(mri_2011_2040_126_bio4, indomalay_region)
+mri_2011_2040_126_bio6 <- terra::mask(mri_2011_2040_126_bio6, indomalay_region)
+mri_2011_2040_126_bio7 <- terra::mask(mri_2011_2040_126_bio7, indomalay_region)
+mri_2011_2040_126_bio12 <- terra::mask(mri_2011_2040_126_bio12, indomalay_region)
+mri_2011_2040_126_bio14 <- terra::mask(mri_2011_2040_126_bio14, indomalay_region)
+mri_2011_2040_126_bio15 <- terra::mask(mri_2011_2040_126_bio15, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(mri_2011_2040_126_bio1)
+plot(mri_2011_2040_126_bio2)
+plot(mri_2011_2040_126_bio4)
+plot(mri_2011_2040_126_bio6)
+plot(mri_2011_2040_126_bio7)
+plot(mri_2011_2040_126_bio12)
+plot(mri_2011_2040_126_bio14)
+plot(mri_2011_2040_126_bio15)
+```
+
+## UKESM1_0_LL ##
+DONE
+```{r}
+ukesm_2011_2040_126_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/UKESM1_0_LL/ukesm_2011_2040_126_bio1.tif")
+
+ukesm_2011_2040_126_bio2 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/UKESM1_0_LL/ukesm_2011_2040_126_bio2.tif")
+
+ukesm_2011_2040_126_bio4 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/UKESM1_0_LL/ukesm_2011_2040_126_bio4.tif")
+
+ukesm_2011_2040_126_bio6 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/UKESM1_0_LL/ukesm_2011_2040_126_bio6.tif")
+
+ukesm_2011_2040_126_bio7 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/UKESM1_0_LL/ukesm_2011_2040_126_bio7.tif")
+
+ukesm_2011_2040_126_bio12 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/UKESM1_0_LL/ukesm_2011_2040_126_bio12.tif")
+
+ukesm_2011_2040_126_bio14 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/UKESM1_0_LL/ukesm_2011_2040_126_bio14.tif")
+
+ukesm_2011_2040_126_bio15 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/UKESM1_0_LL/ukesm_2011_2040_126_bio15.tif")
+
+ukesm_2011_2040_126_bio1 <- terra::mask(ukesm_2011_2040_126_bio1, indomalay_region)
+ukesm_2011_2040_126_bio2 <- terra::mask(ukesm_2011_2040_126_bio2, indomalay_region)
+ukesm_2011_2040_126_bio4 <- terra::mask(ukesm_2011_2040_126_bio4, indomalay_region)
+ukesm_2011_2040_126_bio6 <- terra::mask(ukesm_2011_2040_126_bio6, indomalay_region)
+ukesm_2011_2040_126_bio7 <- terra::mask(ukesm_2011_2040_126_bio7, indomalay_region)
+ukesm_2011_2040_126_bio12 <- terra::mask(ukesm_2011_2040_126_bio12, indomalay_region)
+ukesm_2011_2040_126_bio14 <- terra::mask(ukesm_2011_2040_126_bio14, indomalay_region)
+ukesm_2011_2040_126_bio15 <- terra::mask(ukesm_2011_2040_126_bio15, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(ukesm_2011_2040_126_bio1)
+plot(ukesm_2011_2040_126_bio2)
+plot(ukesm_2011_2040_126_bio4)
+plot(ukesm_2011_2040_126_bio6)
+plot(ukesm_2011_2040_126_bio7)
+plot(ukesm_2011_2040_126_bio12)
+plot(ukesm_2011_2040_126_bio14)
+plot(ukesm_2011_2040_126_bio15)
+```
+
+############ 2011 - 2041 ############
+
+####### 370 #######
+
+## GFDL_ESM4 ##
+DONE
+```{r}
+gfdl_2011_2040_370_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/GFDL_ESM4/gfdl_2011_2040_370_bio1.tif")
+
+gfdl_2011_2040_370_bio2 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/GFDL_ESM4/gfdl_2011_2040_370_bio2.tif")
+
+gfdl_2011_2040_370_bio4 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/GFDL_ESM4/gfdl_2011_2040_370_bio4.tif")
+
+gfdl_2011_2040_370_bio6 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/GFDL_ESM4/gfdl_2011_2040_370_bio6.tif")
+
+gfdl_2011_2040_370_bio7 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/GFDL_ESM4/gfdl_2011_2040_370_bio7.tif")
+
+gfdl_2011_2040_370_bio12 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/GFDL_ESM4/gfdl_2011_2040_370_bio12.tif")
+
+gfdl_2011_2040_370_bio14 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/GFDL_ESM4/gfdl_2011_2040_370_bio14.tif")
+
+gfdl_2011_2040_370_bio15 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/GFDL_ESM4/gfdl_2011_2040_370_bio15.tif")
+
+gfdl_2011_2040_370_bio1 <- terra::mask(gfdl_2011_2040_370_bio1, indomalay_region)
+gfdl_2011_2040_370_bio2 <- terra::mask(gfdl_2011_2040_370_bio2, indomalay_region)
+gfdl_2011_2040_370_bio4 <- terra::mask(gfdl_2011_2040_370_bio4, indomalay_region)
+gfdl_2011_2040_370_bio6 <- terra::mask(gfdl_2011_2040_370_bio6, indomalay_region)
+gfdl_2011_2040_370_bio7 <- terra::mask(gfdl_2011_2040_370_bio7, indomalay_region)
+gfdl_2011_2040_370_bio12 <- terra::mask(gfdl_2011_2040_370_bio12, indomalay_region)
+gfdl_2011_2040_370_bio14 <- terra::mask(gfdl_2011_2040_370_bio14, indomalay_region)
+gfdl_2011_2040_370_bio15 <- terra::mask(gfdl_2011_2040_370_bio15, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(gfdl_2011_2040_370_bio1)
+plot(gfdl_2011_2040_370_bio2)
+plot(gfdl_2011_2040_370_bio4)
+plot(gfdl_2011_2040_370_bio6)
+plot(gfdl_2011_2040_370_bio7)
+plot(gfdl_2011_2040_370_bio12)
+plot(gfdl_2011_2040_370_bio14)
+plot(gfdl_2011_2040_370_bio15)
+```
+
+## IPSL_CM6A_LR ##
+DONE
+```{r}
+ipsl_2011_2040_370_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/IPSL_CM6A_LR/ipsl_2011_2040_370_bio1.tif")
+
+ipsl_2011_2040_370_bio2 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/IPSL_CM6A_LR/ipsl_2011_2040_370_bio2.tif")
+
+ipsl_2011_2040_370_bio4 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/IPSL_CM6A_LR/ipsl_2011_2040_370_bio4.tif")
+
+ipsl_2011_2040_370_bio6 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/IPSL_CM6A_LR/ipsl_2011_2040_370_bio6.tif")
+
+ipsl_2011_2040_370_bio7 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/IPSL_CM6A_LR/ipsl_2011_2040_370_bio7.tif")
+
+ipsl_2011_2040_370_bio12 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/IPSL_CM6A_LR/ipsl_2011_2040_370_bio12.tif")
+
+ipsl_2011_2040_370_bio14 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/IPSL_CM6A_LR/ipsl_2011_2040_370_bio14.tif")
+
+ipsl_2011_2040_370_bio15 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/IPSL_CM6A_LR/ipsl_2011_2040_370_bio15.tif")
+
+ipsl_2011_2040_370_bio1 <- terra::mask(ipsl_2011_2040_370_bio1, indomalay_region)
+ipsl_2011_2040_370_bio2 <- terra::mask(ipsl_2011_2040_370_bio2, indomalay_region)
+ipsl_2011_2040_370_bio4 <- terra::mask(ipsl_2011_2040_370_bio4, indomalay_region)
+ipsl_2011_2040_370_bio6 <- terra::mask(ipsl_2011_2040_370_bio6, indomalay_region)
+ipsl_2011_2040_370_bio7 <- terra::mask(ipsl_2011_2040_370_bio7, indomalay_region)
+ipsl_2011_2040_370_bio12 <- terra::mask(ipsl_2011_2040_370_bio12, indomalay_region)
+ipsl_2011_2040_370_bio14 <- terra::mask(ipsl_2011_2040_370_bio14, indomalay_region)
+ipsl_2011_2040_370_bio15 <- terra::mask(ipsl_2011_2040_370_bio15, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(ipsl_2011_2040_370_bio1)
+plot(ipsl_2011_2040_370_bio2)
+plot(ipsl_2011_2040_370_bio4)
+plot(ipsl_2011_2040_370_bio6)
+plot(ipsl_2011_2040_370_bio7)
+plot(ipsl_2011_2040_370_bio12)
+plot(ipsl_2011_2040_370_bio14)
+plot(ipsl_2011_2040_370_bio15)
+```
+
+## MPI_ESM1_2_HR ##
+DONE
+```{r}
+mpi_2011_2040_370_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/MPI_ESM1_2_HR/mpi_2011_2040_370_bio1.tif")
+
+mpi_2011_2040_370_bio2 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/MPI_ESM1_2_HR/mpi_2011_2040_370_bio2.tif")
+
+mpi_2011_2040_370_bio4 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/MPI_ESM1_2_HR/mpi_2011_2040_370_bio4.tif")
+
+mpi_2011_2040_370_bio6 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/MPI_ESM1_2_HR/mpi_2011_2040_370_bio6.tif")
+
+mpi_2011_2040_370_bio7 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/MPI_ESM1_2_HR/mpi_2011_2040_370_bio7.tif")
+
+mpi_2011_2040_370_bio12 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/MPI_ESM1_2_HR/mpi_2011_2040_370_bio12.tif")
+
+mpi_2011_2040_370_bio14 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/MPI_ESM1_2_HR/mpi_2011_2040_370_bio14.tif")
+
+mpi_2011_2040_370_bio15 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/MPI_ESM1_2_HR/mpi_2011_2040_370_bio15.tif")
+
+mpi_2011_2040_370_bio1 <- terra::mask(mpi_2011_2040_370_bio1, indomalay_region)
+mpi_2011_2040_370_bio2 <- terra::mask(mpi_2011_2040_370_bio2, indomalay_region)
+mpi_2011_2040_370_bio4 <- terra::mask(mpi_2011_2040_370_bio4, indomalay_region)
+mpi_2011_2040_370_bio6 <- terra::mask(mpi_2011_2040_370_bio6, indomalay_region)
+mpi_2011_2040_370_bio7 <- terra::mask(mpi_2011_2040_370_bio7, indomalay_region)
+mpi_2011_2040_370_bio12 <- terra::mask(mpi_2011_2040_370_bio12, indomalay_region)
+mpi_2011_2040_370_bio14 <- terra::mask(mpi_2011_2040_370_bio14, indomalay_region)
+mpi_2011_2040_370_bio15 <- terra::mask(mpi_2011_2040_370_bio15, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(mpi_2011_2040_370_bio1)
+plot(mpi_2011_2040_370_bio2)
+plot(mpi_2011_2040_370_bio4)
+plot(mpi_2011_2040_370_bio6)
+plot(mpi_2011_2040_370_bio7)
+plot(mpi_2011_2040_370_bio12)
+plot(mpi_2011_2040_370_bio14)
+plot(mpi_2011_2040_370_bio15)
+```
+
+## MRI_ESM2_0 ##
+DONE
+```{r}
+mri_2011_2040_370_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/MRI_ESM2_0/mri_2011_2040_370_bio1.tif")
+
+mri_2011_2040_370_bio2 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/MRI_ESM2_0/mri_2011_2040_370_bio2.tif")
+
+mri_2011_2040_370_bio4 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/MRI_ESM2_0/mri_2011_2040_370_bio4.tif")
+
+mri_2011_2040_370_bio6 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/MRI_ESM2_0/mri_2011_2040_370_bio6.tif")
+
+mri_2011_2040_370_bio7 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/MRI_ESM2_0/mri_2011_2040_370_bio7.tif")
+
+mri_2011_2040_370_bio12 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/MRI_ESM2_0/mri_2011_2040_370_bio12.tif")
+
+mri_2011_2040_370_bio14 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/MRI_ESM2_0/mri_2011_2040_370_bio14.tif")
+
+mri_2011_2040_370_bio15 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/MRI_ESM2_0/mri_2011_2040_370_bio15.tif")
+
+mri_2011_2040_370_bio1 <- terra::mask(mri_2011_2040_370_bio1, indomalay_region)
+mri_2011_2040_370_bio2 <- terra::mask(mri_2011_2040_370_bio2, indomalay_region)
+mri_2011_2040_370_bio4 <- terra::mask(mri_2011_2040_370_bio4, indomalay_region)
+mri_2011_2040_370_bio6 <- terra::mask(mri_2011_2040_370_bio6, indomalay_region)
+mri_2011_2040_370_bio7 <- terra::mask(mri_2011_2040_370_bio7, indomalay_region)
+mri_2011_2040_370_bio12 <- terra::mask(mri_2011_2040_370_bio12, indomalay_region)
+mri_2011_2040_370_bio14 <- terra::mask(mri_2011_2040_370_bio14, indomalay_region)
+mri_2011_2040_370_bio15 <- terra::mask(mri_2011_2040_370_bio15, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(mri_2011_2040_370_bio1)
+plot(mri_2011_2040_370_bio2)
+plot(mri_2011_2040_370_bio4)
+plot(mri_2011_2040_370_bio6)
+plot(mri_2011_2040_370_bio7)
+plot(mri_2011_2040_370_bio12)
+plot(mri_2011_2040_370_bio14)
+plot(mri_2011_2040_370_bio15)
+```
+
+## UKESM1_0_LL ##
+DONE
+```{r}
+ukesm_2011_2040_370_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/UKESM1_0_LL/ukesm_2011_2040_370_bio1.tif")
+
+ukesm_2011_2040_370_bio2 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/UKESM1_0_LL/ukesm_2011_2040_370_bio2.tif")
+
+ukesm_2011_2040_370_bio4 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/UKESM1_0_LL/ukesm_2011_2040_370_bio4.tif")
+
+ukesm_2011_2040_370_bio6 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/UKESM1_0_LL/ukesm_2011_2040_370_bio6.tif")
+
+ukesm_2011_2040_370_bio7 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/UKESM1_0_LL/ukesm_2011_2040_370_bio7.tif")
+
+ukesm_2011_2040_370_bio12 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/UKESM1_0_LL/ukesm_2011_2040_370_bio12.tif")
+
+ukesm_2011_2040_370_bio14 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/UKESM1_0_LL/ukesm_2011_2040_370_bio14.tif")
+
+ukesm_2011_2040_370_bio15 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/UKESM1_0_LL/ukesm_2011_2040_370_bio15.tif")
+
+ukesm_2011_2040_370_bio1 <- terra::mask(ukesm_2011_2040_370_bio1, indomalay_region)
+ukesm_2011_2040_370_bio2 <- terra::mask(ukesm_2011_2040_370_bio2, indomalay_region)
+ukesm_2011_2040_370_bio4 <- terra::mask(ukesm_2011_2040_370_bio4, indomalay_region)
+ukesm_2011_2040_370_bio6 <- terra::mask(ukesm_2011_2040_370_bio6, indomalay_region)
+ukesm_2011_2040_370_bio7 <- terra::mask(ukesm_2011_2040_370_bio7, indomalay_region)
+ukesm_2011_2040_370_bio12 <- terra::mask(ukesm_2011_2040_370_bio12, indomalay_region)
+ukesm_2011_2040_370_bio14 <- terra::mask(ukesm_2011_2040_370_bio14, indomalay_region)
+ukesm_2011_2040_370_bio15 <- terra::mask(ukesm_2011_2040_370_bio15, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(ukesm_2011_2040_370_bio1)
+plot(ukesm_2011_2040_370_bio2)
+plot(ukesm_2011_2040_370_bio4)
+plot(ukesm_2011_2040_370_bio6)
+plot(ukesm_2011_2040_370_bio7)
+plot(ukesm_2011_2040_370_bio12)
+plot(ukesm_2011_2040_370_bio14)
+plot(ukesm_2011_2040_370_bio15)
+```
+
+############ 2011 - 2041 ############ 
+
+###### 585 #######
+
+## GFDL_ESM4 ##
+DONE
+```{r}
+gfdl_2011_2040_585_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/585/GFDL_ESM4/gfdl_2011_2040_585_bio1.tif")
+
+gfdl_2011_2040_585_bio1 <- terra::mask(gfdl_2011_2040_585_bio1, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(gfdl_2011_2040_585_bio1)
+```
+
+## IPSL_CM6A_LR ##
+DONE
+```{r}
+ipsl_2011_2040_585_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/585/IPSL_CM6A_LR/ipsl_2011_2040_585_bio1.tif")
+
+ipsl_2011_2040_585_bio1 <- terra::mask(ipsl_2011_2040_585_bio1, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(ipsl_2011_2040_585_bio1)
+```
+
+## MPI_ESM1_2_HR ##
+DONE
+```{r}
+mpi_2011_2040_585_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/585/MPI_ESM1_2_HR/mpi_2011_2040_585_bio1.tif")
+
+mpi_2011_2040_585_bio1 <- terra::mask(mpi_2011_2040_585_bio1, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(mpi_2011_2040_585_bio1)
+```
+
+## MRI_ESM2_0 ##
+DONE
+```{r}
+mri_2011_2040_585_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/585/MRI_ESM2_0/mri_2011_2040_585_bio1.tif")
+
+mri_2011_2040_585_bio2 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/585/MRI_ESM2_0/mri_2011_2040_585_bio2.tif")
+
+mri_2011_2040_585_bio4 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/585/MRI_ESM2_0/mri_2011_2040_585_bio4.tif")
+
+mri_2011_2040_585_bio6 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/585/MRI_ESM2_0/mri_2011_2040_585_bio6.tif")
+
+mri_2011_2040_585_bio7 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/585/MRI_ESM2_0/mri_2011_2040_585_bio7.tif")
+
+mri_2011_2040_585_bio12 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/585/MRI_ESM2_0/mri_2011_2040_585_bio12.tif")
+
+mri_2011_2040_585_bio14 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/585/MRI_ESM2_0/mri_2011_2040_585_bio14.tif")
+
+mri_2011_2040_585_bio15 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/585/MRI_ESM2_0/mri_2011_2040_585_bio15.tif")
+
+mri_2011_2040_585_bio1 <- terra::mask(mri_2011_2040_585_bio1, indomalay_region)
+mri_2011_2040_585_bio2 <- terra::mask(mri_2011_2040_585_bio2, indomalay_region)
+mri_2011_2040_585_bio4 <- terra::mask(mri_2011_2040_585_bio4, indomalay_region)
+mri_2011_2040_585_bio6 <- terra::mask(mri_2011_2040_585_bio6, indomalay_region)
+mri_2011_2040_585_bio7 <- terra::mask(mri_2011_2040_585_bio7, indomalay_region)
+mri_2011_2040_585_bio12 <- terra::mask(mri_2011_2040_585_bio12, indomalay_region)
+mri_2011_2040_585_bio14 <- terra::mask(mri_2011_2040_585_bio14, indomalay_region)
+mri_2011_2040_585_bio15 <- terra::mask(mri_2011_2040_585_bio15, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(mri_2011_2040_585_bio1)
+plot(mri_2011_2040_585_bio2)
+plot(mri_2011_2040_585_bio4)
+plot(mri_2011_2040_585_bio6)
+plot(mri_2011_2040_585_bio7)
+plot(mri_2011_2040_585_bio12)
+plot(mri_2011_2040_585_bio14)
+plot(mri_2011_2040_585_bio15)
+```
+
+## UKESM1_0_LL ##
+DONE
+```{r}
+ukesm_2011_2040_585_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/585/UKESM1_0_LL/ukesm_2011_2040_585_bio1.tif")
+
+ukesm_2011_2040_585_bio2 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/585/UKESM1_0_LL/ukesm_2011_2040_585_bio2.tif")
+
+ukesm_2011_2040_585_bio4 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/585/UKESM1_0_LL/ukesm_2011_2040_585_bio4.tif")
+
+ukesm_2011_2040_585_bio6 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/585/UKESM1_0_LL/ukesm_2011_2040_585_bio6.tif")
+
+ukesm_2011_2040_585_bio7 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/585/UKESM1_0_LL/ukesm_2011_2040_585_bio7.tif")
+
+ukesm_2011_2040_585_bio12 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/585/UKESM1_0_LL/ukesm_2011_2040_585_bio12.tif")
+
+ukesm_2011_2040_585_bio14 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/585/UKESM1_0_LL/ukesm_2011_2040_585_bio14.tif")
+
+ukesm_2011_2040_585_bio15 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/585/UKESM1_0_LL/ukesm_2011_2040_585_bio15.tif")
+
+ukesm_2011_2040_585_bio1 <- terra::mask(ukesm_2011_2040_585_bio1, indomalay_region)
+ukesm_2011_2040_585_bio2 <- terra::mask(ukesm_2011_2040_585_bio2, indomalay_region)
+ukesm_2011_2040_585_bio4 <- terra::mask(ukesm_2011_2040_585_bio4, indomalay_region)
+ukesm_2011_2040_585_bio6 <- terra::mask(ukesm_2011_2040_585_bio6, indomalay_region)
+ukesm_2011_2040_585_bio7 <- terra::mask(ukesm_2011_2040_585_bio7, indomalay_region)
+ukesm_2011_2040_585_bio12 <- terra::mask(ukesm_2011_2040_585_bio12, indomalay_region)
+ukesm_2011_2040_585_bio14 <- terra::mask(ukesm_2011_2040_585_bio14, indomalay_region)
+ukesm_2011_2040_585_bio15 <- terra::mask(ukesm_2011_2040_585_bio15, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(ukesm_2011_2040_585_bio1)
+plot(ukesm_2011_2040_585_bio2)
+plot(ukesm_2011_2040_585_bio4)
+plot(ukesm_2011_2040_585_bio6)
+plot(ukesm_2011_2040_585_bio7)
+plot(ukesm_2011_2040_585_bio12)
+plot(ukesm_2011_2040_585_bio14)
+plot(ukesm_2011_2040_585_bio15)
+```
+
+############ 2041 - 2070 ############
+
+####### 126 #######
+
+## GFDL_ESM4 ##
+DONE
+```{r}
+gfdl_2041_2070_126_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/GFDL_ESM4/gfdl_2041_2070_126_bio1.tif")
+
+gfdl_2041_2070_126_bio2 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/GFDL_ESM4/gfdl_2041_2070_126_bio2.tif")
+
+gfdl_2041_2070_126_bio4 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/GFDL_ESM4/gfdl_2041_2070_126_bio4.tif")
+
+gfdl_2041_2070_126_bio6 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/GFDL_ESM4/gfdl_2041_2070_126_bio6.tif")
+
+gfdl_2041_2070_126_bio7 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/GFDL_ESM4/gfdl_2041_2070_126_bio7.tif")
+
+gfdl_2041_2070_126_bio12 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/GFDL_ESM4/gfdl_2041_2070_126_bio12.tif")
+
+gfdl_2041_2070_126_bio14 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/GFDL_ESM4/gfdl_2041_2070_126_bio14.tif")
+
+gfdl_2041_2070_126_bio15 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/GFDL_ESM4/gfdl_2041_2070_126_bio15.tif")
+
+gfdl_2041_2070_126_bio1 <- terra::mask(gfdl_2041_2070_126_bio1, indomalay_region)
+gfdl_2041_2070_126_bio2 <- terra::mask(gfdl_2041_2070_126_bio2, indomalay_region)
+gfdl_2041_2070_126_bio4 <- terra::mask(gfdl_2041_2070_126_bio4, indomalay_region)
+gfdl_2041_2070_126_bio6 <- terra::mask(gfdl_2041_2070_126_bio6, indomalay_region)
+gfdl_2041_2070_126_bio7 <- terra::mask(gfdl_2041_2070_126_bio7, indomalay_region)
+gfdl_2041_2070_126_bio12 <- terra::mask(gfdl_2041_2070_126_bio12, indomalay_region)
+gfdl_2041_2070_126_bio14 <- terra::mask(gfdl_2041_2070_126_bio14, indomalay_region)
+gfdl_2041_2070_126_bio15 <- terra::mask(gfdl_2041_2070_126_bio15, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(gfdl_2041_2070_126_bio1)
+plot(gfdl_2041_2070_126_bio2)
+plot(gfdl_2041_2070_126_bio4)
+plot(gfdl_2041_2070_126_bio6)
+plot(gfdl_2041_2070_126_bio7)
+plot(gfdl_2041_2070_126_bio12)
+plot(gfdl_2041_2070_126_bio14)
+plot(gfdl_2041_2070_126_bio15)
+```
+
+## IPSL_CM6A_LR ##
+DONE
+```{r}
+ipsl_2041_2070_126_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/IPSL_CM6A_LR/ipsl_2041_2070_126_bio1.tif")
+
+ipsl_2041_2070_126_bio2 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/IPSL_CM6A_LR/ipsl_2041_2070_126_bio2.tif")
+
+ipsl_2041_2070_126_bio4 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/IPSL_CM6A_LR/ipsl_2041_2070_126_bio4.tif")
+
+ipsl_2041_2070_126_bio6 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/IPSL_CM6A_LR/ipsl_2041_2070_126_bio6.tif")
+
+ipsl_2041_2070_126_bio7 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/IPSL_CM6A_LR/ipsl_2041_2070_126_bio7.tif")
+
+ipsl_2041_2070_126_bio12 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/IPSL_CM6A_LR/ipsl_2041_2070_126_bio12.tif")
+
+ipsl_2041_2070_126_bio14 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/IPSL_CM6A_LR/ipsl_2041_2070_126_bio14.tif")
+
+ipsl_2041_2070_126_bio15 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/IPSL_CM6A_LR/ipsl_2041_2070_126_bio15.tif")
+
+ipsl_2041_2070_126_bio1 <- terra::mask(ipsl_2041_2070_126_bio1, indomalay_region)
+ipsl_2041_2070_126_bio2 <- terra::mask(ipsl_2041_2070_126_bio2, indomalay_region)
+ipsl_2041_2070_126_bio4 <- terra::mask(ipsl_2041_2070_126_bio4, indomalay_region)
+ipsl_2041_2070_126_bio6 <- terra::mask(ipsl_2041_2070_126_bio6, indomalay_region)
+ipsl_2041_2070_126_bio7 <- terra::mask(ipsl_2041_2070_126_bio7, indomalay_region)
+ipsl_2041_2070_126_bio12 <- terra::mask(ipsl_2041_2070_126_bio12, indomalay_region)
+ipsl_2041_2070_126_bio14 <- terra::mask(ipsl_2041_2070_126_bio14, indomalay_region)
+ipsl_2041_2070_126_bio15 <- terra::mask(ipsl_2041_2070_126_bio15, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(ipsl_2041_2070_126_bio1)
+plot(ipsl_2041_2070_126_bio2)
+plot(ipsl_2041_2070_126_bio4)
+plot(ipsl_2041_2070_126_bio6)
+plot(ipsl_2041_2070_126_bio7)
+plot(ipsl_2041_2070_126_bio12)
+plot(ipsl_2041_2070_126_bio14)
+plot(ipsl_2041_2070_126_bio15)
+```
+
+## MPI_ESM1_2_HR ##
+DONE
+```{r}
+mpi_2041_2070_126_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/MPI_ESM1_2_HR/mpi_2041_2070_126_bio1.tif")
+
+mpi_2041_2070_126_bio2 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/MPI_ESM1_2_HR/mpi_2041_2070_126_bio2.tif")
+
+mpi_2041_2070_126_bio4 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/MPI_ESM1_2_HR/mpi_2041_2070_126_bio4.tif")
+
+mpi_2041_2070_126_bio6 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/MPI_ESM1_2_HR/mpi_2041_2070_126_bio6.tif")
+
+mpi_2041_2070_126_bio7 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/MPI_ESM1_2_HR/mpi_2041_2070_126_bio7.tif")
+
+mpi_2041_2070_126_bio12 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/MPI_ESM1_2_HR/mpi_2041_2070_126_bio12.tif")
+
+mpi_2041_2070_126_bio14 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/MPI_ESM1_2_HR/mpi_2041_2070_126_bio14.tif")
+
+mpi_2041_2070_126_bio15 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/MPI_ESM1_2_HR/mpi_2041_2070_126_bio15.tif")
+
+mpi_2041_2070_126_bio1 <- terra::mask(mpi_2041_2070_126_bio1, indomalay_region)
+mpi_2041_2070_126_bio2 <- terra::mask(mpi_2041_2070_126_bio2, indomalay_region)
+mpi_2041_2070_126_bio4 <- terra::mask(mpi_2041_2070_126_bio4, indomalay_region)
+mpi_2041_2070_126_bio6 <- terra::mask(mpi_2041_2070_126_bio6, indomalay_region)
+mpi_2041_2070_126_bio7 <- terra::mask(mpi_2041_2070_126_bio7, indomalay_region)
+mpi_2041_2070_126_bio12 <- terra::mask(mpi_2041_2070_126_bio12, indomalay_region)
+mpi_2041_2070_126_bio14 <- terra::mask(mpi_2041_2070_126_bio14, indomalay_region)
+mpi_2041_2070_126_bio15 <- terra::mask(mpi_2041_2070_126_bio15, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(mpi_2041_2070_126_bio1)
+plot(mpi_2041_2070_126_bio2)
+plot(mpi_2041_2070_126_bio4)
+plot(mpi_2041_2070_126_bio6)
+plot(mpi_2041_2070_126_bio7)
+plot(mpi_2041_2070_126_bio12)
+plot(mpi_2041_2070_126_bio14)
+plot(mpi_2041_2070_126_bio15)
+```
+
+## MRI_ESM2_0 ##
+DONE
+```{r}
+mri_2041_2070_126_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/MRI_ESM2_0/mri_2041_2070_126_bio1.tif") 
+
+mri_2041_2070_126_bio2 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/MRI_ESM2_0/mri_2041_2070_126_bio2.tif") 
+
+mri_2041_2070_126_bio4 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/MRI_ESM2_0/mri_2041_2070_126_bio4.tif") 
+
+mri_2041_2070_126_bio6 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/MRI_ESM2_0/mri_2041_2070_126_bio6.tif") 
+
+mri_2041_2070_126_bio7 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/MRI_ESM2_0/mri_2041_2070_126_bio7.tif") 
+
+mri_2041_2070_126_bio12 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/MRI_ESM2_0/mri_2041_2070_126_bio12.tif") 
+
+mri_2041_2070_126_bio14 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/MRI_ESM2_0/mri_2041_2070_126_bio14.tif") 
+
+mri_2041_2070_126_bio15 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/MRI_ESM2_0/mri_2041_2070_126_bio15.tif") 
+
+mri_2041_2070_126_bio1 <- terra::mask(mri_2041_2070_126_bio1, indomalay_region)
+mri_2041_2070_126_bio2 <- terra::mask(mri_2041_2070_126_bio2, indomalay_region)
+mri_2041_2070_126_bio4 <- terra::mask(mri_2041_2070_126_bio4, indomalay_region)
+mri_2041_2070_126_bio6 <- terra::mask(mri_2041_2070_126_bio6, indomalay_region)
+mri_2041_2070_126_bio7 <- terra::mask(mri_2041_2070_126_bio7, indomalay_region)
+mri_2041_2070_126_bio12 <- terra::mask(mri_2041_2070_126_bio12, indomalay_region)
+mri_2041_2070_126_bio14 <- terra::mask(mri_2041_2070_126_bio14, indomalay_region)
+mri_2041_2070_126_bio15 <- terra::mask(mri_2041_2070_126_bio15, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(mri_2041_2070_126_bio1)
+plot(mri_2041_2070_126_bio2)
+plot(mri_2041_2070_126_bio4)
+plot(mri_2041_2070_126_bio6)
+plot(mri_2041_2070_126_bio7)
+plot(mri_2041_2070_126_bio12)
+plot(mri_2041_2070_126_bio14)
+plot(mri_2041_2070_126_bio15)
+```
+
+## UKESM1_0_LL ##
+DONE
+```{r}
+ukesm_2041_2070_126_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/UKESM1_0_LL/ukesm_2041_2070_126_bio1.tif")
+
+ukesm_2041_2070_126_bio2 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/UKESM1_0_LL/ukesm_2041_2070_126_bio2.tif")
+
+ukesm_2041_2070_126_bio4 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/UKESM1_0_LL/ukesm_2041_2070_126_bio4.tif")
+
+ukesm_2041_2070_126_bio6 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/UKESM1_0_LL/ukesm_2041_2070_126_bio6.tif")
+
+ukesm_2041_2070_126_bio7 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/UKESM1_0_LL/ukesm_2041_2070_126_bio7.tif")
+
+ukesm_2041_2070_126_bio12 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/UKESM1_0_LL/ukesm_2041_2070_126_bio12.tif")
+
+ukesm_2041_2070_126_bio14 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/UKESM1_0_LL/ukesm_2041_2070_126_bio14.tif")
+
+ukesm_2041_2070_126_bio15 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/UKESM1_0_LL/ukesm_2041_2070_126_bio15.tif")
+
+ukesm_2041_2070_126_bio1 <- terra::mask(ukesm_2041_2070_126_bio1, indomalay_region)
+ukesm_2041_2070_126_bio2 <- terra::mask(ukesm_2041_2070_126_bio2, indomalay_region)
+ukesm_2041_2070_126_bio4 <- terra::mask(ukesm_2041_2070_126_bio4, indomalay_region)
+ukesm_2041_2070_126_bio6 <- terra::mask(ukesm_2041_2070_126_bio6, indomalay_region)
+ukesm_2041_2070_126_bio7 <- terra::mask(ukesm_2041_2070_126_bio7, indomalay_region)
+ukesm_2041_2070_126_bio12 <- terra::mask(ukesm_2041_2070_126_bio12, indomalay_region)
+ukesm_2041_2070_126_bio14 <- terra::mask(ukesm_2041_2070_126_bio14, indomalay_region)
+ukesm_2041_2070_126_bio15 <- terra::mask(ukesm_2041_2070_126_bio15, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(ukesm_2041_2070_126_bio1)
+plot(ukesm_2041_2070_126_bio2)
+plot(ukesm_2041_2070_126_bio4)
+plot(ukesm_2041_2070_126_bio6)
+plot(ukesm_2041_2070_126_bio7)
+plot(ukesm_2041_2070_126_bio12)
+plot(ukesm_2041_2070_126_bio14)
+plot(ukesm_2041_2070_126_bio15)
+```
+
+############ 2041 - 2070 ############
+
+####### 370 #######
+
+## GFDL_ESM4 ##
+DONE
+```{r}
+gfdl_2041_2070_370_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/GFDL_ESM4/gfdl_2041_2070_370_bio1.tif")
+
+gfdl_2041_2070_370_bio2 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/GFDL_ESM4/gfdl_2041_2070_370_bio2.tif")
+
+gfdl_2041_2070_370_bio4 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/GFDL_ESM4/gfdl_2041_2070_370_bio4.tif")
+
+gfdl_2041_2070_370_bio6 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/GFDL_ESM4/gfdl_2041_2070_370_bio6.tif")
+
+gfdl_2041_2070_370_bio7 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/GFDL_ESM4/gfdl_2041_2070_370_bio7.tif")
+
+gfdl_2041_2070_370_bio12 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/GFDL_ESM4/gfdl_2041_2070_370_bio12.tif")
+
+gfdl_2041_2070_370_bio14 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/GFDL_ESM4/gfdl_2041_2070_370_bio14.tif")
+
+gfdl_2041_2070_370_bio15 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/GFDL_ESM4/gfdl_2041_2070_370_bio15.tif")
+
+gfdl_2041_2070_370_bio1 <- terra::mask(gfdl_2041_2070_370_bio1, indomalay_region)
+gfdl_2041_2070_370_bio2 <- terra::mask(gfdl_2041_2070_370_bio2, indomalay_region)
+gfdl_2041_2070_370_bio4 <- terra::mask(gfdl_2041_2070_370_bio4, indomalay_region)
+gfdl_2041_2070_370_bio6 <- terra::mask(gfdl_2041_2070_370_bio6, indomalay_region)
+gfdl_2041_2070_370_bio7 <- terra::mask(gfdl_2041_2070_370_bio7, indomalay_region)
+gfdl_2041_2070_370_bio12 <- terra::mask(gfdl_2041_2070_370_bio12, indomalay_region)
+gfdl_2041_2070_370_bio14 <- terra::mask(gfdl_2041_2070_370_bio14, indomalay_region)
+gfdl_2041_2070_370_bio15 <- terra::mask(gfdl_2041_2070_370_bio15, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(gfdl_2041_2070_370_bio1)
+plot(gfdl_2041_2070_370_bio2)
+plot(gfdl_2041_2070_370_bio4)
+plot(gfdl_2041_2070_370_bio6)
+plot(gfdl_2041_2070_370_bio7)
+plot(gfdl_2041_2070_370_bio12)
+plot(gfdl_2041_2070_370_bio14)
+plot(gfdl_2041_2070_370_bio15)
+```
+
+## IPSL_CM6A_LR ##
+DONE
+```{r}
+ipsl_2041_2070_370_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/IPSL_CM6A_LR/ipsl_2041_2070_370_bio1.tif")
+
+ipsl_2041_2070_370_bio2 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/IPSL_CM6A_LR/ipsl_2041_2070_370_bio2.tif")
+
+ipsl_2041_2070_370_bio4 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/IPSL_CM6A_LR/ipsl_2041_2070_370_bio4.tif")
+
+ipsl_2041_2070_370_bio6 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/IPSL_CM6A_LR/ipsl_2041_2070_370_bio6.tif")
+
+ipsl_2041_2070_370_bio7 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/IPSL_CM6A_LR/ipsl_2041_2070_370_bio7.tif")
+
+ipsl_2041_2070_370_bio12 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/IPSL_CM6A_LR/ipsl_2041_2070_370_bio12.tif")
+
+ipsl_2041_2070_370_bio14 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/IPSL_CM6A_LR/ipsl_2041_2070_370_bio14.tif")
+
+ipsl_2041_2070_370_bio15 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/IPSL_CM6A_LR/ipsl_2041_2070_370_bio15.tif")
+
+ipsl_2041_2070_370_bio1 <- terra::mask(ipsl_2041_2070_370_bio1, indomalay_region)
+ipsl_2041_2070_370_bio2 <- terra::mask(ipsl_2041_2070_370_bio2, indomalay_region)
+ipsl_2041_2070_370_bio4 <- terra::mask(ipsl_2041_2070_370_bio4, indomalay_region)
+ipsl_2041_2070_370_bio6 <- terra::mask(ipsl_2041_2070_370_bio6, indomalay_region)
+ipsl_2041_2070_370_bio7 <- terra::mask(ipsl_2041_2070_370_bio7, indomalay_region)
+ipsl_2041_2070_370_bio12 <- terra::mask(ipsl_2041_2070_370_bio12, indomalay_region)
+ipsl_2041_2070_370_bio14 <- terra::mask(ipsl_2041_2070_370_bio14, indomalay_region)
+ipsl_2041_2070_370_bio15 <- terra::mask(ipsl_2041_2070_370_bio15, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(ipsl_2041_2070_370_bio1)
+plot(ipsl_2041_2070_370_bio2)
+plot(ipsl_2041_2070_370_bio4)
+plot(ipsl_2041_2070_370_bio6)
+plot(ipsl_2041_2070_370_bio7)
+plot(ipsl_2041_2070_370_bio12)
+plot(ipsl_2041_2070_370_bio14)
+plot(ipsl_2041_2070_370_bio15)
+```
+
+## MPI_ESM1_2_HR ##
+DONE
+```{r}
+mpi_2041_2070_370_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/MPI_ESM1_2_HR/mpi_2041_2070_370_bio1.tif")
+
+mpi_2041_2070_370_bio2 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/MPI_ESM1_2_HR/mpi_2041_2070_370_bio2.tif")
+
+mpi_2041_2070_370_bio4 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/MPI_ESM1_2_HR/mpi_2041_2070_370_bio4.tif")
+
+mpi_2041_2070_370_bio6 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/MPI_ESM1_2_HR/mpi_2041_2070_370_bio6.tif")
+
+mpi_2041_2070_370_bio7 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/MPI_ESM1_2_HR/mpi_2041_2070_370_bio7.tif")
+
+mpi_2041_2070_370_bio12 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/MPI_ESM1_2_HR/mpi_2041_2070_370_bio12.tif")
+
+mpi_2041_2070_370_bio14 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/MPI_ESM1_2_HR/mpi_2041_2070_370_bio14.tif")
+
+mpi_2041_2070_370_bio15 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/MPI_ESM1_2_HR/mpi_2041_2070_370_bio15.tif")
+
+mpi_2041_2070_370_bio1 <- terra::mask(mpi_2041_2070_370_bio1, indomalay_region)
+mpi_2041_2070_370_bio2 <- terra::mask(mpi_2041_2070_370_bio2, indomalay_region)
+mpi_2041_2070_370_bio4 <- terra::mask(mpi_2041_2070_370_bio4, indomalay_region)
+mpi_2041_2070_370_bio6 <- terra::mask(mpi_2041_2070_370_bio6, indomalay_region)
+mpi_2041_2070_370_bio7 <- terra::mask(mpi_2041_2070_370_bio7, indomalay_region)
+mpi_2041_2070_370_bio12 <- terra::mask(mpi_2041_2070_370_bio12, indomalay_region)
+mpi_2041_2070_370_bio14 <- terra::mask(mpi_2041_2070_370_bio14, indomalay_region)
+mpi_2041_2070_370_bio15 <- terra::mask(mpi_2041_2070_370_bio15, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(mpi_2041_2070_370_bio1)
+plot(mpi_2041_2070_370_bio2)
+plot(mpi_2041_2070_370_bio4)
+plot(mpi_2041_2070_370_bio6)
+plot(mpi_2041_2070_370_bio7)
+plot(mpi_2041_2070_370_bio12)
+plot(mpi_2041_2070_370_bio14)
+plot(mpi_2041_2070_370_bio15)
+```
+
+## MRI_ESM2_0 ##
+DONE
+```{r}
+mri_2041_2070_370_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/MRI_ESM2_0/mri_2041_2070_370_bio1.tif")
+
+mri_2041_2070_370_bio2 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/MRI_ESM2_0/mri_2041_2070_370_bio2.tif")
+
+mri_2041_2070_370_bio4 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/MRI_ESM2_0/mri_2041_2070_370_bio4.tif")
+
+mri_2041_2070_370_bio6 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/MRI_ESM2_0/mri_2041_2070_370_bio6.tif")
+
+mri_2041_2070_370_bio7 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/MRI_ESM2_0/mri_2041_2070_370_bio7.tif")
+
+mri_2041_2070_370_bio12 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/MRI_ESM2_0/mri_2041_2070_370_bio12.tif")
+
+mri_2041_2070_370_bio14 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/MRI_ESM2_0/mri_2041_2070_370_bio14.tif")
+
+mri_2041_2070_370_bio15 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/MRI_ESM2_0/mri_2041_2070_370_bio15.tif")
+
+mri_2041_2070_370_bio1 <- terra::mask(mri_2041_2070_370_bio1, indomalay_region)
+mri_2041_2070_370_bio2 <- terra::mask(mri_2041_2070_370_bio2, indomalay_region)
+mri_2041_2070_370_bio4 <- terra::mask(mri_2041_2070_370_bio4, indomalay_region)
+mri_2041_2070_370_bio6 <- terra::mask(mri_2041_2070_370_bio6, indomalay_region)
+mri_2041_2070_370_bio7 <- terra::mask(mri_2041_2070_370_bio7, indomalay_region)
+mri_2041_2070_370_bio12 <- terra::mask(mri_2041_2070_370_bio12, indomalay_region)
+mri_2041_2070_370_bio14 <- terra::mask(mri_2041_2070_370_bio14, indomalay_region)
+mri_2041_2070_370_bio15 <- terra::mask(mri_2041_2070_370_bio15, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(mri_2041_2070_370_bio1)
+plot(mri_2041_2070_370_bio2)
+plot(mri_2041_2070_370_bio4)
+plot(mri_2041_2070_370_bio6)
+plot(mri_2041_2070_370_bio7)
+plot(mri_2041_2070_370_bio12)
+plot(mri_2041_2070_370_bio14)
+plot(mri_2041_2070_370_bio15)
+```
+
+## UKESM1_0_LL ##
+DONE
+```{r}
+ukesm_2041_2070_370_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/UKESM1_0_LL/ukesm_2041_2070_370_bio1.tif")
+
+ukesm_2041_2070_370_bio2 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/UKESM1_0_LL/ukesm_2041_2070_370_bio2.tif")
+
+ukesm_2041_2070_370_bio4 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/UKESM1_0_LL/ukesm_2041_2070_370_bio4.tif")
+
+ukesm_2041_2070_370_bio6 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/UKESM1_0_LL/ukesm_2041_2070_370_bio6.tif")
+
+ukesm_2041_2070_370_bio7 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/UKESM1_0_LL/ukesm_2041_2070_370_bio7.tif")
+
+ukesm_2041_2070_370_bio12 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/UKESM1_0_LL/ukesm_2041_2070_370_bio12.tif")
+
+ukesm_2041_2070_370_bio14 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/UKESM1_0_LL/ukesm_2041_2070_370_bio14.tif")
+
+ukesm_2041_2070_370_bio15 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/UKESM1_0_LL/ukesm_2041_2070_370_bio15.tif")
+
+ukesm_2041_2070_370_bio1 <- terra::mask(ukesm_2041_2070_370_bio1, indomalay_region)
+ukesm_2041_2070_370_bio2 <- terra::mask(ukesm_2041_2070_370_bio2, indomalay_region)
+ukesm_2041_2070_370_bio4 <- terra::mask(ukesm_2041_2070_370_bio4, indomalay_region)
+ukesm_2041_2070_370_bio6 <- terra::mask(ukesm_2041_2070_370_bio6, indomalay_region)
+ukesm_2041_2070_370_bio7 <- terra::mask(ukesm_2041_2070_370_bio7, indomalay_region)
+ukesm_2041_2070_370_bio12 <- terra::mask(ukesm_2041_2070_370_bio12, indomalay_region)
+ukesm_2041_2070_370_bio14 <- terra::mask(ukesm_2041_2070_370_bio14, indomalay_region)
+ukesm_2041_2070_370_bio15 <- terra::mask(ukesm_2041_2070_370_bio15, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(ukesm_2041_2070_370_bio1)
+plot(ukesm_2041_2070_370_bio2)
+plot(ukesm_2041_2070_370_bio4)
+plot(ukesm_2041_2070_370_bio6)
+plot(ukesm_2041_2070_370_bio7)
+plot(ukesm_2041_2070_370_bio12)
+plot(ukesm_2041_2070_370_bio14)
+plot(ukesm_2041_2070_370_bio15)
+```
+
+############ 2041 - 2070 ############
+
+####### 585 #######
+
+## GFDL_ESM4 ##
+DONE
+```{r}
+gfdl_2041_2070_585_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/GFDL_ESM4/gfdl_2041_2070_585_bio1.tif")
+
+gfdl_2041_2070_585_bio2 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/GFDL_ESM4/gfdl_2041_2070_585_bio2.tif")
+
+gfdl_2041_2070_585_bio4 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/GFDL_ESM4/gfdl_2041_2070_585_bio4.tif")
+
+gfdl_2041_2070_585_bio6 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/GFDL_ESM4/gfdl_2041_2070_585_bio6.tif")
+
+gfdl_2041_2070_585_bio7 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/GFDL_ESM4/gfdl_2041_2070_585_bio7.tif")
+
+gfdl_2041_2070_585_bio12 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/GFDL_ESM4/gfdl_2041_2070_585_bio12.tif")
+
+gfdl_2041_2070_585_bio14 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/GFDL_ESM4/gfdl_2041_2070_585_bio14.tif")
+
+gfdl_2041_2070_585_bio15 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/GFDL_ESM4/gfdl_2041_2070_585_bio15.tif")
+
+gfdl_2041_2070_585_bio1 <- terra::mask(gfdl_2041_2070_585_bio1, indomalay_region)
+gfdl_2041_2070_585_bio2 <- terra::mask(gfdl_2041_2070_585_bio2, indomalay_region)
+gfdl_2041_2070_585_bio4 <- terra::mask(gfdl_2041_2070_585_bio4, indomalay_region)
+gfdl_2041_2070_585_bio6 <- terra::mask(gfdl_2041_2070_585_bio6, indomalay_region)
+gfdl_2041_2070_585_bio7 <- terra::mask(gfdl_2041_2070_585_bio7, indomalay_region)
+gfdl_2041_2070_585_bio12 <- terra::mask(gfdl_2041_2070_585_bio12, indomalay_region)
+gfdl_2041_2070_585_bio14 <- terra::mask(gfdl_2041_2070_585_bio14, indomalay_region)
+gfdl_2041_2070_585_bio15 <- terra::mask(gfdl_2041_2070_585_bio15, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(gfdl_2041_2070_585_bio1)
+plot(gfdl_2041_2070_585_bio2)
+plot(gfdl_2041_2070_585_bio4)
+plot(gfdl_2041_2070_585_bio6)
+plot(gfdl_2041_2070_585_bio7)
+plot(gfdl_2041_2070_585_bio12)
+plot(gfdl_2041_2070_585_bio14)
+plot(gfdl_2041_2070_585_bio15)
+```
+
+## IPSL_CM6A_LR ##
+DONE
+```{r}
+ipsl_2041_2070_585_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/IPSL_CM6A_LR/ipsl_2041_2070_585_bio1.tif")
+
+ipsl_2041_2070_585_bio2 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/IPSL_CM6A_LR/ipsl_2041_2070_585_bio2.tif")
+
+ipsl_2041_2070_585_bio4 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/IPSL_CM6A_LR/ipsl_2041_2070_585_bio4.tif")
+
+ipsl_2041_2070_585_bio6 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/IPSL_CM6A_LR/ipsl_2041_2070_585_bio6.tif")
+
+ipsl_2041_2070_585_bio7 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/IPSL_CM6A_LR/ipsl_2041_2070_585_bio7.tif")
+
+ipsl_2041_2070_585_bio12 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/IPSL_CM6A_LR/ipsl_2041_2070_585_bio12.tif")
+
+ipsl_2041_2070_585_bio14 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/IPSL_CM6A_LR/ipsl_2041_2070_585_bio14.tif")
+
+ipsl_2041_2070_585_bio15 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/IPSL_CM6A_LR/ipsl_2041_2070_585_bio15.tif")
+
+ipsl_2041_2070_585_bio1 <- terra::mask(ipsl_2041_2070_585_bio1, indomalay_region)
+ipsl_2041_2070_585_bio2 <- terra::mask(ipsl_2041_2070_585_bio2, indomalay_region)
+ipsl_2041_2070_585_bio4 <- terra::mask(ipsl_2041_2070_585_bio4, indomalay_region)
+ipsl_2041_2070_585_bio6 <- terra::mask(ipsl_2041_2070_585_bio6, indomalay_region)
+ipsl_2041_2070_585_bio7 <- terra::mask(ipsl_2041_2070_585_bio7, indomalay_region)
+ipsl_2041_2070_585_bio12 <- terra::mask(ipsl_2041_2070_585_bio12, indomalay_region)
+ipsl_2041_2070_585_bio14 <- terra::mask(ipsl_2041_2070_585_bio14, indomalay_region)
+ipsl_2041_2070_585_bio15 <- terra::mask(ipsl_2041_2070_585_bio15, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(ipsl_2041_2070_585_bio1)
+plot(ipsl_2041_2070_585_bio2)
+plot(ipsl_2041_2070_585_bio4)
+plot(ipsl_2041_2070_585_bio6)
+plot(ipsl_2041_2070_585_bio7)
+plot(ipsl_2041_2070_585_bio12)
+plot(ipsl_2041_2070_585_bio14)
+plot(ipsl_2041_2070_585_bio15)
+```
+
+## MPI_ESM1_2_HR ##
+DONE
+```{r}
+mpi_2041_2070_585_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/MPI_ESM1_2_HR/mpi_2041_2070_585_bio1.tif")
+
+mpi_2041_2070_585_bio2 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/MPI_ESM1_2_HR/mpi_2041_2070_585_bio2.tif")
+
+mpi_2041_2070_585_bio4 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/MPI_ESM1_2_HR/mpi_2041_2070_585_bio4.tif")
+
+mpi_2041_2070_585_bio6 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/MPI_ESM1_2_HR/mpi_2041_2070_585_bio6.tif")
+
+mpi_2041_2070_585_bio7 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/MPI_ESM1_2_HR/mpi_2041_2070_585_bio7.tif")
+
+mpi_2041_2070_585_bio12 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/MPI_ESM1_2_HR/mpi_2041_2070_585_bio12.tif")
+
+mpi_2041_2070_585_bio14 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/MPI_ESM1_2_HR/mpi_2041_2070_585_bio14.tif")
+
+mpi_2041_2070_585_bio15 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/MPI_ESM1_2_HR/mpi_2041_2070_585_bio15.tif")
+
+mpi_2041_2070_585_bio1 <- terra::mask(mpi_2041_2070_585_bio1, indomalay_region)
+mpi_2041_2070_585_bio2 <- terra::mask(mpi_2041_2070_585_bio2, indomalay_region)
+mpi_2041_2070_585_bio4 <- terra::mask(mpi_2041_2070_585_bio4, indomalay_region)
+mpi_2041_2070_585_bio6 <- terra::mask(mpi_2041_2070_585_bio6, indomalay_region)
+mpi_2041_2070_585_bio7 <- terra::mask(mpi_2041_2070_585_bio7, indomalay_region)
+mpi_2041_2070_585_bio12 <- terra::mask(mpi_2041_2070_585_bio12, indomalay_region)
+mpi_2041_2070_585_bio14 <- terra::mask(mpi_2041_2070_585_bio14, indomalay_region)
+mpi_2041_2070_585_bio15 <- terra::mask(mpi_2041_2070_585_bio15, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(mpi_2041_2070_585_bio1)
+plot(mpi_2041_2070_585_bio2)
+plot(mpi_2041_2070_585_bio4)
+plot(mpi_2041_2070_585_bio6)
+plot(mpi_2041_2070_585_bio7)
+plot(mpi_2041_2070_585_bio12)
+plot(mpi_2041_2070_585_bio14)
+plot(mpi_2041_2070_585_bio15)
+```
+
+## MRI_ESM2_0 ##
+DONE
+```{r}
+mri_2041_2070_585_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/MRI_ESM2_0/mri_2041_2070_585_bio1.tif")
+
+mri_2041_2070_585_bio2 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/MRI_ESM2_0/mri_2041_2070_585_bio2.tif")
+
+mri_2041_2070_585_bio4 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/MRI_ESM2_0/mri_2041_2070_585_bio4.tif")
+
+mri_2041_2070_585_bio6 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/MRI_ESM2_0/mri_2041_2070_585_bio6.tif")
+
+mri_2041_2070_585_bio7 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/MRI_ESM2_0/mri_2041_2070_585_bio7.tif")
+
+mri_2041_2070_585_bio12 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/MRI_ESM2_0/mri_2041_2070_585_bio12.tif")
+
+mri_2041_2070_585_bio14 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/MRI_ESM2_0/mri_2041_2070_585_bio14.tif")
+
+mri_2041_2070_585_bio15 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/MRI_ESM2_0/mri_2041_2070_585_bio15.tif")
+
+mri_2041_2070_585_bio1 <- terra::mask(mri_2041_2070_585_bio1, indomalay_region)
+mri_2041_2070_585_bio2 <- terra::mask(mri_2041_2070_585_bio2, indomalay_region)
+mri_2041_2070_585_bio4 <- terra::mask(mri_2041_2070_585_bio4, indomalay_region)
+mri_2041_2070_585_bio6 <- terra::mask(mri_2041_2070_585_bio6, indomalay_region)
+mri_2041_2070_585_bio7 <- terra::mask(mri_2041_2070_585_bio7, indomalay_region)
+mri_2041_2070_585_bio12 <- terra::mask(mri_2041_2070_585_bio12, indomalay_region)
+mri_2041_2070_585_bio14 <- terra::mask(mri_2041_2070_585_bio14, indomalay_region)
+mri_2041_2070_585_bio15 <- terra::mask(mri_2041_2070_585_bio15, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(mri_2041_2070_585_bio1)
+plot(mri_2041_2070_585_bio2)
+plot(mri_2041_2070_585_bio4)
+plot(mri_2041_2070_585_bio6)
+plot(mri_2041_2070_585_bio7)
+plot(mri_2041_2070_585_bio12)
+plot(mri_2041_2070_585_bio14)
+plot(mri_2041_2070_585_bio15)
+```
+
+## UKESM1_0_LL ##
+DONE
+```{r}
+ukesm_2041_2070_585_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/UKESM1_0_LL/ukesm_2041_2070_585_bio1.tif")
+
+ukesm_2041_2070_585_bio2 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/UKESM1_0_LL/ukesm_2041_2070_585_bio2.tif")
+
+ukesm_2041_2070_585_bio4 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/UKESM1_0_LL/ukesm_2041_2070_585_bio4.tif")
+
+ukesm_2041_2070_585_bio6 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/UKESM1_0_LL/ukesm_2041_2070_585_bio6.tif")
+
+ukesm_2041_2070_585_bio7 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/UKESM1_0_LL/ukesm_2041_2070_585_bio7.tif")
+
+ukesm_2041_2070_585_bio12 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/UKESM1_0_LL/ukesm_2041_2070_585_bio12.tif")
+
+ukesm_2041_2070_585_bio14 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/UKESM1_0_LL/ukesm_2041_2070_585_bio14.tif")
+
+ukesm_2041_2070_585_bio15 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/UKESM1_0_LL/ukesm_2041_2070_585_bio15.tif")
+
+ukesm_2041_2070_585_bio1 <- terra::mask(ukesm_2041_2070_585_bio1, indomalay_region)
+ukesm_2041_2070_585_bio2 <- terra::mask(ukesm_2041_2070_585_bio2, indomalay_region)
+ukesm_2041_2070_585_bio4 <- terra::mask(ukesm_2041_2070_585_bio4, indomalay_region)
+ukesm_2041_2070_585_bio6 <- terra::mask(ukesm_2041_2070_585_bio6, indomalay_region)
+ukesm_2041_2070_585_bio7 <- terra::mask(ukesm_2041_2070_585_bio7, indomalay_region)
+ukesm_2041_2070_585_bio12 <- terra::mask(ukesm_2041_2070_585_bio12, indomalay_region)
+ukesm_2041_2070_585_bio14 <- terra::mask(ukesm_2041_2070_585_bio14, indomalay_region)
+ukesm_2041_2070_585_bio15 <- terra::mask(ukesm_2041_2070_585_bio15, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(ukesm_2041_2070_585_bio1)
+plot(ukesm_2041_2070_585_bio2)
+plot(ukesm_2041_2070_585_bio4)
+plot(ukesm_2041_2070_585_bio6)
+plot(ukesm_2041_2070_585_bio7)
+plot(ukesm_2041_2070_585_bio12)
+plot(ukesm_2041_2070_585_bio14)
+plot(ukesm_2041_2070_585_bio15)
+```
+
+############ 2071 - 2100 ############
+
+####### 126 #######
+
+## GFDL_ESM4 ##
+DONE
+```{r}
+gfdl_2071_2100_126_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/GFDL_ESM4/gfdl_2071_2100_126_bio1.tif")
+
+gfdl_2071_2100_126_bio2 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/GFDL_ESM4/gfdl_2071_2100_126_bio2.tif")
+
+gfdl_2071_2100_126_bio4 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/GFDL_ESM4/gfdl_2071_2100_126_bio4.tif")
+
+gfdl_2071_2100_126_bio6 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/GFDL_ESM4/gfdl_2071_2100_126_bio6.tif")
+
+gfdl_2071_2100_126_bio7 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/GFDL_ESM4/gfdl_2071_2100_126_bio7.tif")
+
+gfdl_2071_2100_126_bio12 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/GFDL_ESM4/gfdl_2071_2100_126_bio12.tif")
+
+gfdl_2071_2100_126_bio14 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/GFDL_ESM4/gfdl_2071_2100_126_bio14.tif")
+
+gfdl_2071_2100_126_bio15 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/GFDL_ESM4/gfdl_2071_2100_126_bio15.tif")
+
+gfdl_2071_2100_126_bio1 <- terra::mask(gfdl_2071_2100_126_bio1, indomalay_region)
+gfdl_2071_2100_126_bio2 <- terra::mask(gfdl_2071_2100_126_bio2, indomalay_region)
+gfdl_2071_2100_126_bio4 <- terra::mask(gfdl_2071_2100_126_bio4, indomalay_region)
+gfdl_2071_2100_126_bio6 <- terra::mask(gfdl_2071_2100_126_bio6, indomalay_region)
+gfdl_2071_2100_126_bio7 <- terra::mask(gfdl_2071_2100_126_bio7, indomalay_region)
+gfdl_2071_2100_126_bio12 <- terra::mask(gfdl_2071_2100_126_bio12, indomalay_region)
+gfdl_2071_2100_126_bio14 <- terra::mask(gfdl_2071_2100_126_bio14, indomalay_region)
+gfdl_2071_2100_126_bio15 <- terra::mask(gfdl_2071_2100_126_bio15, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(gfdl_2071_2100_126_bio1)
+plot(gfdl_2071_2100_126_bio2)
+plot(gfdl_2071_2100_126_bio4)
+plot(gfdl_2071_2100_126_bio6)
+plot(gfdl_2071_2100_126_bio7)
+plot(gfdl_2071_2100_126_bio12)
+plot(gfdl_2071_2100_126_bio14)
+plot(gfdl_2071_2100_126_bio15)
+```
+
+## IPSL_CM6A_LR ##
+DONE
+```{r}
+ipsl_2071_2100_126_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/IPSL_CM6A_LR/ipsl_2071_2100_126_bio1.tif")
+
+ipsl_2071_2100_126_bio2 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/IPSL_CM6A_LR/ipsl_2071_2100_126_bio2.tif")
+
+ipsl_2071_2100_126_bio4 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/IPSL_CM6A_LR/ipsl_2071_2100_126_bio4.tif")
+
+ipsl_2071_2100_126_bio6 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/IPSL_CM6A_LR/ipsl_2071_2100_126_bio6.tif")
+
+ipsl_2071_2100_126_bio7 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/IPSL_CM6A_LR/ipsl_2071_2100_126_bio7.tif")
+
+ipsl_2071_2100_126_bio12 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/IPSL_CM6A_LR/ipsl_2071_2100_126_bio12.tif")
+
+ipsl_2071_2100_126_bio14 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/IPSL_CM6A_LR/ipsl_2071_2100_126_bio14.tif")
+
+ipsl_2071_2100_126_bio15 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/IPSL_CM6A_LR/ipsl_2071_2100_126_bio15.tif")
+
+ipsl_2071_2100_126_bio1 <- terra::mask(ipsl_2071_2100_126_bio1, indomalay_region)
+ipsl_2071_2100_126_bio2 <- terra::mask(ipsl_2071_2100_126_bio2, indomalay_region)
+ipsl_2071_2100_126_bio4 <- terra::mask(ipsl_2071_2100_126_bio4, indomalay_region)
+ipsl_2071_2100_126_bio6 <- terra::mask(ipsl_2071_2100_126_bio6, indomalay_region)
+ipsl_2071_2100_126_bio7 <- terra::mask(ipsl_2071_2100_126_bio7, indomalay_region)
+ipsl_2071_2100_126_bio12 <- terra::mask(ipsl_2071_2100_126_bio12, indomalay_region)
+ipsl_2071_2100_126_bio14 <- terra::mask(ipsl_2071_2100_126_bio14, indomalay_region)
+ipsl_2071_2100_126_bio15 <- terra::mask(ipsl_2071_2100_126_bio15, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(ipsl_2071_2100_126_bio1)
+plot(ipsl_2071_2100_126_bio2)
+plot(ipsl_2071_2100_126_bio4)
+plot(ipsl_2071_2100_126_bio6)
+plot(ipsl_2071_2100_126_bio7)
+plot(ipsl_2071_2100_126_bio12)
+plot(ipsl_2071_2100_126_bio14)
+plot(ipsl_2071_2100_126_bio15)
+```
+
+## MPI_ESM1_2_HR ##
+DONE
+```{r}
+mpi_2071_2100_126_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/MPI_ESM1_2_HR/mpi_2071_2100_126_bio1.tif")
+
+mpi_2071_2100_126_bio2 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/MPI_ESM1_2_HR/mpi_2071_2100_126_bio2.tif")
+
+mpi_2071_2100_126_bio4 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/MPI_ESM1_2_HR/mpi_2071_2100_126_bio4.tif")
+
+mpi_2071_2100_126_bio6 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/MPI_ESM1_2_HR/mpi_2071_2100_126_bio6.tif")
+
+mpi_2071_2100_126_bio7 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/MPI_ESM1_2_HR/mpi_2071_2100_126_bio7.tif")
+
+mpi_2071_2100_126_bio12 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/MPI_ESM1_2_HR/mpi_2071_2100_126_bio12.tif")
+
+mpi_2071_2100_126_bio14 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/MPI_ESM1_2_HR/mpi_2071_2100_126_bio14.tif")
+
+mpi_2071_2100_126_bio15 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/MPI_ESM1_2_HR/mpi_2071_2100_126_bio15.tif")
+
+mpi_2071_2100_126_bio1 <- terra::mask(mpi_2071_2100_126_bio1, indomalay_region)
+mpi_2071_2100_126_bio2 <- terra::mask(mpi_2071_2100_126_bio2, indomalay_region)
+mpi_2071_2100_126_bio4 <- terra::mask(mpi_2071_2100_126_bio4, indomalay_region)
+mpi_2071_2100_126_bio6 <- terra::mask(mpi_2071_2100_126_bio6, indomalay_region)
+mpi_2071_2100_126_bio7 <- terra::mask(mpi_2071_2100_126_bio7, indomalay_region)
+mpi_2071_2100_126_bio12 <- terra::mask(mpi_2071_2100_126_bio12, indomalay_region)
+mpi_2071_2100_126_bio14 <- terra::mask(mpi_2071_2100_126_bio14, indomalay_region)
+mpi_2071_2100_126_bio15 <- terra::mask(mpi_2071_2100_126_bio15, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(mpi_2071_2100_126_bio1)
+plot(mpi_2071_2100_126_bio2)
+plot(mpi_2071_2100_126_bio4)
+plot(mpi_2071_2100_126_bio6)
+plot(mpi_2071_2100_126_bio7)
+plot(mpi_2071_2100_126_bio12)
+plot(mpi_2071_2100_126_bio14)
+plot(mpi_2071_2100_126_bio15)
+```
+
+## MRI_ESM2_0 ##
+DONE
+```{r}
+mri_2071_2100_126_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/MRI_ESM2_0/mri_2071_2100_126_bio1.tif") 
+
+mri_2071_2100_126_bio2 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/MRI_ESM2_0/mri_2071_2100_126_bio2.tif") 
+
+mri_2071_2100_126_bio4 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/MRI_ESM2_0/mri_2071_2100_126_bio4.tif") 
+
+mri_2071_2100_126_bio6 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/MRI_ESM2_0/mri_2071_2100_126_bio6.tif") 
+
+mri_2071_2100_126_bio7 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/MRI_ESM2_0/mri_2071_2100_126_bio7.tif") 
+
+mri_2071_2100_126_bio12 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/MRI_ESM2_0/mri_2071_2100_126_bio12.tif") 
+
+mri_2071_2100_126_bio14 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/MRI_ESM2_0/mri_2071_2100_126_bio14.tif") 
+
+mri_2071_2100_126_bio15 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/MRI_ESM2_0/mri_2071_2100_126_bio15.tif") 
+
+mri_2071_2100_126_bio1 <- terra::mask(mri_2071_2100_126_bio1, indomalay_region)
+mri_2071_2100_126_bio2 <- terra::mask(mri_2071_2100_126_bio2, indomalay_region)
+mri_2071_2100_126_bio4 <- terra::mask(mri_2071_2100_126_bio4, indomalay_region)
+mri_2071_2100_126_bio6 <- terra::mask(mri_2071_2100_126_bio6, indomalay_region)
+mri_2071_2100_126_bio7 <- terra::mask(mri_2071_2100_126_bio7, indomalay_region)
+mri_2071_2100_126_bio12 <- terra::mask(mri_2071_2100_126_bio12, indomalay_region)
+mri_2071_2100_126_bio14 <- terra::mask(mri_2071_2100_126_bio14, indomalay_region)
+mri_2071_2100_126_bio15 <- terra::mask(mri_2071_2100_126_bio15, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(mri_2071_2100_126_bio1)
+plot(mri_2071_2100_126_bio2)
+plot(mri_2071_2100_126_bio4)
+plot(mri_2071_2100_126_bio6)
+plot(mri_2071_2100_126_bio7)
+plot(mri_2071_2100_126_bio12)
+plot(mri_2071_2100_126_bio14)
+plot(mri_2071_2100_126_bio15)
+```
+
+## UKESM1_0_LL ##
+DONE
+```{r}
+ukesm_2071_2100_126_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/UKESM1_0_LL/ukesm_2071_2100_126_bio1.tif")
+
+ukesm_2071_2100_126_bio2 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/UKESM1_0_LL/ukesm_2071_2100_126_bio2.tif")
+
+ukesm_2071_2100_126_bio4 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/UKESM1_0_LL/ukesm_2071_2100_126_bio4.tif")
+
+ukesm_2071_2100_126_bio6 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/UKESM1_0_LL/ukesm_2071_2100_126_bio6.tif")
+
+ukesm_2071_2100_126_bio7 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/UKESM1_0_LL/ukesm_2071_2100_126_bio7.tif")
+
+ukesm_2071_2100_126_bio12 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/UKESM1_0_LL/ukesm_2071_2100_126_bio12.tif")
+
+ukesm_2071_2100_126_bio14 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/UKESM1_0_LL/ukesm_2071_2100_126_bio14.tif")
+
+ukesm_2071_2100_126_bio15 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/UKESM1_0_LL/ukesm_2071_2100_126_bio15.tif")
+
+ukesm_2071_2100_126_bio1 <- terra::mask(ukesm_2071_2100_126_bio1, indomalay_region)
+ukesm_2071_2100_126_bio2 <- terra::mask(ukesm_2071_2100_126_bio2, indomalay_region)
+ukesm_2071_2100_126_bio4 <- terra::mask(ukesm_2071_2100_126_bio4, indomalay_region)
+ukesm_2071_2100_126_bio6 <- terra::mask(ukesm_2071_2100_126_bio6, indomalay_region)
+ukesm_2071_2100_126_bio7 <- terra::mask(ukesm_2071_2100_126_bio7, indomalay_region)
+ukesm_2071_2100_126_bio12 <- terra::mask(ukesm_2071_2100_126_bio12, indomalay_region)
+ukesm_2071_2100_126_bio14 <- terra::mask(ukesm_2071_2100_126_bio14, indomalay_region)
+ukesm_2071_2100_126_bio15 <- terra::mask(ukesm_2071_2100_126_bio15, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(ukesm_2071_2100_126_bio1)
+plot(ukesm_2071_2100_126_bio2)
+plot(ukesm_2071_2100_126_bio4)
+plot(ukesm_2071_2100_126_bio6)
+plot(ukesm_2071_2100_126_bio7)
+plot(ukesm_2071_2100_126_bio12)
+plot(ukesm_2071_2100_126_bio14)
+plot(ukesm_2071_2100_126_bio15)
+```
+
+############ 2071 - 2100 ############
+
+####### 370 #######
+
+## GFDL_ESM4 ##
+DONE
+```{r}
+gfdl_2071_2100_370_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/370/GFDL_ESM4/gfdl_2071_2100_370_bio1.tif")
+
+gfdl_2071_2100_370_bio2 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/370/GFDL_ESM4/gfdl_2071_2100_370_bio2.tif")
+
+gfdl_2071_2100_370_bio4 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/370/GFDL_ESM4/gfdl_2071_2100_370_bio4.tif")
+
+gfdl_2071_2100_370_bio6 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/370/GFDL_ESM4/gfdl_2071_2100_370_bio6.tif")
+
+gfdl_2071_2100_370_bio7 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/370/GFDL_ESM4/gfdl_2071_2100_370_bio7.tif")
+
+gfdl_2071_2100_370_bio12 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/370/GFDL_ESM4/gfdl_2071_2100_370_bio12.tif")
+
+gfdl_2071_2100_370_bio14 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/370/GFDL_ESM4/gfdl_2071_2100_370_bio14.tif")
+
+gfdl_2071_2100_370_bio15 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/370/GFDL_ESM4/gfdl_2071_2100_370_bio15.tif")
+
+gfdl_2071_2100_370_bio1 <- terra::mask(gfdl_2071_2100_370_bio1, indomalay_region)
+gfdl_2071_2100_370_bio2 <- terra::mask(gfdl_2071_2100_370_bio2, indomalay_region)
+gfdl_2071_2100_370_bio4 <- terra::mask(gfdl_2071_2100_370_bio4, indomalay_region)
+gfdl_2071_2100_370_bio6 <- terra::mask(gfdl_2071_2100_370_bio6, indomalay_region)
+gfdl_2071_2100_370_bio7 <- terra::mask(gfdl_2071_2100_370_bio7, indomalay_region)
+gfdl_2071_2100_370_bio12 <- terra::mask(gfdl_2071_2100_370_bio12, indomalay_region)
+gfdl_2071_2100_370_bio14 <- terra::mask(gfdl_2071_2100_370_bio14, indomalay_region)
+gfdl_2071_2100_370_bio15 <- terra::mask(gfdl_2071_2100_370_bio15, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(gfdl_2071_2100_370_bio1)
+plot(gfdl_2071_2100_370_bio2)
+plot(gfdl_2071_2100_370_bio4)
+plot(gfdl_2071_2100_370_bio6)
+plot(gfdl_2071_2100_370_bio7)
+plot(gfdl_2071_2100_370_bio12)
+plot(gfdl_2071_2100_370_bio14)
+plot(gfdl_2071_2100_370_bio15)
+```
+
+## IPSL_CM6A_LR ##
+DONE
+```{r}
+ipsl_2071_2100_370_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/370/IPSL_CM6A_LR/ipsl_2071_2100_370_bio1.tif")
+
+ipsl_2071_2100_370_bio2 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/370/IPSL_CM6A_LR/ipsl_2071_2100_370_bio2.tif")
+
+ipsl_2071_2100_370_bio4 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/370/IPSL_CM6A_LR/ipsl_2071_2100_370_bio4.tif")
+
+ipsl_2071_2100_370_bio6 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/370/IPSL_CM6A_LR/ipsl_2071_2100_370_bio6.tif")
+
+ipsl_2071_2100_370_bio7 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/370/IPSL_CM6A_LR/ipsl_2071_2100_370_bio7.tif")
+
+ipsl_2071_2100_370_bio12 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/370/IPSL_CM6A_LR/ipsl_2071_2100_370_bio12.tif")
+
+ipsl_2071_2100_370_bio14 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/370/IPSL_CM6A_LR/ipsl_2071_2100_370_bio14.tif")
+
+ipsl_2071_2100_370_bio15 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/370/IPSL_CM6A_LR/ipsl_2071_2100_370_bio15.tif")
+
+ipsl_2071_2100_370_bio1 <- terra::mask(ipsl_2071_2100_370_bio1, indomalay_region)
+ipsl_2071_2100_370_bio2 <- terra::mask(ipsl_2071_2100_370_bio2, indomalay_region)
+ipsl_2071_2100_370_bio4 <- terra::mask(ipsl_2071_2100_370_bio4, indomalay_region)
+ipsl_2071_2100_370_bio6 <- terra::mask(ipsl_2071_2100_370_bio6, indomalay_region)
+ipsl_2071_2100_370_bio7 <- terra::mask(ipsl_2071_2100_370_bio7, indomalay_region)
+ipsl_2071_2100_370_bio12 <- terra::mask(ipsl_2071_2100_370_bio12, indomalay_region)
+ipsl_2071_2100_370_bio14 <- terra::mask(ipsl_2071_2100_370_bio14, indomalay_region)
+ipsl_2071_2100_370_bio15 <- terra::mask(ipsl_2071_2100_370_bio15, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(ipsl_2071_2100_370_bio1)
+plot(ipsl_2071_2100_370_bio2)
+plot(ipsl_2071_2100_370_bio4)
+plot(ipsl_2071_2100_370_bio6)
+plot(ipsl_2071_2100_370_bio7)
+plot(ipsl_2071_2100_370_bio12)
+plot(ipsl_2071_2100_370_bio14)
+plot(ipsl_2071_2100_370_bio15)
+```
+
+## MPI_ESM1_2_HR ##
+DONE
+```{r}
+mpi_2071_2100_370_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/370/MPI_ESM1_2_HR/mpi_2071_2100_370_bio1.tif")
+
+mpi_2071_2100_370_bio2 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/370/MPI_ESM1_2_HR/mpi_2071_2100_370_bio2.tif")
+
+mpi_2071_2100_370_bio4 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/370/MPI_ESM1_2_HR/mpi_2071_2100_370_bio4.tif")
+
+mpi_2071_2100_370_bio6 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/370/MPI_ESM1_2_HR/mpi_2071_2100_370_bio6.tif")
+
+mpi_2071_2100_370_bio7 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/370/MPI_ESM1_2_HR/mpi_2071_2100_370_bio7.tif")
+
+mpi_2071_2100_370_bio12 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/370/MPI_ESM1_2_HR/mpi_2071_2100_370_bio12.tif")
+
+mpi_2071_2100_370_bio14 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/370/MPI_ESM1_2_HR/mpi_2071_2100_370_bio14.tif")
+
+mpi_2071_2100_370_bio15 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/370/MPI_ESM1_2_HR/mpi_2071_2100_370_bio15.tif")
+
+mpi_2071_2100_370_bio1 <- terra::mask(mpi_2071_2100_370_bio1, indomalay_region)
+mpi_2071_2100_370_bio2 <- terra::mask(mpi_2071_2100_370_bio2, indomalay_region)
+mpi_2071_2100_370_bio4 <- terra::mask(mpi_2071_2100_370_bio4, indomalay_region)
+mpi_2071_2100_370_bio6 <- terra::mask(mpi_2071_2100_370_bio6, indomalay_region)
+mpi_2071_2100_370_bio7 <- terra::mask(mpi_2071_2100_370_bio7, indomalay_region)
+mpi_2071_2100_370_bio12 <- terra::mask(mpi_2071_2100_370_bio12, indomalay_region)
+mpi_2071_2100_370_bio14 <- terra::mask(mpi_2071_2100_370_bio14, indomalay_region)
+mpi_2071_2100_370_bio15 <- terra::mask(mpi_2071_2100_370_bio15, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(mpi_2071_2100_370_bio1)
+plot(mpi_2071_2100_370_bio2)
+plot(mpi_2071_2100_370_bio4)
+plot(mpi_2071_2100_370_bio6)
+plot(mpi_2071_2100_370_bio7)
+plot(mpi_2071_2100_370_bio12)
+plot(mpi_2071_2100_370_bio14)
+plot(mpi_2071_2100_370_bio15)
+```
+
+## MRI_ESM2_0 ##
+DONE
+```{r}
+mri_2071_2100_370_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/370/MRI_ESM2_0/mri_2071_2100_370_bio1.tif")
+
+mri_2071_2100_370_bio2 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/370/MRI_ESM2_0/mri_2071_2100_370_bio2.tif")
+
+mri_2071_2100_370_bio4 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/370/MRI_ESM2_0/mri_2071_2100_370_bio4.tif")
+
+mri_2071_2100_370_bio6 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/370/MRI_ESM2_0/mri_2071_2100_370_bio6.tif")
+
+mri_2071_2100_370_bio7 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/370/MRI_ESM2_0/mri_2071_2100_370_bio7.tif")
+
+mri_2071_2100_370_bio12 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/370/MRI_ESM2_0/mri_2071_2100_370_bio12.tif")
+
+mri_2071_2100_370_bio14 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/370/MRI_ESM2_0/mri_2071_2100_370_bio14.tif")
+
+mri_2071_2100_370_bio15 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/370/MRI_ESM2_0/mri_2071_2100_370_bio15.tif")
+
+mri_2071_2100_370_bio1 <- terra::mask(mri_2071_2100_370_bio1, indomalay_region)
+mri_2071_2100_370_bio2 <- terra::mask(mri_2071_2100_370_bio2, indomalay_region)
+mri_2071_2100_370_bio4 <- terra::mask(mri_2071_2100_370_bio4, indomalay_region)
+mri_2071_2100_370_bio6 <- terra::mask(mri_2071_2100_370_bio6, indomalay_region)
+mri_2071_2100_370_bio7 <- terra::mask(mri_2071_2100_370_bio7, indomalay_region)
+mri_2071_2100_370_bio12 <- terra::mask(mri_2071_2100_370_bio12, indomalay_region)
+mri_2071_2100_370_bio14 <- terra::mask(mri_2071_2100_370_bio14, indomalay_region)
+mri_2071_2100_370_bio15 <- terra::mask(mri_2071_2100_370_bio15, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(mri_2071_2100_370_bio1)
+plot(mri_2071_2100_370_bio2)
+plot(mri_2071_2100_370_bio4)
+plot(mri_2071_2100_370_bio6)
+plot(mri_2071_2100_370_bio7)
+plot(mri_2071_2100_370_bio12)
+plot(mri_2071_2100_370_bio14)
+plot(mri_2071_2100_370_bio15)
+```
+
+## UKESM1_0_LL ##
+DONE
+```{r}
+ukesm_2041_2070_370_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/UKESM1_0_LL/ukesm_2041_2070_370_bio1.tif")
+
+ukesm_2041_2070_370_bio2 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/UKESM1_0_LL/ukesm_2041_2070_370_bio2.tif")
+
+ukesm_2041_2070_370_bio4 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/UKESM1_0_LL/ukesm_2041_2070_370_bio4.tif")
+
+ukesm_2041_2070_370_bio6 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/UKESM1_0_LL/ukesm_2041_2070_370_bio6.tif")
+
+ukesm_2041_2070_370_bio7 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/UKESM1_0_LL/ukesm_2041_2070_370_bio7.tif")
+
+ukesm_2041_2070_370_bio12 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/UKESM1_0_LL/ukesm_2041_2070_370_bio12.tif")
+
+ukesm_2041_2070_370_bio14 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/UKESM1_0_LL/ukesm_2041_2070_370_bio14.tif")
+
+ukesm_2041_2070_370_bio15 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/UKESM1_0_LL/ukesm_2041_2070_370_bio15.tif")
+
+ukesm_2041_2070_370_bio1 <- terra::mask(ukesm_2041_2070_370_bio1, indomalay_region)
+ukesm_2041_2070_370_bio2 <- terra::mask(ukesm_2041_2070_370_bio2, indomalay_region)
+ukesm_2041_2070_370_bio4 <- terra::mask(ukesm_2041_2070_370_bio4, indomalay_region)
+ukesm_2041_2070_370_bio6 <- terra::mask(ukesm_2041_2070_370_bio6, indomalay_region)
+ukesm_2041_2070_370_bio7 <- terra::mask(ukesm_2041_2070_370_bio7, indomalay_region)
+ukesm_2041_2070_370_bio12 <- terra::mask(ukesm_2041_2070_370_bio12, indomalay_region)
+ukesm_2041_2070_370_bio14 <- terra::mask(ukesm_2041_2070_370_bio14, indomalay_region)
+ukesm_2041_2070_370_bio15 <- terra::mask(ukesm_2041_2070_370_bio15, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(ukesm_2041_2070_370_bio1)
+plot(ukesm_2041_2070_370_bio2)
+plot(ukesm_2041_2070_370_bio4)
+plot(ukesm_2041_2070_370_bio6)
+plot(ukesm_2041_2070_370_bio7)
+plot(ukesm_2041_2070_370_bio12)
+plot(ukesm_2041_2070_370_bio14)
+plot(ukesm_2041_2070_370_bio15)
+```
+
+
+############ 2071 - 2100 ############
+
+####### 585 #######
+
+## GFDL_ESM4 ##
+DONE
+```{r}
+gfdl_2071_2100_585_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/GFDL_ESM4/gfdl_2071_2100_585_bio1.tif")
+
+gfdl_2071_2100_585_bio2 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/GFDL_ESM4/gfdl_2071_2100_585_bio2.tif")
+
+gfdl_2071_2100_585_bio4 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/GFDL_ESM4/gfdl_2071_2100_585_bio4.tif")
+
+gfdl_2071_2100_585_bio6 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/GFDL_ESM4/gfdl_2071_2100_585_bio6.tif")
+
+gfdl_2071_2100_585_bio7 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/GFDL_ESM4/gfdl_2071_2100_585_bio7.tif")
+
+gfdl_2071_2100_585_bio12 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/GFDL_ESM4/gfdl_2071_2100_585_bio12.tif")
+
+gfdl_2071_2100_585_bio14 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/GFDL_ESM4/gfdl_2071_2100_585_bio14.tif")
+
+gfdl_2071_2100_585_bio15 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/GFDL_ESM4/gfdl_2071_2100_585_bio15.tif")
+
+gfdl_2071_2100_585_bio1 <- terra::mask(gfdl_2071_2100_585_bio1, indomalay_region)
+gfdl_2071_2100_585_bio2 <- terra::mask(gfdl_2071_2100_585_bio2, indomalay_region)
+gfdl_2071_2100_585_bio4 <- terra::mask(gfdl_2071_2100_585_bio4, indomalay_region)
+gfdl_2071_2100_585_bio6 <- terra::mask(gfdl_2071_2100_585_bio6, indomalay_region)
+gfdl_2071_2100_585_bio7 <- terra::mask(gfdl_2071_2100_585_bio7, indomalay_region)
+gfdl_2071_2100_585_bio12 <- terra::mask(gfdl_2071_2100_585_bio12, indomalay_region)
+gfdl_2071_2100_585_bio14 <- terra::mask(gfdl_2071_2100_585_bio14, indomalay_region)
+gfdl_2071_2100_585_bio15 <- terra::mask(gfdl_2071_2100_585_bio15, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(gfdl_2071_2100_585_bio1)
+plot(gfdl_2071_2100_585_bio2)
+plot(gfdl_2071_2100_585_bio4)
+plot(gfdl_2071_2100_585_bio6)
+plot(gfdl_2071_2100_585_bio7)
+plot(gfdl_2071_2100_585_bio12)
+plot(gfdl_2071_2100_585_bio14)
+plot(gfdl_2071_2100_585_bio15)
+```
+
+## IPSL_CM6A_LR ##
+DONE
+```{r}
+ipsl_2071_2100_585_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/IPSL_CM6A_LR/ipsl_2071_2100_585_bio1.tif")
+
+ipsl_2071_2100_585_bio2 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/IPSL_CM6A_LR/ipsl_2071_2100_585_bio2.tif")
+
+ipsl_2071_2100_585_bio4 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/IPSL_CM6A_LR/ipsl_2071_2100_585_bio4.tif")
+
+ipsl_2071_2100_585_bio6 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/IPSL_CM6A_LR/ipsl_2071_2100_585_bio6.tif")
+
+ipsl_2071_2100_585_bio7 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/IPSL_CM6A_LR/ipsl_2071_2100_585_bio7.tif")
+
+ipsl_2071_2100_585_bio12 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/IPSL_CM6A_LR/ipsl_2071_2100_585_bio12.tif")
+
+ipsl_2071_2100_585_bio14 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/IPSL_CM6A_LR/ipsl_2071_2100_585_bio14.tif")
+
+ipsl_2071_2100_585_bio15 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/IPSL_CM6A_LR/ipsl_2071_2100_585_bio15.tif")
+
+ipsl_2071_2100_585_bio1 <- terra::mask(ipsl_2071_2100_585_bio1, indomalay_region)
+ipsl_2071_2100_585_bio2 <- terra::mask(ipsl_2071_2100_585_bio2, indomalay_region)
+ipsl_2071_2100_585_bio4 <- terra::mask(ipsl_2071_2100_585_bio4, indomalay_region)
+ipsl_2071_2100_585_bio6 <- terra::mask(ipsl_2071_2100_585_bio6, indomalay_region)
+ipsl_2071_2100_585_bio7 <- terra::mask(ipsl_2071_2100_585_bio7, indomalay_region)
+ipsl_2071_2100_585_bio12 <- terra::mask(ipsl_2071_2100_585_bio12, indomalay_region)
+ipsl_2071_2100_585_bio14 <- terra::mask(ipsl_2071_2100_585_bio14, indomalay_region)
+ipsl_2071_2100_585_bio15 <- terra::mask(ipsl_2071_2100_585_bio15, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(ipsl_2071_2100_585_bio1)
+plot(ipsl_2071_2100_585_bio2)
+plot(ipsl_2071_2100_585_bio4)
+plot(ipsl_2071_2100_585_bio6)
+plot(ipsl_2071_2100_585_bio7)
+plot(ipsl_2071_2100_585_bio12)
+plot(ipsl_2071_2100_585_bio14)
+plot(ipsl_2071_2100_585_bio15)
+```
+
+## MPI_ESM1_2_HR ##
+DONE
+```{r}
+mpi_2071_2100_585_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/MPI_ESM1_2_HR/mpi_2071_2100_585_bio1.tif")
+
+mpi_2071_2100_585_bio2 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/MPI_ESM1_2_HR/mpi_2071_2100_585_bio2.tif")
+
+mpi_2071_2100_585_bio4 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/MPI_ESM1_2_HR/mpi_2071_2100_585_bio4.tif")
+
+mpi_2071_2100_585_bio6 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/MPI_ESM1_2_HR/mpi_2071_2100_585_bio6.tif")
+
+mpi_2071_2100_585_bio7 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/MPI_ESM1_2_HR/mpi_2071_2100_585_bio7.tif")
+
+mpi_2071_2100_585_bio12 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/MPI_ESM1_2_HR/mpi_2071_2100_585_bio12.tif")
+
+mpi_2071_2100_585_bio14 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/MPI_ESM1_2_HR/mpi_2071_2100_585_bio14.tif")
+
+mpi_2071_2100_585_bio15 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/MPI_ESM1_2_HR/mpi_2071_2100_585_bio15.tif")
+
+mpi_2071_2100_585_bio1 <- terra::mask(mpi_2071_2100_585_bio1, indomalay_region)
+mpi_2071_2100_585_bio2 <- terra::mask(mpi_2071_2100_585_bio2, indomalay_region)
+mpi_2071_2100_585_bio4 <- terra::mask(mpi_2071_2100_585_bio4, indomalay_region)
+mpi_2071_2100_585_bio6 <- terra::mask(mpi_2071_2100_585_bio6, indomalay_region)
+mpi_2071_2100_585_bio7 <- terra::mask(mpi_2071_2100_585_bio7, indomalay_region)
+mpi_2071_2100_585_bio12 <- terra::mask(mpi_2071_2100_585_bio12, indomalay_region)
+mpi_2071_2100_585_bio14 <- terra::mask(mpi_2071_2100_585_bio14, indomalay_region)
+mpi_2071_2100_585_bio15 <- terra::mask(mpi_2071_2100_585_bio15, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(mpi_2071_2100_585_bio1)
+plot(mpi_2071_2100_585_bio2)
+plot(mpi_2071_2100_585_bio4)
+plot(mpi_2071_2100_585_bio6)
+plot(mpi_2071_2100_585_bio7)
+plot(mpi_2071_2100_585_bio12)
+plot(mpi_2071_2100_585_bio14)
+plot(mpi_2071_2100_585_bio15)
+```
+
+## MRI_ESM2_0 ##
+
+```{r}
+mri_2071_2100_585_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/MRI_ESM2_0/mri_2071_2100_585_bio1.tif")
+
+mri_2071_2100_585_bio2 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/MRI_ESM2_0/mri_2071_2100_585_bio2.tif")
+
+mri_2071_2100_585_bio4 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/MRI_ESM2_0/mri_2071_2100_585_bio4.tif")
+
+mri_2071_2100_585_bio6 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/MRI_ESM2_0/mri_2071_2100_585_bio6.tif")
+
+mri_2071_2100_585_bio7 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/MRI_ESM2_0/mri_2071_2100_585_bio7.tif")
+
+mri_2071_2100_585_bio12 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/MRI_ESM2_0/mri_2071_2100_585_bio12.tif")
+
+mri_2071_2100_585_bio14 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/MRI_ESM2_0/mri_2071_2100_585_bio14.tif")
+
+mri_2071_2100_585_bio15 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/MRI_ESM2_0/mri_2071_2100_585_bio15.tif")
+
+mri_2071_2100_585_bio1 <- terra::mask(mri_2071_2100_585_bio1, indomalay_region)
+mri_2071_2100_585_bio2 <- terra::mask(mri_2071_2100_585_bio2, indomalay_region)
+mri_2071_2100_585_bio4 <- terra::mask(mri_2071_2100_585_bio4, indomalay_region)
+mri_2071_2100_585_bio6 <- terra::mask(mri_2071_2100_585_bio6, indomalay_region)
+mri_2071_2100_585_bio7 <- terra::mask(mri_2071_2100_585_bio7, indomalay_region)
+mri_2071_2100_585_bio12 <- terra::mask(mri_2071_2100_585_bio12, indomalay_region)
+mri_2071_2100_585_bio14 <- terra::mask(mri_2071_2100_585_bio14, indomalay_region)
+mri_2071_2100_585_bio15 <- terra::mask(mri_2071_2100_585_bio15, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(mri_2071_2100_585_bio1)
+plot(mri_2071_2100_585_bio2)
+plot(mri_2071_2100_585_bio4)
+plot(mri_2071_2100_585_bio6)
+plot(mri_2071_2100_585_bio7)
+plot(mri_2071_2100_585_bio12)
+plot(mri_2071_2100_585_bio14)
+plot(mri_2071_2100_585_bio15)
+```
+
+## UKESM1_0_LL ##
+DONE
+```{r}
+ukesm_2071_2100_585_bio1 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/UKESM1_0_LL/ukesm_2071_2100_585_bio1.tif")
+
+ukesm_2071_2100_585_bio2 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/UKESM1_0_LL/ukesm_2071_2100_585_bio2.tif")
+
+ukesm_2071_2100_585_bio4 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/UKESM1_0_LL/ukesm_2071_2100_585_bio4.tif")
+
+ukesm_2071_2100_585_bio6 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/UKESM1_0_LL/ukesm_2071_2100_585_bio6.tif")
+
+ukesm_2071_2100_585_bio7 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/UKESM1_0_LL/ukesm_2071_2100_585_bio7.tif")
+
+ukesm_2071_2100_585_bio12 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/UKESM1_0_LL/ukesm_2071_2100_585_bio12.tif")
+
+ukesm_2071_2100_585_bio14 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/UKESM1_0_LL/ukesm_2071_2100_585_bio14.tif")
+
+ukesm_2071_2100_585_bio15 <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/UKESM1_0_LL/ukesm_2071_2100_585_bio15.tif")
+
+ukesm_2071_2100_585_bio1 <- terra::mask(ukesm_2071_2100_585_bio1, indomalay_region)
+ukesm_2071_2100_585_bio2 <- terra::mask(ukesm_2071_2100_585_bio2, indomalay_region)
+ukesm_2071_2100_585_bio4 <- terra::mask(ukesm_2071_2100_585_bio4, indomalay_region)
+ukesm_2071_2100_585_bio6 <- terra::mask(ukesm_2071_2100_585_bio6, indomalay_region)
+ukesm_2071_2100_585_bio7 <- terra::mask(ukesm_2071_2100_585_bio7, indomalay_region)
+ukesm_2071_2100_585_bio12 <- terra::mask(ukesm_2071_2100_585_bio12, indomalay_region)
+ukesm_2071_2100_585_bio14 <- terra::mask(ukesm_2071_2100_585_bio14, indomalay_region)
+ukesm_2071_2100_585_bio15 <- terra::mask(ukesm_2071_2100_585_bio15, indomalay_region)
+
+par(mfrow=c(2,4))
+par(mar=c(4,4,4,4))
+plot(ukesm_2071_2100_585_bio1)
+plot(ukesm_2071_2100_585_bio2)
+plot(ukesm_2071_2100_585_bio4)
+plot(ukesm_2071_2100_585_bio6)
+plot(ukesm_2071_2100_585_bio7)
+plot(ukesm_2071_2100_585_bio12)
+plot(ukesm_2071_2100_585_bio14)
+plot(ukesm_2071_2100_585_bio15)
+```

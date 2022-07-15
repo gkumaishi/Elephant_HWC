@@ -13,22 +13,14 @@ library(tidyverse)
 library(rgbif) # interface to GBIF
 library(maptools)
 library(dismo)
-#library(rgeos)
-#library(viridis)
 library(raster)
 library(spocc) # Interface to species occurrence data sources
 library(sf)
 library(sp)
-#library(rgdal)
-#library(spData)
-#library(lubridate)
-#library(kableExtra)
-#library(tmap)
+library(tmap)
 library(here)
 library(dplyr)
 library(ggplot2)
-#library(ggbeeswarm)
-#library(patchwork)
 
 ### Install Wallace:
 library(wallace)
