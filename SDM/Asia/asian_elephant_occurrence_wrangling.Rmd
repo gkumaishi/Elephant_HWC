@@ -1,0 +1,422 @@
+---
+title: "Asian Elephant Occurrence Data"
+author: "Grace Kumaishi"
+date: "1/19/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+### Load packages:
+library(tidyverse)
+library(rgbif) # interface to GBIF
+library(maptools)
+library(dismo)
+#library(rgeos)
+#library(viridis)
+library(raster)
+library(spocc) # Interface to species occurrence data sources
+library(sf)
+library(sp)
+#library(rgdal)
+#library(spData)
+#library(lubridate)
+#library(kableExtra)
+#library(tmap)
+library(here)
+library(dplyr)
+library(ggplot2)
+#library(ggbeeswarm)
+#library(patchwork)
+
+### Install Wallace:
+library(wallace)
+
+### Load Wallace functions:
+source(system.file('shiny/funcs', 'functions.R', package = 'wallace'))
+```
+
+## Description:
+
+This markdown file outlines the first steps for creating data for species distribution modeling (SDM) with Wallace.
+
+### Download species occurence data and get coordinates
+
+We begin by downloading the species occurrence points for the Asian Elephant subspecies using Wallace's spocc:occ() function. Choose which chunk to run based on the species of interest.
+
+#### Indian Elephant
+
+```{r}
+### Gives global records. If limit is set high, this function can take a while to run.
+results <- spocc::occ(query = "Elephas maximus indicus", # scientific name
+                      from = "gbif", # set to records from https://www.gbif.org/
+                      limit = 15000, # max number of records
+                      has_coords = TRUE) # gets the lat/long for each observation
+
+### Select just GBIF records, format the species name:
+results[["gbif"]]$data[[formatSpName("Elephas maximus indicus")]]
+
+### Select just the necessary information:
+indicus_coords <- as.data.frame(results$gbif$data$Elephas_maximus_indicus) %>% # using GBIF data
+  dplyr::select(longitude, latitude, occurrenceStatus, coordinateUncertaintyInMeters, institutionCode, references, basisOfRecord, eventDate) %>%  # selecting just the columns that we want
+  filter(!basisOfRecord %in% c("FOSSIL_SPECIMEN", "PRESERVED_SPECIMEN", "LIVING_SPECIMEN"),
+         occurrenceStatus == "PRESENT",
+        eventDate <= "2021-12-31" & eventDate >= "1981-01-01")
+```
+
+#### Sri Lankan Elephant
+
+```{r}
+### Gives global records.  If limit is set high, this function can take a while to run.
+results <- spocc::occ(query = "Elephas maximus maximus", # scientific name
+                      from = "gbif", # set to records from https://www.gbif.org/
+                      limit = 15000, # max number of records
+                      has_coords = TRUE) # gets the lat/long for each observation
+
+### Select just GBIF records, format the species name:
+results[["gbif"]]$data[[formatSpName("Elephas maximus maximus")]]
+
+### Select just the necessary information:
+maximus_coords <- as.data.frame(results$gbif$data$Elephas_maximus_maximus) %>% # using GBIF data
+  dplyr::select(longitude, latitude, occurrenceStatus, coordinateUncertaintyInMeters, institutionCode, references, basisOfRecord, eventDate) %>%  # selecting just the columns that we want
+  filter(!basisOfRecord %in% c("FOSSIL_SPECIMEN", "PRESERVED_SPECIMEN", "LIVING_SPECIMEN"),
+         occurrenceStatus == "PRESENT",
+        eventDate <= "2021-12-31" & eventDate >= "1981-01-01")
+```
+
+#### Sumatran Elephant
+
+```{r}
+### Gives global records.  If limit is set high, this function can take a while to run.
+results <- spocc::occ(query = "Elephas maximus sumatranus", # scientific name
+                      from = "gbif", # set to records from https://www.gbif.org/
+                      limit = 15000, # max number of records
+                      has_coords = TRUE) # gets the lat/long for each observation
+
+### Select just GBIF records, format the species name:
+results[["gbif"]]$data[[formatSpName("Elephas maximus sumatranus")]]
+
+### Select just the necessary information:
+sumatranus_coords <- as.data.frame(results$gbif$data$Elephas_maximus_sumatranus) %>% # using GBIF data
+  dplyr::select(longitude, latitude, occurrenceStatus, coordinateUncertaintyInMeters, institutionCode, references, basisOfRecord, eventDate) %>%  # selecting just the columns that we want
+  filter(!basisOfRecord %in% c("FOSSIL_SPECIMEN", "PRESERVED_SPECIMEN", "LIVING_SPECIMEN"),
+         occurrenceStatus == "PRESENT",
+        eventDate <= "2021-12-31" & eventDate >= "1981-01-01")
+```
+
+### Download WWF Terrestrial Ecoregions
+
+```{r}
+### Get spatial extent using IndoMalay ecoregion from WWF. Data downloaded from: https://www.worldwildlife.org/publications/terrestrial-ecoregions-of-the-world
+# indomalay_region <- read_sf(dsn = "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/wwf_ecoregions/official", layer = "wwf_terr_ecos") %>% 
+#    filter(REALM == "IM")
+
+### Check CRS:
+# crs(indomalay_region) #+proj=longlat +datum=WGS84 +no_defs 
+
+# indomalay_region_sp <- as_Spatial(indomalay_region, cast = TRUE)
+
+### Create shapefile for wallace:
+#st_write(indomalay_region, dsn = "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/indomalay_region/indomalay_region.shp", layer = "indomalay_region.shp", driver = "ESRI Shapefile")
+
+### Read in shapefile from Google Drive:
+indomalay_region <- st_read("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/indomalay_region/indomalay_region.shp")
+
+indomalay_region_sp <- as_Spatial(indomalay_region, cast = TRUE)
+
+### Check shapefile:
+plot(indomalay_region_sp)
+crs(indomalay_region_sp)
+```
+
+### Clean Data
+
+```{r}
+### Remove rows with duplicate coordinates:
+occs.dups <- duplicated(indicus_coords[c('longitude', 'latitude')])
+indicus_coords <- indicus_coords[!occs.dups,]
+
+occs.dups <- duplicated(maximus_coords[c('longitude', 'latitude')])
+maximus_coords <- maximus_coords[!occs.dups,]
+
+occs.dups <- duplicated(sumatranus_coords[c('longitude', 'latitude')])
+sumatranus_coords <- sumatranus_coords[!occs.dups,]
+
+### Make sure latitude and longitude are numeric (sometimes they are characters):
+indicus_coords$latitude <- as.numeric(indicus_coords$latitude)
+indicus_coords$longitude <- as.numeric(indicus_coords$longitude)
+
+maximus_coords$latitude <- as.numeric(maximus_coords$latitude)
+maximus_coords$longitude <- as.numeric(maximus_coords$longitude)
+
+sumatranus_coords$latitude <- as.numeric(sumatranus_coords$latitude)
+sumatranus_coords$longitude <- as.numeric(sumatranus_coords$longitude)
+
+### Give all records a unique ID:
+indicus_coords$occID <- row.names(indicus_coords)
+maximus_coords$occID <- row.names(maximus_coords)
+sumatranus_coords$occID <- row.names(sumatranus_coords)
+
+### Add species column to each dataset:
+indicus_coords$species <- "Indian elephant" 
+  
+indicus_coords <- indicus_coords %>% 
+  relocate(species, .before = longitude)
+
+maximus_coords$species <- "Sri Lankan elephant" 
+  
+maximus_coords <- maximus_coords %>% 
+  relocate(species, .before = longitude)
+
+sumatranus_coords$species <- "Sumatran elephant" 
+  
+sumatranus_coords <- sumatranus_coords %>% 
+  relocate(species, .before = longitude)
+```
+
+### Crop data by species range
+
+```{r}
+### Turn data frames into sf object in order to crop by range shapefile:
+indicus_coords_sf <- st_as_sf(x = indicus_coords,
+                              coords = c("longitude", "latitude"),
+                              crs = 4326)
+
+maximus_coords_sf <- st_as_sf(x = maximus_coords,
+                              coords = c("longitude", "latitude"),
+                              crs = 4326)
+
+sumatranus_coords_sf <- st_as_sf(x = sumatranus_coords,
+                              coords = c("longitude", "latitude"),
+                              crs = 4326)
+```
+
+```{r}
+### Read in shapefile:
+range <- st_read("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Data/Asian_Elephant/redlist_species_data/data_0.shp")
+
+### Crop coordinates by species range file:
+cropped_indicus_coords_sf <- indicus_coords_sf[range, op = st_intersects]
+
+cropped_maximus_coords_sf <- maximus_coords_sf[range, op = st_intersects]
+
+cropped_sumatranus_coords_sf <- sumatranus_coords_sf[range, op = st_intersects]
+
+### Crop coordinates by WWF ecoregions shapefile:
+cropped_indicus_coords_sf <- cropped_indicus_coords_sf[indomalay_region, op = st_intersects]
+
+cropped_maximus_coords_sf <- cropped_maximus_coords_sf[indomalay_region, op = st_intersects]
+
+cropped_sumatranus_coords_sf <- cropped_sumatranus_coords_sf[indomalay_region, op = st_intersects]
+```
+
+```{r}
+### Need just lat/long values in two columns to use raster extract, also need separate lat/long columns for the spatial thin below
+cropped_indicus_coords_sf <- cropped_indicus_coords_sf %>% # extract lat/long from geometry column in sf object
+  dplyr::mutate(longitude = sf::st_coordinates(.)[,1],
+                latitude = sf::st_coordinates(.)[,2])
+
+cropped_maximus_coords_sf <- cropped_maximus_coords_sf %>% # extract lat/long from geometry column in sf object
+  dplyr::mutate(longitude = sf::st_coordinates(.)[,1],
+                latitude = sf::st_coordinates(.)[,2])
+
+cropped_sumatranus_coords_sf <- cropped_sumatranus_coords_sf %>% # extract lat/long from geometry column in sf object
+  dplyr::mutate(longitude = sf::st_coordinates(.)[,1],
+                latitude = sf::st_coordinates(.)[,2])
+
+### Pull out species, lat, long columns:
+cropped_indicus_coords_sf <- cropped_indicus_coords_sf[c("species", "longitude", "latitude")] 
+
+cropped_maximus_coords_sf <- cropped_maximus_coords_sf[c("species", "longitude", "latitude")] 
+
+cropped_sumatranus_coords_sf <- cropped_sumatranus_coords_sf[c("species", "longitude", "latitude")] 
+
+### Drop geometry column that remains:
+cropped_indicus_coords_sf <- st_set_geometry(cropped_indicus_coords_sf, NULL)
+
+cropped_maximus_coords_sf <- st_set_geometry(cropped_maximus_coords_sf, NULL)
+
+cropped_sumatranus_coords_sf <- st_set_geometry(cropped_sumatranus_coords_sf, NULL)
+```
+
+### Spatial thin
+
+```{r}
+library(spThin)
+
+##### Indian Elephant
+
+### Just doing 10 replicates for now, thinning to 10 km
+thinned_indicus_coords <- spThin::thin(cropped_indicus_coords_sf, 'longitude', 'latitude', 'species',
+                       thin.par = 10, # thinned to 10 km
+                       reps = 10, # default on Wallace is 100, but run time is long, so a low number is good for testing
+                       locs.thinned.list.return = TRUE, 
+                       write.files = FALSE, 
+                       verbose = FALSE)
+
+### Find the iteration that returns the max number of occurrences:
+indicus_maxThin <- which(sapply(thinned_indicus_coords, nrow) == max(sapply(thinned_indicus_coords, nrow)))
+
+### If there's more than one max, pick the first one:
+indicus_maxThin <- thinned_indicus_coords[[ifelse(length(indicus_maxThin) > 1, indicus_maxThin[1], indicus_maxThin)]]  
+
+### Subset data to those thinned records:
+thinned_indicus_coords_final <- cropped_indicus_coords_sf[as.numeric(rownames(indicus_maxThin)),]
+
+### Rename species column to "name":
+thinned_indicus_coords_final <- as_tibble(thinned_indicus_coords_final) %>% 
+  dplyr::rename(name = species)
+
+### Save occs to upload to Wallace if needed
+#          all_spp_occs_wallace <- all_spp_occs %>% 
+#            dplyr::select(species, longitude, latitude) # change order to match
+```
+
+```{r}
+##### Sri Lankan Elephant
+
+### Just doing 10 replicates for now, thinning to 10 km
+thinned_maximus_coords <- spThin::thin(cropped_maximus_coords_sf, 'longitude', 'latitude', 'species',
+                       thin.par = 10, # thinned to 10 km
+                       reps = 10, # default on Wallace is 100, but run time is long, so a low number is good for testing
+                       locs.thinned.list.return = TRUE, 
+                       write.files = FALSE, 
+                       verbose = FALSE)
+
+### Find the iteration that returns the max number of occurrences:
+maximus_maxThin <- which(sapply(thinned_maximus_coords, nrow) == max(sapply(thinned_maximus_coords, nrow)))
+
+### If there's more than one max, pick the first one:
+maximus_maxThin <- thinned_maximus_coords[[ifelse(length(maximus_maxThin) > 1, maximus_maxThin[1], maximus_maxThin)]]  
+
+### Subset data to those thinned records:
+thinned_maximus_coords_final <- cropped_maximus_coords_sf[as.numeric(rownames(maximus_maxThin)),]
+
+### Rename species column to "name":
+thinned_maximus_coords_final <- as_tibble(thinned_maximus_coords_final) %>% 
+  dplyr::rename(name = species)
+```
+
+```{r}
+##### Sumatran Elephant
+
+### Just doing 10 replicates for now, thinning to 10 km
+thinned_sumatranus_coords <- spThin::thin(cropped_sumatranus_coords_sf, 'longitude', 'latitude', 'species',
+                       thin.par = 10, # thinned to 10 km
+                       reps = 10, # default on Wallace is 100, but run time is long, so a low number is good for testing
+                       locs.thinned.list.return = TRUE, 
+                       write.files = FALSE, 
+                       verbose = FALSE)
+
+### Find the iteration that returns the max number of occurrences:
+sumatranus_maxThin <- which(sapply(thinned_sumatranus_coords, nrow) == max(sapply(thinned_sumatranus_coords, nrow)))
+
+### If there's more than one max, pick the first one:
+sumatranus_maxThin <- thinned_sumatranus_coords[[ifelse(length(sumatranus_maxThin) > 1, sumatranus_maxThin[1], sumatranus_maxThin)]]  
+
+### Subset data to those thinned records:
+thinned_sumatranus_coords_final <- cropped_sumatranus_coords_sf[as.numeric(rownames(sumatranus_maxThin)),]
+
+### Rename species column to "name":
+thinned_sumatranus_coords_final <- as_tibble(thinned_sumatranus_coords_final) %>% 
+  dplyr::rename(name = species)
+```
+
+### Map occurrence data
+
+```{r}
+thinned_indicus_coords_sf <- st_as_sf(x = thinned_indicus_coords_final,
+                              coords = c("longitude", "latitude"),
+                              crs = 4326)
+
+thinned_maximus_coords_sf <- st_as_sf(x = thinned_maximus_coords_final,
+                              coords = c("longitude", "latitude"),
+                              crs = 4326)
+
+thinned_sumatranus_coords_sf <- st_as_sf(x = thinned_sumatranus_coords_final,
+                              coords = c("longitude", "latitude"),
+                              crs = 4326)
+
+tmap_mode(mode = "view")
+
+asian_elephant_map <-
+  tm_shape(thinned_indicus_coords_sf) +
+    tm_symbols(col = "red",
+               size = 0.2,
+               alpha = 0.75) +
+  tm_shape(thinned_maximus_coords_sf) +
+    tm_symbols(col = "green",
+               size = 0.2) +
+  tm_shape(thinned_sumatranus_coords_sf) +
+    tm_symbols(col = "blue",
+                size = 0.2)
+
+asian_elephant_map
+```
+
+### Combine all subspecies into single dataframe
+
+```{r}
+### Create dataframe with subspecies defined
+all_subspecies_coords <- rbind(thinned_indicus_coords_final, thinned_maximus_coords_final, thinned_sumatranus_coords_final) 
+# 
+# # Save for MESS analysis
+# write.csv(all_subspecies_coords, "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Asia_MESS_analysis/input_dataframes/all_subspecies_coords.csv", row.names = TRUE)
+
+### Create dataframe where name = Asian Elephant
+all_combined_asian_elephant_coords <- all_subspecies_coords %>% 
+  mutate(name = case_when( 
+    name == "Indian elephant" ~ "Elephas_maximus", 
+    name == "Sri Lankan elephant" ~ "Elephas_maximus",
+    name == "Sumatran elephant" ~ "Elephas_maximus"))
+
+all_combined_asian_elephant_coords_sf <- st_as_sf(x = all_combined_asian_elephant_coords,
+                              coords = c("longitude", "latitude"),
+                              crs = 4326)
+```
+
+```{r}
+# ### Save occs to Google Drive:
+# write_csv(all_combined_asian_elephant_coords, "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Data/Asian_Elephant/all_combined_asian_elephant_coords.csv") # overwrite = FALSE prevents from overwriting
+# 
+# st_write(all_combined_asian_elephant_coords_sf, "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Data/Asian_Elephant/all_combined_asian_elephant_coords.shp")
+# 
+# ### Indian Elephant only:
+# write_csv(thinned_indicus_coords_final, "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Data/Asian_Elephant/final_indicus_coords.csv") # overwrite = FALSE prevents from overwriting
+# 
+# ### Sri Lankan Elephant only:
+# write_csv(thinned_maximus_coords_final, "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Data/Asian_Elephant/final_maximus_coords.csv") # overwrite = FALSE prevents from overwriting
+# 
+# ### Sumatran Elephant only:
+# write_csv(thinned_sumatranus_coords_final, "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Data/Asian_Elephant/final_sumatranus_coords.csv") # overwrite = FALSE prevents from overwriting
+```
+
+### Plot Wallace model outputs (historic)
+
+```{r}
+indicus_historic <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/1981_2010/indicus_historic.tif")
+
+indicus_coords_final <- read_csv("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Data/Asian_Elephant/final_indicus_coords.csv")
+
+all_combined_asian_elephant_coords <- read_csv("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Data/Asian_Elephant/all_combined_asian_elephant_coords.csv")
+
+all_spp_historic <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/1981_2010/new_all_spp.tif")
+```
+
+```{r}
+plot(all_spp_historic)
+#points(all_combined_asian_elephant_coords$longitude, all_combined_asian_elephant_coords$latitude, col = "black", alpha = 0.5)
+#plot(range, col = "black", add=TRUE)
+
+plot(indicus_historic)
+#points(indicus_coords_final$longitude, indicus_coords_final$latitude, col = "black", alpha = 0.5)
+
+tmap_mode(mode = "view")
+
+tm_shape(all_combined_asian_elephant_coords_sf) +
+    tm_symbols(col = "black",
+               size = 0.2,
+               alpha = 0.75)
+```
+

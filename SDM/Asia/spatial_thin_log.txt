@@ -1,0 +1,51 @@
+********************************************** 
+ Beginning Spatial Thinning.
+ Script Started at: Fri Jul 15 15:38:13 2022
+
+Thinning Parameter Used (in km): 10
+Number of replicates of thinning script: 10
+
+Elapsed time for thinning completion
+0.743 0.472 1.397 0.051 0.055
+
+Number of data.frames per locations retained
+loc.cnt df.freq
+79	80	81	82
+2	4	2	2
+Maximum number of records after thinning: 82
+Number of data.frames with max records: 2
+No files written for this run.
+********************************************** 
+ Beginning Spatial Thinning.
+ Script Started at: Fri Jul 15 15:38:19 2022
+
+Thinning Parameter Used (in km): 10
+Number of replicates of thinning script: 10
+
+Elapsed time for thinning completion
+0.437 0.374 0.992 0.05 0.051
+
+Number of data.frames per locations retained
+loc.cnt df.freq
+18	19
+3	7
+Maximum number of records after thinning: 19
+Number of data.frames with max records: 7
+No files written for this run.
+********************************************** 
+ Beginning Spatial Thinning.
+ Script Started at: Fri Jul 15 15:38:23 2022
+
+Thinning Parameter Used (in km): 10
+Number of replicates of thinning script: 10
+
+Elapsed time for thinning completion
+0.002 0 0.003 0 0
+
+Number of data.frames per locations retained
+loc.cnt df.freq
+4
+10
+Maximum number of records after thinning: 4
+Number of data.frames with max records: 10
+No files written for this run.
