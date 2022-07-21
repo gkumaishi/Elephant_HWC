@@ -60,3 +60,49 @@ afel_change_2041_2070_585_freq %>%
                       "Percent")) %>% 
   kable_styling(full_width = FALSE)
 ```
+
+## Asia
+```{r}
+#read in rasters
+
+#2041-2070 SSP 1 RCP 2.6
+asel_change_2041_2070_126 <- stack(paste0("I:/My Drive/HWC_data/Wallace SDM Rasters/asia/2041_2070/change_maps/change_2041_2070_126_", c("gfdl", "ipsl", "mpi", "mri", "ukesm"), ".tif"), RAT=TRUE)
+
+#2041-2070 SSP 5 RCP 8.5
+asel_change_2041_2070_585 <- stack(paste0("I:/My Drive/HWC_data/Wallace SDM Rasters/asia/2041_2070/change_maps/change_2041_2070_585_", c("gfdl", "ipsl", "mpi", "mri", "ukesm"), ".tif"))
+
+#get cell counts for each suitability category 
+#value column key: 1 = decreasing suitability, 2 = no change (not suitable), 3 = no change (suitable), 4 = increasing suitability
+
+#SSP 1 RCP 2.6
+asel_change_2041_2070_126_freq <- raster::freq(asel_change_2041_2070_126, merge = TRUE) %>% 
+  filter(value != "NA") %>%
+  pivot_longer(cols = 2:6, names_to = "gcm", values_to = "pixel_count") %>% 
+  ddply(.(gcm),
+           transform,
+           percent = (pixel_count/sum(pixel_count))*100)
+
+#create nicer looking table
+asel_change_2041_2070_126_freq %>%
+  kable(col.names = c("Category",
+                      "GCM", 
+                      "Pixel Count",
+                      "Percent")) %>% 
+  kable_styling(full_width = FALSE)
+
+#SSP 5 RCP 8.5
+asel_change_2041_2070_585_freq <- raster::freq(asel_change_2041_2070_585, merge = TRUE) %>% 
+  filter(value != "NA") %>%
+  pivot_longer(cols = 2:6, names_to = "gcm", values_to = "pixel_count") %>% 
+  ddply(.(gcm),
+           transform,
+           percent = (pixel_count/sum(pixel_count))*100)
+
+#create nicer looking table
+asel_change_2041_2070_585_freq %>%
+  kable(col.names = c("Category",
+                      "GCM", 
+                      "Pixel Count",
+                      "Percent")) %>% 
+  kable_styling(full_width = FALSE)
+```
