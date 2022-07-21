@@ -1,0 +1,62 @@
+---
+title: "Median GCM"
+author: "Roshni Katrak-Adefowora"
+date: "7/20/2022"
+output: html_document
+---
+
+Calculating median GCM by finding the proportion of cells in each change category (decreasing suitability, no change (not suitable), no change (suitable), and increasing suitability). Methods are the same for Africa and Asia.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(raster)
+library(tidyverse)
+library(plyr)
+library(kableExtra)
+```
+
+## Africa
+```{r}
+#read in rasters (5 GCMs for each SSP/RCP scenario)
+
+#2041-2070 SSP 1 RCP 2.6
+afel_change_2041_2070_126 <- stack(paste0("I:/My Drive/HWC_data/Wallace SDM Rasters/LQ/2041_2070/126/change_maps/afel_change_2041_2070_126_", c("gfdl", "ipsl", "mpi", "mri", "ukesm"), ".tif"))
+
+#2041-2070 SSP 5 RCP 8.5
+afel_change_2041_2070_585 <- stack(paste0("I:/My Drive/HWC_data/Wallace SDM Rasters/LQ/2041_2070/585/change_maps/afel_change_2041_2070_585_", c("gfdl", "ipsl", "mpi", "mri", "ukesm"), ".tif"))
+
+#get cell counts for each suitability category 
+#value column key: 1 = decreasing suitability, 2 = no change (not suitable), 3 = no change (suitable), 4 = increasing suitability
+
+#SSP 1 RCP 2.6
+afel_change_2041_2070_126_freq <- raster::freq(afel_change_2041_2070_126, merge = TRUE) %>% 
+  filter(value != "NA") %>%
+  pivot_longer(cols = 2:6, names_to = "gcm", values_to = "pixel_count") %>% 
+  ddply(.(gcm),
+           transform,
+           percent = (pixel_count/sum(pixel_count))*100)
+
+#create nicer looking table
+afel_change_2041_2070_126_freq %>%
+  kable(col.names = c("Category",
+                      "GCM", 
+                      "Pixel Count",
+                      "Percent")) %>% 
+  kable_styling(full_width = FALSE)
+
+#SSP 5 RCP 8.5
+afel_change_2041_2070_585_freq <- raster::freq(afel_change_2041_2070_585, merge = TRUE) %>% 
+  filter(value != "NA") %>%
+  pivot_longer(cols = 2:6, names_to = "gcm", values_to = "pixel_count") %>% 
+  ddply(.(gcm),
+           transform,
+           percent = (pixel_count/sum(pixel_count))*100)
+
+#create nicer looking table
+afel_change_2041_2070_585_freq %>%
+  kable(col.names = c("Category",
+                      "GCM", 
+                      "Pixel Count",
+                      "Percent")) %>% 
+  kable_styling(full_width = FALSE)
+```
