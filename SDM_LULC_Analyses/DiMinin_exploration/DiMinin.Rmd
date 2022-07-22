@@ -1,30 +1,110 @@
 ---
-title: "DiMinin"
-author: "Grace Kumaishi"
+title: "DiMinin Comparison"
+author: "Chris Kracha"
 date: "7/19/2022"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(sf)
+library(stars)
+library(terra)
+
+# Enter data path to HWC_data folder, including "HWC_data". 
+# May require double forward slashes
+HWC_data <- "" 
 ```
 
-## R Markdown
+```{r Load in Spatial Data}
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+bivar_rast <- rast(paste0(HWC_data, "/Geospatial Data/baseline_bivariate_afrotropical.tif"))
+diminin <- vect(paste0(HWC_data, "/Geospatial Data/DiMinin Risk of conflict (at 10 km buffer size).gpkg"))
+diminin_severe <-subset(diminin, diminin$"Risk of conflict" == "severe")
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+# Only DiMinin zones classified as "high" or "severe" risk
+diminin_high <-subset(diminin, 
+                      (diminin$"Risk of conflict" == "severe" 
+                       | diminin$"Risk of conflict" == "high"))
 ```
 
-## Including Plots
+```{r Mask Rasters to DiMinin}
 
-You can also embed plots, for example:
+bivar_mask <- mask(bivar_rast, diminin)
+bivar_mask_severe <- mask(bivar_rast, diminin_severe)
+bivar_mask_high <- mask(bivar_rast, diminin_high)
 
-```{r pressure, echo=FALSE}
-plot(pressure)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r Manipulate Attribute Tables}
+
+bivar_all <- as.data.frame(bivar_rast) %>%
+  rename(SuitAg = afel_historic_sdm) %>%
+  mutate(SuitAg = as.factor(SuitAg))
+
+bivar_severe <- as.data.frame(bivar_mask_severe) %>%
+  rename(SuitAg = afel_historic_sdm) %>%
+  mutate(SuitAg = as.factor(SuitAg))
+
+bivar_all_p <- as.data.frame(bivar_rast) %>%
+  rename(SuitAg = afel_historic_sdm) %>%
+  group_by(SuitAg) %>%
+  summarize(PercentComp = n()) %>%
+  mutate(PercentComp = PercentComp/sum(PercentComp),
+         SuitAg = as.factor(SuitAg))
+
+bivar_severe_p <- as.data.frame(bivar_mask_severe) %>%
+  rename(SuitAg = afel_historic_sdm) %>%
+  group_by(SuitAg) %>%
+  summarize(Percent = n()) %>%
+  mutate(Percent = Percent/sum(Percent),
+         SuitAg = as.factor(SuitAg)) %>%
+  right_join(bivar_all_p) %>%
+  replace(is.na(.), 0) %>%
+  mutate(D_Severe = Percent-PercentComp,
+         SuitAg = fct_relevel(SuitAg, "10", "11", "20", "21", "30", "31"))
+
+bivar_high_p <- as.data.frame(bivar_mask_high) %>%
+  rename(SuitAg = afel_historic_sdm) %>%
+  group_by(SuitAg) %>%
+  summarize(Percent = n()) %>%
+  mutate(Percent = Percent/sum(Percent),
+         SuitAg = as.factor(SuitAg)) %>%
+  right_join(bivar_all_p) %>%
+  replace(is.na(.), 0) %>%
+  mutate(D_High = Percent-PercentComp,
+         SuitAg = fct_relevel(SuitAg, "10", "11", "20", "21", "30", "31"))
+```
+
+```{r Visualize Raster Composition Changes}
+
+names_bivar <- c("low", "low*", "medium", "medium*", "high", "high*")
+
+ggplot(bivar_severe_p, aes(x = SuitAg, y = D_Severe, fill = SuitAg)) + 
+  geom_bar(stat = "identity") + 
+  scale_x_discrete(labels = names_bivar) + 
+  scale_fill_manual(values = rep.int(c("green", "orange"), 3)) +
+  labs(title = "Comparison of cells near severe risk Diminin zones 
+                             with full bivariate map",
+       x = "Habitat Suitability and Agricuture*", 
+       y = "Difference in % of cells") +
+  theme(legend.position = "none")
+
+ggplot(bivar_high_p, aes(x = SuitAg, y = D_High, fill = SuitAg)) + 
+  geom_bar(stat = "identity") + 
+  scale_x_discrete(labels = names_bivar) + 
+  scale_fill_manual(values = rep.int(c("green", "orange"), 3)) +
+  labs(title = "Comparison of cells near high AND severe risk Diminin zones 
+                               with full bivariate map",
+       x = "Habitat Suitability and Agricuture*", 
+       y = "Difference in % of cells") +
+  theme(legend.position = "none")
+
+
+```
+
+```{r Statistical Analysis}
+
+
+
+```
