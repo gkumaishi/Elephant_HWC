@@ -1,0 +1,102 @@
+---
+title: "Asia Bivariate Maps"
+author: "Taylor Lockmann"
+date: '2022-07-21'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Load in packages
+library(tidyverse)
+library(terra)
+library(raster)
+```
+
+
+## BASELINE/HISTORIC MAPPING ##
+
+
+# Read in the baseline land use and SDM
+
+```{r}
+sdm <- rast("G:/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/1981_2010/indicus_historic.tif")
+lu <- rast("G:/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Geospatial Data/Chen_LULC_data/global_LULC_2015.tif")
+```
+
+
+#### SDM raster does not have an extent, so we're going to assign it (found by importing to QGIS)
+              
+```{r}
+ext(sdm) <- c(65.8581934609999990,
+              131.0665265334999958,
+              -12.2168058669999979,
+              35.8248606080000016)
+```
+   
+#### Plot to look at them
+
+```{r}
+plot(sdm)
+plot(lu)
+```
+
+# Re-project the land use layer to have the same CRS as the SDM layer
+
+```{r}
+lu_reproj <- lu %>% 
+  project(crs(sdm))
+
+plot(lu_reproj)
+```
+
+#### Reclassify values of the baseline year for cropland
+We want cropland (category 5) to be 1, everything else to be 0
+
+```{r}
+baseline_cropland <- lu_reproj
+baseline_cropland[baseline_cropland != 5] <- 0
+baseline_cropland[baseline_cropland == 5] <- 1
+plot(baseline_cropland)
+```
+
+#### Next, crop the baseline cropland map to the extent of the SDM
+
+```{r}
+baseline_indomalaya_crops <- crop(baseline_cropland, sdm)
+plot(baseline_indomalaya_crops)
+```
+
+# Now reclassify the values of the SDM raster for easier raster math
+
+```{r}
+sdm[sdm >= 0 & sdm < 0.33] <- 10
+sdm[sdm >= 0.33 & sdm < 0.66] <- 20
+sdm[sdm >=0.66 & sdm <= 1] <- 30
+
+plot(sdm)
+```
+
+
+# Make both of the rasters have the same resolution
+
+```{r}
+baseline_indomalaya_crops_resampled <- resample(baseline_indomalaya_crops, sdm, method = "near")
+```
+
+
+# Add the two layers together
+
+```{r}
+baseline_bivariate_indomalaya <- (sdm + baseline_indomalaya_crops_resampled)
+plot(baseline_bivariate_indomalaya)
+```
+
+
+# Write the file to a .tif to export to QGIS
+
+```{r}
+writeRaster(baseline_bivariate_indomalaya, "G:/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Geospatial Data/bivariate_outputs/asel_bivariate_baseline.tif", overwrite = TRUE)
+```
+
