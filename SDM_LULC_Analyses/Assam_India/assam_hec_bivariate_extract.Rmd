@@ -13,7 +13,7 @@ library(here)
 library(terra)
 library(ggplot2)
 
-# Enter data path to HWC_data folder, including "HWC_data". 
+# Enter YOUR data path to HWC_data folder, including "HWC_data". 
 # May require double forward slashes
 HWC_data <- "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data" 
 ```

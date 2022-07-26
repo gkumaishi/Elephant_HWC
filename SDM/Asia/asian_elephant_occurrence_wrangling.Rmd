@@ -22,6 +22,10 @@ library(here)
 library(dplyr)
 library(ggplot2)
 
+# Enter YOUR data path to HWC_data folder, including "HWC_data". 
+# May require double forward slashes
+HWC_data <- "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data" 
+
 ### Install Wallace:
 library(wallace)
 
@@ -113,7 +117,7 @@ sumatranus_coords <- as.data.frame(results$gbif$data$Elephas_maximus_sumatranus)
 #st_write(indomalay_region, dsn = "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/indomalay_region/indomalay_region.shp", layer = "indomalay_region.shp", driver = "ESRI Shapefile")
 
 ### Read in shapefile from Google Drive:
-indomalay_region <- st_read("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/indomalay_region/indomalay_region.shp")
+indomalay_region <- st_read(here(HWC_data, "/R_files/R_output_data/indomalay_region/indomalay_region.shp"))
 
 indomalay_region_sp <- as_Spatial(indomalay_region, cast = TRUE)
 
@@ -186,7 +190,7 @@ sumatranus_coords_sf <- st_as_sf(x = sumatranus_coords,
 
 ```{r}
 ### Read in shapefile:
-range <- st_read("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Data/Asian_Elephant/redlist_species_data/data_0.shp")
+range <- st_read(here(HWC_data, "/Data/Asian_Elephant/redlist_species_data/data_0.shp"))
 
 ### Crop coordinates by species range file:
 cropped_indicus_coords_sf <- indicus_coords_sf[range, op = st_intersects]
@@ -354,7 +358,7 @@ asian_elephant_map
 all_subspecies_coords <- rbind(thinned_indicus_coords_final, thinned_maximus_coords_final, thinned_sumatranus_coords_final) 
 # 
 # # Save for MESS analysis
-# write.csv(all_subspecies_coords, "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Asia_MESS_analysis/input_dataframes/all_subspecies_coords.csv", row.names = TRUE)
+# write.csv(all_subspecies_coords, here(HWC_data, "/Asia_MESS_analysis/input_dataframes/all_subspecies_coords.csv", row.names = TRUE))
 
 ### Create dataframe where name = Asian Elephant
 all_combined_asian_elephant_coords <- all_subspecies_coords %>% 
@@ -370,30 +374,30 @@ all_combined_asian_elephant_coords_sf <- st_as_sf(x = all_combined_asian_elephan
 
 ```{r}
 # ### Save occs to Google Drive:
-# write_csv(all_combined_asian_elephant_coords, "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Data/Asian_Elephant/all_combined_asian_elephant_coords.csv") # overwrite = FALSE prevents from overwriting
+# write_csv(all_combined_asian_elephant_coords, here(HWC_data, "/Data/Asian_Elephant/all_combined_asian_elephant_coords.csv")) # overwrite = FALSE prevents from overwriting
 # 
-# st_write(all_combined_asian_elephant_coords_sf, "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Data/Asian_Elephant/all_combined_asian_elephant_coords.shp")
+# st_write(all_combined_asian_elephant_coords_sf, here(HWC_data, "/Data/Asian_Elephant/all_combined_asian_elephant_coords.shp"))
 # 
 # ### Indian Elephant only:
-# write_csv(thinned_indicus_coords_final, "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Data/Asian_Elephant/final_indicus_coords.csv") # overwrite = FALSE prevents from overwriting
+# write_csv(thinned_indicus_coords_final, here(HWC_data, "/Data/Asian_Elephant/final_indicus_coords.csv")) # overwrite = FALSE prevents from overwriting
 # 
 # ### Sri Lankan Elephant only:
-# write_csv(thinned_maximus_coords_final, "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Data/Asian_Elephant/final_maximus_coords.csv") # overwrite = FALSE prevents from overwriting
+# write_csv(thinned_maximus_coords_final, here(HWC_data, "/Data/Asian_Elephant/final_maximus_coords.csv")) # overwrite = FALSE prevents from overwriting
 # 
 # ### Sumatran Elephant only:
-# write_csv(thinned_sumatranus_coords_final, "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Data/Asian_Elephant/final_sumatranus_coords.csv") # overwrite = FALSE prevents from overwriting
+# write_csv(thinned_sumatranus_coords_final, here(HWC_data, "/Data/Asian_Elephant/final_sumatranus_coords.csv")) # overwrite = FALSE prevents from overwriting
 ```
 
 ### Plot Wallace model outputs (historic)
 
 ```{r}
-indicus_historic <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/1981_2010/indicus_historic.tif")
+indicus_historic <- raster(here(HWC_data, "/Wallace SDM Rasters/asia/1981_2010/indicus_historic.tif"))
 
-indicus_coords_final <- read_csv("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Data/Asian_Elephant/final_indicus_coords.csv")
+indicus_coords_final <- read_csv(here(HWC_data, "/Data/Asian_Elephant/final_indicus_coords.csv"))
 
-all_combined_asian_elephant_coords <- read_csv("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Data/Asian_Elephant/all_combined_asian_elephant_coords.csv")
+all_combined_asian_elephant_coords <- read_csv(here(HWC_data, "/Data/Asian_Elephant/all_combined_asian_elephant_coords.csv"))
 
-all_spp_historic <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/1981_2010/new_all_spp.tif")
+all_spp_historic <- raster(here(HWC_data, "/Wallace SDM Rasters/asia/1981_2010/new_all_spp.tif"))
 ```
 
 ```{r}
