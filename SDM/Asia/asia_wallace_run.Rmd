@@ -19,6 +19,11 @@ library(dismo)
 library(rgeos)
 library(ENMeval)
 library(dplyr)
+library(here)
+
+# Enter data path to YOUR HWC_data folder, including "HWC_data". 
+# May require double forward slashes
+HWC_data <- "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data" 
 ```
 
 Wallace also includes several functions developed to help integrate
@@ -194,7 +199,7 @@ plot(pred)
 #points(occs.xy$longitude, occs.xy$latitude, col = "black")
 
 # save as raster
-asian_elephant_historic_10p_sdm <- writeRaster(pred_thr, filename = file.path("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/1981_2010/asian_elephant_historic_10p_sdm.tif"), overwrite = FALSE)
+asian_elephant_historic_10p_sdm <- writeRaster(pred_thr, filename = file.path(here(HWC_data, "/Wallace SDM Rasters/asia/1981_2010/asian_elephant_historic_10p_sdm.tif")), overwrite = FALSE)
 ```
 
 ### Project Niche Model to New Time
@@ -252,11 +257,11 @@ plot(proj)
 ```{r}
 ### 2071-2100 126
 #read in 10 percentile threshold tifs
-all_2071_2100_126 <- c("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2071_2100/126/gfdl_2071_2100_126_10p_sdm.tif",
-               "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2071_2100/126/ipsl_2071_2100_126_10p_sdm.tif",
-               "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2071_2100/126/mpi_2071_2100_126_10p_sdm.tif",
-               "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2071_2100/126/mri_2071_2100_126_10p_sdm.tif",
-               "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2071_2100/126/ukesm_2071_2100_126_10p_sdm.tif")
+all_2071_2100_126 <- here(HWC_data, c("/Wallace SDM Rasters/asia/2071_2100/126/gfdl_2071_2100_126_10p_sdm.tif",
+               "/Wallace SDM Rasters/asia/2071_2100/126/ipsl_2071_2100_126_10p_sdm.tif",
+               "/Wallace SDM Rasters/asia/2071_2100/126/mpi_2071_2100_126_10p_sdm.tif",
+               "/Wallace SDM Rasters/asia/2071_2100/126/mri_2071_2100_126_10p_sdm.tif",
+               "/Wallace SDM Rasters/asia/2071_2100/126/ukesm_2071_2100_126_10p_sdm.tif"))
  
 all_2071_2100_126_stack <- stack(all_2071_2100_126)
  
@@ -265,7 +270,7 @@ all_2071_2100_126_model_agreement <- calc(all_2071_2100_126_stack, sum)
 plot(all_2071_2100_126_model_agreement)
 
 # save as raster (10 percentile threshold - model agreement)
-#all_2071_2100_126_10p_sdm <- writeRaster(all_2071_2100_126_model_agreement, filename = file.path("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2071_2100/126/all_2071_2100_126_10p_sdm.tif"), overwrite = FALSE)
+#all_2071_2100_126_10p_sdm <- writeRaster(all_2071_2100_126_model_agreement, filename = here(HWC_data, "/Wallace SDM Rasters/asia/2071_2100/126/all_2071_2100_126_10p_sdm.tif"), overwrite = FALSE) 
 
 # reclassify
 all_2071_2100_126_model_agreement_reclass <- all_2071_2100_126_model_agreement
@@ -275,22 +280,22 @@ all_2071_2100_126_model_agreement_reclass[all_2071_2100_126_model_agreement_recl
 plot(all_2071_2100_126_model_agreement_reclass)
 
 # # save as binary raster
-#all_2071_2100_126_01_sdm <- writeRaster(all_2071_2100_126_model_agreement_reclass, filename = file.path("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2071_2100/126/all_2071_2100_126_01_sdm.tif"), overwrite = FALSE)
+#all_2071_2100_126_01_sdm <- writeRaster(all_2071_2100_126_model_agreement_reclass, filename = here(HWC_data, "/Wallace SDM Rasters/asia/2071_2100/126/all_2071_2100_126_01_sdm.tif"), overwrite = FALSE)
 
 ### 2071-2100 370
 #read in 10 percentile threshold tifs
-all_2071_2100_370 <- c("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2071_2100/370/gfdl_2071_2100_370_10p_sdm.tif",
-               "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2071_2100/370/ipsl_2071_2100_370_10p_sdm.tif",
-               "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2071_2100/370/mpi_2071_2100_370_10p_sdm.tif",
-               "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2071_2100/370/mri_2071_2100_370_10p_sdm.tif",
-               "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2071_2100/370/ukesm_2071_2100_370_10p_sdm.tif")
+all_2071_2100_370 <- here(HWC_data, c("/Wallace SDM Rasters/asia/2071_2100/370/gfdl_2071_2100_370_10p_sdm.tif",
+               "/Wallace SDM Rasters/asia/2071_2100/370/ipsl_2071_2100_370_10p_sdm.tif",
+               "/Wallace SDM Rasters/asia/2071_2100/370/mpi_2071_2100_370_10p_sdm.tif",
+               "/Wallace SDM Rasters/asia/2071_2100/370/mri_2071_2100_370_10p_sdm.tif",
+               "/Wallace SDM Rasters/asia/2071_2100/370/ukesm_2071_2100_370_10p_sdm.tif"))
  
 all_2071_2100_370_stack <- stack(all_2071_2100_370)
  
 all_2071_2100_370_model_agreement <- calc(all_2071_2100_370_stack, sum)
 
 # save as raster (10 percentile threshold - model agreement)
-#all_2071_2100_370_10p_sdm <- writeRaster(all_2071_2100_370_model_agreement, filename = file.path("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2071_2100/370/all_2071_2100_370_10p_sdm.tif"), overwrite = FALSE)
+#all_2071_2100_370_10p_sdm <- writeRaster(all_2071_2100_370_model_agreement, filename = here(HWC_data,"/Wallace SDM Rasters/asia/2071_2100/370/all_2071_2100_370_10p_sdm.tif"), overwrite = FALSE)
 
 # reclassify
 all_2071_2100_370_model_agreement_reclass <- all_2071_2100_370_model_agreement
@@ -298,22 +303,22 @@ all_2071_2100_370_model_agreement_reclass[all_2071_2100_370_model_agreement_recl
 all_2071_2100_370_model_agreement_reclass[all_2071_2100_370_model_agreement_reclass %in% c(3, 4, 5)] <- 1
 
 # save as binary raster
-#all_2071_2100_370_01_sdm <- writeRaster(all_2071_2100_370_model_agreement_reclass, filename = file.path("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2071_2100/370/all_2071_2100_370_01_sdm.tif"), overwrite = FALSE)
+#all_2071_2100_370_01_sdm <- writeRaster(all_2071_2100_370_model_agreement_reclass, filename = here(HWC_data, "//Wallace SDM Rasters/asia/2071_2100/370/all_2071_2100_370_01_sdm.tif"), overwrite = FALSE)
 
 ### 2071-2100 585
 #read in 10 percentile threshold tifs
-all_2071_2100_585 <- c("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2071_2100/585/gfdl_2071_2100_585_10p_sdm.tif",
-               "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2071_2100/585/ipsl_2071_2100_585_10p_sdm.tif",
-               "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2071_2100/585/mpi_2071_2100_585_10p_sdm.tif",
-               "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2071_2100/585/mri_2071_2100_585_10p_sdm.tif",
-               "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2071_2100/585/ukesm_2071_2100_585_10p_sdm.tif")
+all_2071_2100_585 <- here(HWC_data, c("/Wallace SDM Rasters/asia/2071_2100/585/gfdl_2071_2100_585_10p_sdm.tif",
+               "/Wallace SDM Rasters/asia/2071_2100/585/ipsl_2071_2100_585_10p_sdm.tif",
+               "/Wallace SDM Rasters/asia/2071_2100/585/mpi_2071_2100_585_10p_sdm.tif",
+               "/Wallace SDM Rasters/asia/2071_2100/585/mri_2071_2100_585_10p_sdm.tif",
+               "/Wallace SDM Rasters/asia/2071_2100/585/ukesm_2071_2100_585_10p_sdm.tif"))
  
 all_2071_2100_585_stack <- stack(all_2071_2100_585)
  
 all_2071_2100_585_model_agreement <- calc(all_2071_2100_585_stack, sum)
 
 # save as raster (10 percentile threshold - model agreement)
-#all_2071_2100_585_10p_sdm <- writeRaster(all_2071_2100_585_model_agreement, filename = file.path("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2071_2100/585/all_2071_2100_585_10p_sdm.tif"), overwrite = FALSE)
+#all_2071_2100_585_10p_sdm <- writeRaster(all_2071_2100_585_model_agreement, filename = here(HWC_data, "/Wallace SDM Rasters/asia/2071_2100/585/all_2071_2100_585_10p_sdm.tif"), overwrite = FALSE)
 
 # reclassify
 all_2071_2100_585_model_agreement_reclass <- all_2071_2100_585_model_agreement
@@ -321,25 +326,25 @@ all_2071_2100_585_model_agreement_reclass[all_2071_2100_585_model_agreement_recl
 all_2071_2100_585_model_agreement_reclass[all_2071_2100_585_model_agreement_reclass %in% c(3, 4, 5)] <- 1
 
 # save as binary raster
-#all_2071_2100_585_01_sdm <- writeRaster(all_2071_2100_585_model_agreement_reclass, filename = file.path("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2071_2100/585/all_2071_2100_585_01_sdm.tif"), overwrite = FALSE)
+#all_2071_2100_585_01_sdm <- writeRaster(all_2071_2100_585_model_agreement_reclass, filename = here(HWC_data, "/Wallace SDM Rasters/asia/2071_2100/585/all_2071_2100_585_01_sdm.tif"), overwrite = FALSE)
 ```
 
 ## Plot model agreement (2041-2070)
 ```{r}
 ### 2041-2070 126
 #read in 10 percentile threshold tifs
-all_2041_2070_126 <- c("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2041_2070/126/gfdl_2041_2070_126_10p_sdm.tif",
-               "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2041_2070/126/ipsl_2041_2070_126_10p_sdm.tif",
-               "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2041_2070/126/mpi_2041_2070_126_10p_sdm.tif",
-               "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2041_2070/126/mri_2041_2070_126_10p_sdm.tif",
-               "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2041_2070/126/ukesm_2041_2070_126_10p_sdm.tif")
+all_2041_2070_126 <- here(HWC_data, c("/Wallace SDM Rasters/asia/2041_2070/126/gfdl_2041_2070_126_10p_sdm.tif",
+               "/Wallace SDM Rasters/asia/2041_2070/126/ipsl_2041_2070_126_10p_sdm.tif",
+               "/Wallace SDM Rasters/asia/2041_2070/126/mpi_2041_2070_126_10p_sdm.tif",
+               "/Wallace SDM Rasters/asia/2041_2070/126/mri_2041_2070_126_10p_sdm.tif",
+               "/Wallace SDM Rasters/asia/2041_2070/126/ukesm_2041_2070_126_10p_sdm.tif"))
  
 all_2041_2070_126_stack <- stack(all_2041_2070_126)
  
 all_2041_2070_126_model_agreement <- calc(all_2041_2070_126_stack, sum)
 
 # save as raster (10 percentile threshold - model agreement)
-#all_2041_2070_126_10p_sdm <- writeRaster(all_2041_2070_126_model_agreement, filename = file.path("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2041_2070/126/all_2041_2070_126_10p_sdm.tif"), overwrite = FALSE)
+#all_2041_2070_126_10p_sdm <- writeRaster(all_2041_2070_126_model_agreement, filename = here(HWC_data, "/Wallace SDM Rasters/asia/2041_2070/126/all_2041_2070_126_10p_sdm.tif"), overwrite = FALSE)
 
 # reclassify
 all_2041_2070_126_model_agreement_reclass <- all_2041_2070_126_model_agreement
@@ -347,15 +352,15 @@ all_2041_2070_126_model_agreement_reclass[all_2041_2070_126_model_agreement_recl
 all_2041_2070_126_model_agreement_reclass[all_2041_2070_126_model_agreement_reclass %in% c(3, 4, 5)] <- 1
 
 # save as binary raster
-#all_2041_2070_126_10p_01_sdm <- writeRaster(all_2041_2070_126_model_agreement_reclass, filename = file.path("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2041_2070/126/all_2041_2070_126_10p_01_sdm.tif"), overwrite = FALSE)
+#all_2041_2070_126_10p_01_sdm <- writeRaster(all_2041_2070_126_model_agreement_reclass, filename = here(HWC_data, "/Wallace SDM Rasters/asia/2041_2070/126/all_2041_2070_126_10p_01_sdm.tif"), overwrite = FALSE)
 
 ### 2041-2070 370
 #read in 10 percentile threshold tifs
-all_2041_2070_370 <- c("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2041_2070/370/gfdl_2041_2070_370_10p_sdm.tif",
-               "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2041_2070/370/ipsl_2041_2070_370_10p_sdm.tif",
-               "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2041_2070/370/mpi_2041_2070_370_10p_sdm.tif",
-               "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2041_2070/370/mri_2041_2070_370_10p_sdm.tif",
-               "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2041_2070/370/ukesm_2041_2070_370_10p_sdm.tif")
+all_2041_2070_370 <- here(HWC_data, c("/Wallace SDM Rasters/asia/2041_2070/370/gfdl_2041_2070_370_10p_sdm.tif",
+               "/Wallace SDM Rasters/asia/2041_2070/370/ipsl_2041_2070_370_10p_sdm.tif",
+               "/Wallace SDM Rasters/asia/2041_2070/370/mpi_2041_2070_370_10p_sdm.tif",
+               "/Wallace SDM Rasters/asia/2041_2070/370/mri_2041_2070_370_10p_sdm.tif",
+               "/Wallace SDM Rasters/asia/2041_2070/370/ukesm_2041_2070_370_10p_sdm.tif"))
  
 all_2041_2070_370_stack <- stack(all_2041_2070_370)
  
@@ -370,22 +375,22 @@ all_2041_2070_370_model_agreement_reclass[all_2041_2070_370_model_agreement_recl
 all_2041_2070_370_model_agreement_reclass[all_2041_2070_370_model_agreement_reclass %in% c(3, 4, 5)] <- 1
 
 # save as binary raster
-#all_2041_2070_370_10p_01_sdm <- writeRaster(all_2041_2070_370_model_agreement_reclass, filename = file.path("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2041_2070/370/all_2041_2070_370_10p_01_sdm.tif"), overwrite = FALSE)
+#all_2041_2070_370_10p_01_sdm <- writeRaster(all_2041_2070_370_model_agreement_reclass, filename = here(HWC_data, "/Wallace SDM Rasters/asia/2041_2070/370/all_2041_2070_370_10p_01_sdm.tif"), overwrite = FALSE)
 
 ### 2041-2070 585
 #read in 10 percentile threshold tifs
-all_2041_2070_585 <- c("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2041_2070/585/gfdl_2041_2070_585_10p_sdm.tif",
-               "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2041_2070/585/ipsl_2041_2070_585_10p_sdm.tif",
-               "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2041_2070/585/mpi_2041_2070_585_10p_sdm.tif",
-               "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2041_2070/585/mri_2041_2070_585_10p_sdm.tif",
-               "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2041_2070/585/ukesm_2041_2070_585_10p_sdm.tif")
+all_2041_2070_585 <- here(HWC_data, c("/Wallace SDM Rasters/asia/2041_2070/585/gfdl_2041_2070_585_10p_sdm.tif",
+               "/Wallace SDM Rasters/asia/2041_2070/585/ipsl_2041_2070_585_10p_sdm.tif",
+               "/Wallace SDM Rasters/asia/2041_2070/585/mpi_2041_2070_585_10p_sdm.tif",
+               "/Wallace SDM Rasters/asia/2041_2070/585/mri_2041_2070_585_10p_sdm.tif",
+               "/Wallace SDM Rasters/asia/2041_2070/585/ukesm_2041_2070_585_10p_sdm.tif"))
  
 all_2041_2070_585_stack <- stack(all_2041_2070_585)
  
 all_2041_2070_585_model_agreement <- calc(all_2041_2070_585_stack, sum)
 
 # save as raster (10 percentile threshold - model agreement)
-#all_2041_2070_585_10p_sdm <- writeRaster(all_2041_2070_585_model_agreement, filename = file.path("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2041_2070/585/all_2041_2070_585_10p_sdm.tif"), overwrite = FALSE)
+#all_2041_2070_585_10p_sdm <- writeRaster(all_2041_2070_585_model_agreement, filename = here(HWC_data, "/Wallace SDM Rasters/asia/2041_2070/585/all_2041_2070_585_10p_sdm.tif"), overwrite = FALSE)
 
 # reclassify
 all_2041_2070_585_model_agreement_reclass <- all_2041_2070_585_model_agreement
@@ -393,25 +398,25 @@ all_2041_2070_585_model_agreement_reclass[all_2041_2070_585_model_agreement_recl
 all_2041_2070_585_model_agreement_reclass[all_2041_2070_585_model_agreement_reclass %in% c(3, 4, 5)] <- 1
 
 # save as binary raster
-#all_2041_2070_585_10p_01_sdm <- writeRaster(all_2041_2070_585_model_agreement_reclass, filename = file.path("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2041_2070/585/all_2041_2070_585_10p_01_sdm.tif"), overwrite = FALSE)
+#all_2041_2070_585_10p_01_sdm <- writeRaster(all_2041_2070_585_model_agreement_reclass, filename = here(HWC_data, "/Wallace SDM Rasters/asia/2041_2070/585/all_2041_2070_585_10p_01_sdm.tif"), overwrite = FALSE)
 ```
 
 ## Plot model agreement (2011-2040)
 ```{r}
 ### 2011-2040 126
 #read in 10 percentile threshold tifs
-all_2011_2040_126 <- c("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2011_2040/126/gfdl_2011_2040_126_10p_sdm.tif",
-               "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2011_2040/126/ipsl_2011_2040_126_10p_sdm.tif",
-               "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2011_2040/126/mpi_2011_2040_126_10p_sdm.tif",
-               "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2011_2040/126/mri_2011_2040_126_10p_sdm.tif",
-               "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2011_2040/126/ukesm_2011_2040_126_10p_sdm.tif")
+all_2011_2040_126 <- here(HWC_data, c("/Wallace SDM Rasters/asia/2011_2040/126/gfdl_2011_2040_126_10p_sdm.tif",
+               "/Wallace SDM Rasters/asia/2011_2040/126/ipsl_2011_2040_126_10p_sdm.tif",
+               "/Wallace SDM Rasters/asia/2011_2040/126/mpi_2011_2040_126_10p_sdm.tif",
+               "/Wallace SDM Rasters/asia/2011_2040/126/mri_2011_2040_126_10p_sdm.tif",
+               "/Wallace SDM Rasters/asia/2011_2040/126/ukesm_2011_2040_126_10p_sdm.tif"))
  
 all_2011_2040_126_stack <- stack(all_2011_2040_126)
  
 all_2011_2040_126_model_agreement <- calc(all_2011_2040_126_stack, sum)
 
 # save as raster (10 percentile threshold - model agreement)
-all_2011_2040_126_10p_sdm <- writeRaster(all_2011_2040_126_model_agreement, filename = file.path("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2011_2040/126/all_2011_2040_126_10p_sdm.tif"), overwrite = FALSE)
+all_2011_2040_126_10p_sdm <- writeRaster(all_2011_2040_126_model_agreement, filename = here(HWC_data, "/Wallace SDM Rasters/asia/2011_2040/126/all_2011_2040_126_10p_sdm.tif"), overwrite = FALSE)
 
 # reclassify
 all_2011_2040_126_model_agreement_reclass <- all_2011_2040_126_model_agreement
@@ -419,22 +424,22 @@ all_2011_2040_126_model_agreement_reclass[all_2011_2040_126_model_agreement_recl
 all_2011_2040_126_model_agreement_reclass[all_2011_2040_126_model_agreement_reclass %in% c(3, 4, 5)] <- 1
 
 # save as binary raster
-all_2011_2040_126_10p_01_sdm <- writeRaster(all_2011_2040_126_model_agreement_reclass, filename = file.path("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2011_2040/126/all_2011_2040_126_10p_01_sdm.tif"), overwrite = FALSE)
+all_2011_2040_126_10p_01_sdm <- writeRaster(all_2011_2040_126_model_agreement_reclass, filename = here(HWC_data, "/Wallace SDM Rasters/asia/2011_2040/126/all_2011_2040_126_10p_01_sdm.tif"), overwrite = FALSE)
 
 ### 2011-2040 370
 #read in 10 percentile threshold tifs
-all_2011_2040_370 <- c("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2011_2040/370/gfdl_2011_2040_370_10p_sdm.tif",
-               "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2011_2040/370/ipsl_2011_2040_370_10p_sdm.tif",
-               "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2011_2040/370/mpi_2011_2040_370_10p_sdm.tif",
-               "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2011_2040/370/mri_2011_2040_370_10p_sdm.tif",
-               "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2011_2040/370/ukesm_2011_2040_370_10p_sdm.tif")
+all_2011_2040_370 <- here(HWC_data, c("/Wallace SDM Rasters/asia/2011_2040/370/gfdl_2011_2040_370_10p_sdm.tif",
+               "/Wallace SDM Rasters/asia/2011_2040/370/ipsl_2011_2040_370_10p_sdm.tif",
+               "/Wallace SDM Rasters/asia/2011_2040/370/mpi_2011_2040_370_10p_sdm.tif",
+               "/Wallace SDM Rasters/asia/2011_2040/370/mri_2011_2040_370_10p_sdm.tif",
+               "/Wallace SDM Rasters/asia/2011_2040/370/ukesm_2011_2040_370_10p_sdm.tif"))
  
 all_2011_2040_370_stack <- stack(all_2011_2040_370)
  
 all_2011_2040_370_model_agreement <- calc(all_2011_2040_370_stack, sum)
 
 # save as raster (10 percentile threshold - model agreement)
-all_2011_2040_370_10p_sdm <- writeRaster(all_2011_2040_370_model_agreement, filename = file.path("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2011_2040/370/all_2011_2040_370_10p_sdm.tif"), overwrite = FALSE)
+all_2011_2040_370_10p_sdm <- writeRaster(all_2011_2040_370_model_agreement, filename = here(HWC_data, "/Wallace SDM Rasters/asia/2011_2040/370/all_2011_2040_370_10p_sdm.tif"), overwrite = FALSE)
 
 # reclassify
 all_2011_2040_370_model_agreement_reclass <- all_2011_2040_370_model_agreement
@@ -442,22 +447,22 @@ all_2011_2040_370_model_agreement_reclass[all_2011_2040_370_model_agreement_recl
 all_2011_2040_370_model_agreement_reclass[all_2011_2040_370_model_agreement_reclass %in% c(3, 4, 5)] <- 1
 
 # save as binary raster
-all_2011_2040_370_10p_01_sdm <- writeRaster(all_2011_2040_370_model_agreement_reclass, filename = file.path("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2011_2040/370/all_2011_2040_370_10p_01_sdm.tif"), overwrite = FALSE)
+all_2011_2040_370_10p_01_sdm <- writeRaster(all_2011_2040_370_model_agreement_reclass, filename = here(HWC_data, "/Wallace SDM Rasters/asia/2011_2040/370/all_2011_2040_370_10p_01_sdm.tif"), overwrite = FALSE)
 
 ### 2011-2040 585
 #read in 10 percentile threshold tifs
-all_2011_2040_585 <- c("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2011_2040/585/gfdl_2011_2040_585_10p_sdm.tif",
-               "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2011_2040/585/ipsl_2011_2040_585_10p_sdm.tif",
-               "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2011_2040/585/mpi_2011_2040_585_10p_sdm.tif",
-               "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2011_2040/585/mri_2011_2040_585_10p_sdm.tif",
-               "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2011_2040/585/ukesm_2011_2040_585_10p_sdm.tif")
+all_2011_2040_585 <- here(HWC_data, c("/Wallace SDM Rasters/asia/2011_2040/585/gfdl_2011_2040_585_10p_sdm.tif",
+               "/Wallace SDM Rasters/asia/2011_2040/585/ipsl_2011_2040_585_10p_sdm.tif",
+               "/Wallace SDM Rasters/asia/2011_2040/585/mpi_2011_2040_585_10p_sdm.tif",
+               "/Wallace SDM Rasters/asia/2011_2040/585/mri_2011_2040_585_10p_sdm.tif",
+               "/Wallace SDM Rasters/asia/2011_2040/585/ukesm_2011_2040_585_10p_sdm.tif"))
  
 all_2011_2040_585_stack <- stack(all_2011_2040_585)
  
 all_2011_2040_585_model_agreement <- calc(all_2011_2040_585_stack, sum)
 
 # save as raster (10 percentile threshold - model agreement)
-all_2011_2040_585_10p_sdm <- writeRaster(all_2011_2040_585_model_agreement, filename = file.path("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2011_2040/585/all_2011_2040_585_10p_sdm.tif"), overwrite = FALSE)
+all_2011_2040_585_10p_sdm <- writeRaster(all_2011_2040_585_model_agreement, filename = here(HWC_data, "/Wallace SDM Rasters/asia/2011_2040/585/all_2011_2040_585_10p_sdm.tif"), overwrite = FALSE)
 
 # reclassify
 all_2011_2040_585_model_agreement_reclass <- all_2011_2040_585_model_agreement
@@ -465,5 +470,5 @@ all_2011_2040_585_model_agreement_reclass[all_2011_2040_585_model_agreement_recl
 all_2011_2040_585_model_agreement_reclass[all_2011_2040_585_model_agreement_reclass %in% c(3, 4, 5)] <- 1
 
 # save as binary raster
-all_2011_2040_585_10p_01_sdm <- writeRaster(all_2011_2040_585_model_agreement_reclass, filename = file.path("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2011_2040/585/all_2011_2040_585_10p_01_sdm.tif"), overwrite = FALSE)
+all_2011_2040_585_10p_01_sdm <- writeRaster(all_2011_2040_585_model_agreement_reclass, filename = here(HWC_data, "/Wallace SDM Rasters/asia/2011_2040/585/all_2011_2040_585_10p_01_sdm.tif"), overwrite = FALSE)
 ```
