@@ -67,12 +67,21 @@ plot(baseline_cropland)
 ```
 
 
-#### Next, crop the baseline cropland map to the extent of the SDM
+#### Aggregate cropland 
+aggregate by factor of 10 (1km -> 10km)
+factor <- ceiling(res(sdm)[1]/res(chen)[1])
+terra::aggregate() (fact -> factor, function  -> mean, na.rm=true)
+Then resample
+Then reclassify into l/m/h categories (want to maintain No Cropland/0 category) (0, 0-0.5, 0.5-1)
 
 ```{r}
-baseline_afrotrop_crops <- crop(baseline_cropland, sdm)
-plot(baseline_afrotrop_crops)
+factor <- ceiling(res(sdm)[1]/res(lu_reproj)[1])
+
+baseline_cropland <- terra::aggregate(x = baseline_cropland, fact = factor, fun = mean, na.rm = TRUE)
+
+plot(baseline_cropland)
 ```
+
 
 
 #### Now reclassify the values of the SDM raster for easier raster math
@@ -89,7 +98,7 @@ plot(sdm)
 #### Make both of the rasters have the same resolution
 
 ```{r}
-baseline_afrotrop_crops_resampled <- resample(baseline_afrotrop_crops, sdm, method = "near")
+baseline_afrotrop_crops_resampled <- terra::resample(baseline_cropland, sdm, method = "bilinear")
 ```
 
 
