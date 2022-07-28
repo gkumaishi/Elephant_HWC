@@ -43,7 +43,7 @@ current workspace, change to the correct file path
 
 ```{r}
 # NOTE: provide the path to the folder that contains the CSV file
-d.occs <- '/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Data/Asian_Elephant/'
+d.occs <- paste0(HWC_data, '/Data/Asian_Elephant/')
 
 # create path to user occurrences csv file
 userOccs.path <- file.path(d.occs, "all_combined_asian_elephant_coords.csv")
@@ -66,7 +66,7 @@ occs$occID <- row.names(occs)
 
 ```{r}
 # NOTE: provide the path to the folder that contains the rasters
-d.envs <- '/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Data/Chelsa_Data/asia_masked_CHELSA_data'
+d.envs <- paste0(HWC_data, '/Data/Chelsa_Data/asia_masked_CHELSA_data')
 
 # create paths to the raster files
 userRas.paths <- file.path(d.envs, c('asia_masked_CHELSA_layer01.tif','asia_masked_CHELSA_layer02.tif', 'asia_masked_CHELSA_layer04.tif', 'asia_masked_CHELSA_layer06.tif', 'asia_masked_CHELSA_layer07.tif', 'asia_masked_CHELSA_layer12.tif', 'asia_masked_CHELSA_layer14.tif', 'asia_masked_CHELSA_layer15.tif'))
@@ -83,7 +83,7 @@ Read in the .shp file and generate a Spatial Polygon object.
 
 ```{r}
 # NOTE: provide the path to the folder that contains the shapefile
-d.bg <- '/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/indomalay_region'
+d.bg <- paste0(HWC_data, '/R_files/R_output_data/indomalay_region')
 # read csv with coordinates for polygon
 bgExt <- rgdal::readOGR(d.bg, "indomalay_region")
 ```
@@ -210,7 +210,7 @@ to predict the values for the new time based on the model selected.
 
 ```{r}
 # NOTE: provide the path to the folder that contains the rasters
-d.envsFuture <- '/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/UKESM1_0_LL'
+d.envsFuture <- paste0(HWC_data, '/R_files/R_output_data/chelsa_asia/2071_2100/585/UKESM1_0_LL')
 
 # create paths to the raster files
 userRas.pathsFuture <- file.path(d.envsFuture, c('ukesm_2071_2100_585_bio1.tif','ukesm_2071_2100_585_bio2.tif', 'ukesm_2071_2100_585_bio4.tif', 'ukesm_2071_2100_585_bio6.tif', 'ukesm_2071_2100_585_bio7.tif', 'ukesm_2071_2100_585_bio12.tif', 'ukesm_2071_2100_585_bio14.tif', 'ukesm_2071_2100_585_bio15.tif'))

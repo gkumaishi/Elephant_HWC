@@ -16,7 +16,7 @@ library(here)
 
 # Enter YOUR data path to HWC_data folder, including "HWC_data". 
 # May require double forward slashes
-HWC_data <- "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data" 
+HWC_data <- "G:/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data" 
 ```
 
 ```{r}
@@ -115,14 +115,14 @@ ggplot(goalpara_HEC_tidy, aes(x = fct_infreq(hec_type))) +
 
 # Rename columns and remove unnecessary columns
 sonitpur_HEC_renamed <- sonitpur_HEC_raw %>% 
-  select(Date_, 
+  select(1, 
          latitudeDD, 
          LongitudeD, 
          Prescense.Type...Crop.Damage, 
          Prescense.Type...Elephant.Death.or.Injury, 
          Prescense.Type...Human.Death.or.Injury, 
          Prescense.Type...Property.Damage) %>% 
-  rename(date = Date_, 
+  rename(date = 1, 
          latitude = latitudeDD, 
          longitude = LongitudeD, 
          crop = Prescense.Type...Crop.Damage, 

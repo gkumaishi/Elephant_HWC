@@ -8,6 +8,11 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(raster)
+library(here)
+
+# Enter YOUR data path to HWC_data folder, including "HWC_data". 
+# May require double forward slashes
+HWC_data <- "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data" 
 ```
 
 ### 2041-2010 ###
@@ -17,24 +22,24 @@ library(raster)
 
 ```{r}
 # historic 
-historic <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/1981_2010/asian_elephant_historic_10p_sdm.tif")
+historic <- raster(here(HWC_data, "/Wallace SDM Rasters/asia/1981_2010/asian_elephant_historic_10p_sdm.tif"))
 ```
 
 ```{r}
 # GFDL
-proj_2041_2070_126_gfdl <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2041_2070/126/gfdl_2041_2070_126_10p_sdm.tif")
+proj_2041_2070_126_gfdl <- raster(here(HWC_data,"/Wallace SDM Rasters/asia/2041_2070/126/gfdl_2041_2070_126_10p_sdm.tif"))
   
 # IPSL
-proj_2041_2070_126_ipsl <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2041_2070/126/ipsl_2041_2070_126_10p_sdm.tif")
+proj_2041_2070_126_ipsl <- raster(here(HWC_data,"/Wallace SDM Rasters/asia/2041_2070/126/ipsl_2041_2070_126_10p_sdm.tif"))
   
 # MPI
-proj_2041_2070_126_mpi <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2041_2070/126/mpi_2041_2070_126_10p_sdm.tif")
+proj_2041_2070_126_mpi <- raster(here(HWC_data,"/Wallace SDM Rasters/asia/2041_2070/126/mpi_2041_2070_126_10p_sdm.tif"))
   
 # MRI
-proj_2041_2070_126_mri <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2041_2070/126/mri_2041_2070_126_10p_sdm.tif")
+proj_2041_2070_126_mri <- raster(here(HWC_data,"/Wallace SDM Rasters/asia/2041_2070/126/mri_2041_2070_126_10p_sdm.tif"))
   
 # UKESM
-proj_2041_2070_126_ukesm <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2041_2070/126/ukesm_2041_2070_126_10p_sdm.tif")
+proj_2041_2070_126_ukesm <- raster(here(HWC_data,"/Wallace SDM Rasters/asia/2041_2070/126/ukesm_2041_2070_126_10p_sdm.tif"))
 ```
 
 # Reclasify projected rasters
@@ -109,19 +114,19 @@ plot(change_2041_2070_126_ukesm)
 
 ```{r}
 # GFDL 
-writeRaster(change_2041_2070_126_gfdl, filename = file.path("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2041_2070/change_maps/change_2041_2070_126_gfdl.tif"), overwrite = FALSE)
+writeRaster(change_2041_2070_126_gfdl, filename = file.path(here(HWC_data,"/Wallace SDM Rasters/asia/2041_2070/change_maps/change_2041_2070_126_gfdl.tif")), overwrite = FALSE)
 
 # IPSL
-writeRaster(change_2041_2070_126_ipsl, filename = file.path("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2041_2070/change_maps/change_2041_2070_126_ipsl.tif"), overwrite = FALSE)
+writeRaster(change_2041_2070_126_ipsl, filename = file.path(here(HWC_data,"/Wallace SDM Rasters/asia/2041_2070/change_maps/change_2041_2070_126_ipsl.tif")), overwrite = FALSE)
 
 # MPI
-writeRaster(change_2041_2070_126_mpi, filename = file.path("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2041_2070/change_maps/change_2041_2070_126_mpi.tif"), overwrite = FALSE)
+writeRaster(change_2041_2070_126_mpi, filename = file.path(here(HWC_data,"/Wallace SDM Rasters/asia/2041_2070/change_maps/change_2041_2070_126_mpi.tif")), overwrite = FALSE)
 
 # MRI
-writeRaster(change_2041_2070_126_mri, filename = file.path("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2041_2070/change_maps/change_2041_2070_126_mri.tif"), overwrite = FALSE)
+writeRaster(change_2041_2070_126_mri, filename = file.path(here(HWC_data,"/Wallace SDM Rasters/asia/2041_2070/change_maps/change_2041_2070_126_mri.tif")), overwrite = FALSE)
 
 # UKESM
-writeRaster(change_2041_2070_126_ukesm, filename = file.path("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2041_2070/change_maps/change_2041_2070_126_ukesm.tif"), overwrite = FALSE)
+writeRaster(change_2041_2070_126_ukesm, filename = file.path(here(HWC_data,"/Wallace SDM Rasters/asia/2041_2070/change_maps/change_2041_2070_126_ukesm.tif")), overwrite = FALSE)
 ```
 
 ### 2041-2010 ###
@@ -131,19 +136,19 @@ writeRaster(change_2041_2070_126_ukesm, filename = file.path("/Volumes/GoogleDri
 
 ```{r}
 # GFDL
-proj_2041_2070_585_gfdl <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2041_2070/585/gfdl_2041_2070_585_10p_sdm.tif")
+proj_2041_2070_585_gfdl <- raster(here(HWC_data,"/Wallace SDM Rasters/asia/2041_2070/585/gfdl_2041_2070_585_10p_sdm.tif"))
   
 # IPSL
-proj_2041_2070_585_ipsl <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2041_2070/585/ipsl_2041_2070_585_10p_sdm.tif")
+proj_2041_2070_585_ipsl <- raster(here(HWC_data,"/Wallace SDM Rasters/asia/2041_2070/585/ipsl_2041_2070_585_10p_sdm.tif"))
   
 # MPI
-proj_2041_2070_585_mpi <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2041_2070/585/mpi_2041_2070_585_10p_sdm.tif")
+proj_2041_2070_585_mpi <- raster(here(HWC_data,"/Wallace SDM Rasters/asia/2041_2070/585/mpi_2041_2070_585_10p_sdm.tif"))
   
 # MRI
-proj_2041_2070_585_mri <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2041_2070/585/mri_2041_2070_585_10p_sdm.tif")
+proj_2041_2070_585_mri <- raster(here(HWC_data,"/Wallace SDM Rasters/asia/2041_2070/585/mri_2041_2070_585_10p_sdm.tif"))
   
 # UKESM
-proj_2041_2070_585_ukesm <- raster("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2041_2070/585/ukesm_2041_2070_585_10p_sdm.tif")
+proj_2041_2070_585_ukesm <- raster(here(HWC_data,"/Wallace SDM Rasters/asia/2041_2070/585/ukesm_2041_2070_585_10p_sdm.tif"))
 ```
 
 # Reclasify projected rasters
@@ -212,18 +217,18 @@ plot(change_2041_2070_585_ukesm)
 
 ```{r}
 # GFDL 
-writeRaster(change_2041_2070_585_gfdl, filename = file.path("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2041_2070/change_maps/change_2041_2070_585_gfdl.tif"), overwrite = FALSE)
+writeRaster(change_2041_2070_585_gfdl, filename = file.path(here(HWC_data,"/Wallace SDM Rasters/asia/2041_2070/change_maps/change_2041_2070_585_gfdl.tif")), overwrite = FALSE)
 
 # IPSL
-writeRaster(change_2041_2070_585_ipsl, filename = file.path("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2041_2070/change_maps/change_2041_2070_585_ipsl.tif"), overwrite = FALSE)
+writeRaster(change_2041_2070_585_ipsl, filename = file.path(here(HWC_data,"/Wallace SDM Rasters/asia/2041_2070/change_maps/change_2041_2070_585_ipsl.tif")), overwrite = FALSE) 
 
 # MPI
-writeRaster(change_2041_2070_585_mpi, filename = file.path("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2041_2070/change_maps/change_2041_2070_585_mpi.tif"), overwrite = FALSE)
+writeRaster(change_2041_2070_585_mpi, filename = file.path(here(HWC_data,"/Wallace SDM Rasters/asia/2041_2070/change_maps/change_2041_2070_585_mpi.tif")), overwrite = FALSE)
 
 # MRI
-writeRaster(change_2041_2070_585_mri, filename = file.path("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2041_2070/change_maps/change_2041_2070_585_mri.tif"), overwrite = FALSE)
+writeRaster(change_2041_2070_585_mri, filename = file.path(here(HWC_data,"/Wallace SDM Rasters/asia/2041_2070/change_maps/change_2041_2070_585_mri.tif")), overwrite = FALSE)
 
 # UKESM
-writeRaster(change_2041_2070_585_ukesm, filename = file.path("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/2041_2070/change_maps/change_2041_2070_585_ukesm.tif"), overwrite = FALSE)
+writeRaster(change_2041_2070_585_ukesm, filename = file.path(here(HWC_data,"/Wallace SDM Rasters/asia/2041_2070/change_maps/change_2041_2070_585_ukesm.tif")), overwrite = FALSE)
 ```
 

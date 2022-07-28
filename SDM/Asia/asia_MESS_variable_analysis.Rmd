@@ -12,11 +12,11 @@ library(tidyverse)
 library(dplyr)
 library(raster)
 library(modEvA)
-library()
+library(here)
 
 # Enter YOUR data path to HWC_data folder, including "HWC_data". 
 # May require double forward slashes
-HWC_data <- "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data" 
+HWC_data <- "G:/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data" 
 ```
 
 ```{r}
@@ -154,7 +154,7 @@ mpi_2071_2100_585_stack <- stack(paste0(HWC_data, "/R_files/R_output_data/chelsa
 mpi_2071_2100_585_extract <- raster::extract(mpi_2071_2100_585_stack, thinned_all_spp_occs_xy)
 
 # save as dataframe
-write.csv(mpi_2071_2100_585_extract, here(HWC_data, "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Asia_MESS_analysis/input_dataframes/2071_2100/585/MPI_ESM1_2_HR/mpi_2071_2100_585_extract.csv"), row.names = TRUE)
+write.csv(mpi_2071_2100_585_extract, paste0(HWC_data, "/Asia_MESS_analysis/input_dataframes/2071_2100/585/MPI_ESM1_2_HR/mpi_2071_2100_585_extract.csv"), row.names = TRUE)
 ```
 
 ```{r}

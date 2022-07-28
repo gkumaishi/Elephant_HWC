@@ -11,12 +11,17 @@ library(raster)
 library(terra)
 library(tidyverse)
 library(sf)
+library(here)
+
+# Enter YOUR data path to HWC_data folder, including "HWC_data". 
+# May require double forward slashes
+HWC_data <- "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data" 
 ```
 
 ```{r}
 ## Elements required for each scenario
 #indomalay region, which rasters will be cropped to
-indomalay_region <- st_read("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/indomalay_region/indomalay_region.shp", crs = 4326)
+indomalay_region <- st_read(here(HWC_data, "/R_files/R_output_data/indomalay_region/indomalay_region.shp"), crs = 4326)
 
 bios <- c(1,2,4,6,7,12,14,15)
 layers <- 1:8
@@ -31,14 +36,14 @@ layers <- 1:8
 # GFDL-ESM4 MODEL
 DONE
 ```{r}
-gfdl_2071_2100_126_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2071_2100/126/GFDL_ESM4/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2071-2100_gfdl-esm4_ssp126_V.2.1.tif"))
+gfdl_2071_2100_126_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2071_2100/126/GFDL_ESM4/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2071-2100_gfdl-esm4_ssp126_V.2.1.tif"))
 
 gfdl_2071_2100_126_crop <- terra::crop(gfdl_2071_2100_126_stack, indomalay_region)
 
 for (i in layers){
   r <- gfdl_2071_2100_126_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/GFDL_ESM4/gfdl_2071_2100_126_bio", i, ".tif"), overwrite = FALSE)
+  writeRaster(agg, paste0(HWC_data, "/R_files/R_output_data/chelsa_asia/2071_2100/126/GFDL_ESM4/gfdl_2071_2100_126_bio", i, ".tif"), overwrite = FALSE)
 }
 ```
 
@@ -47,14 +52,14 @@ for (i in layers){
 # IPSL-CM6A-LR
 DONE
 ```{r}
-ipsl_2071_2100_126_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2071_2100/126/IPSL_CM6A_LR/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2071-2100_ipsl-cm6a-lr_ssp126_V.2.1.tif"))
+ipsl_2071_2100_126_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2071_2100/126/IPSL_CM6A_LR/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2071-2100_ipsl-cm6a-lr_ssp126_V.2.1.tif"))
 
 ipsl_2071_2100_126_crop <- terra::crop(ipsl_2071_2100_126_stack, indomalay_region)
 
 for (i in layers){
   r <- ipsl_2071_2100_126_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  terra::writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/IPSL_CM6A_LR/ipsl_2071_2100_126_bio", i, ".tif"), overwrite = FALSE)
+  terra::writeRaster(agg, paste0(HWC_data, "/R_files/R_output_data/chelsa_asia/2071_2100/126/IPSL_CM6A_LR/ipsl_2071_2100_126_bio", i, ".tif"), overwrite = FALSE)
 }
 ```
 
@@ -63,14 +68,14 @@ for (i in layers){
 # MPI-ESM1-2-HR
 DONe
 ```{r}
-mpi_2071_2100_126_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2071_2100/126/MPI_ESM1_2_HR/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2071-2100_mpi-esm1-2-hr_ssp126_V.2.1.tif"))
+mpi_2071_2100_126_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2071_2100/126/MPI_ESM1_2_HR/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2071-2100_mpi-esm1-2-hr_ssp126_V.2.1.tif"))
 
 mpi_2071_2100_126_crop <- terra::crop(mpi_2071_2100_126_stack, indomalay_region)
 
 for (i in layers){
   r <- mpi_2071_2100_126_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  terra::writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/MPI_ESM1_2_HR/mpi_2071_2100_126_bio", i, ".tif"), overwrite = FALSE)
+  terra::writeRaster(agg, paste0(HWC_data, "/R_files/R_output_data/chelsa_asia/2071_2100/126/MPI_ESM1_2_HR/mpi_2071_2100_126_bio", i, ".tif"), overwrite = FALSE)
 }
 ```
 
@@ -79,14 +84,14 @@ for (i in layers){
 # MRI-ESM2-0
 DONE
 ```{r}
-mri_2071_2100_126_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2071_2100/126/MRI_ESM2_0/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2071-2100_mri-esm2-0_ssp126_V.2.1.tif"))
+mri_2071_2100_126_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2071_2100/126/MRI_ESM2_0/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2071-2100_mri-esm2-0_ssp126_V.2.1.tif"))
 
 mri_2071_2100_126_crop <- terra::crop(mri_2071_2100_126_stack, indomalay_region)
 
 for (i in layers){
   r <- mri_2071_2100_126_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  terra::writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/MRI_ESM2_0/mri_2071_2100_126_bio", i, ".tif"), overwrite = FALSE)
+  terra::writeRaster(agg, paste0(HWC_data, "/R_files/R_output_data/chelsa_asia/2071_2100/126/MRI_ESM2_0/mri_2071_2100_126_bio", i, ".tif"), overwrite = FALSE)
 }
 ```
 
@@ -95,14 +100,14 @@ for (i in layers){
 # UKESM1-0-LL
 DONE
 ```{r}
-ukesm_2071_2100_126_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2071_2100/126/UKESM1_0_LL/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2071-2100_ukesm1-0-ll_ssp126_V.2.1.tif"))
+ukesm_2071_2100_126_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2071_2100/126/UKESM1_0_LL/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2071-2100_ukesm1-0-ll_ssp126_V.2.1.tif"))
 
 ukesm_2071_2100_126_crop <- terra::crop(ukesm_2071_2100_126_stack, indomalay_region)
 
 for (i in layers){
   r <- ukesm_2071_2100_126_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  terra::writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/126/UKESM1_0_LL/ukesm_2071_2100_126_bio", i, ".tif"), overwrite = FALSE)
+  terra::writeRaster(agg, paste0(HWC_data,"/R_files/R_output_data/chelsa_asia/2071_2100/126/UKESM1_0_LL/ukesm_2071_2100_126_bio", i, ".tif"), overwrite = FALSE)
 }
 ```
 
@@ -113,14 +118,14 @@ for (i in layers){
 # GFDL-ESM4 MODEL
 DONE
 ```{r}
-gfdl_2071_2100_370_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2071_2100/370/GFDL_ESM4/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2071-2100_gfdl-esm4_ssp370_V.2.1.tif"))
+gfdl_2071_2100_370_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2071_2100/370/GFDL_ESM4/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2071-2100_gfdl-esm4_ssp370_V.2.1.tif"))
 
 gfdl_2071_2100_370_crop <- terra::crop(gfdl_2071_2100_370_stack, indomalay_region)
 
 for (i in layers){
   r <- gfdl_2071_2100_370_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  terra::writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/370/GFDL_ESM4/gfdl_2071_2100_370_bio", i, ".tif"), overwrite = FALSE)
+  terra::writeRaster(agg, paste0(HWC_data, "/R_files/R_output_data/chelsa_asia/2071_2100/370/GFDL_ESM4/gfdl_2071_2100_370_bio", i, ".tif"), overwrite = FALSE)
 }
 ```
 
@@ -129,14 +134,14 @@ for (i in layers){
 # IPSL-CM6A-LR
 DONE
 ```{r}
-ipsl_2071_2100_370_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2071_2100/370/IPSL_CM6A_LR/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2071-2100_ipsl-cm6a-lr_ssp370_V.2.1.tif"))
+ipsl_2071_2100_370_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2071_2100/370/IPSL_CM6A_LR/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2071-2100_ipsl-cm6a-lr_ssp370_V.2.1.tif"))
 
 ipsl_2071_2100_370_crop <- terra::crop(ipsl_2071_2100_370_stack, indomalay_region)
 
 for (i in layers){
   r <- ipsl_2071_2100_370_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  terra::writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/370/IPSL_CM6A_LR/ipsl_2071_2100_370_bio", i, ".tif"), overwrite = FALSE)
+  terra::writeRaster(agg, paste0(HWC_data, "/R_files/R_output_data/chelsa_asia/2071_2100/370/IPSL_CM6A_LR/ipsl_2071_2100_370_bio", i, ".tif"), overwrite = FALSE)
 }
 ```
 
@@ -145,14 +150,14 @@ for (i in layers){
 # MPI-ESM1-2-HR
 DONE
 ```{r}
-mpi_2071_2100_370_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2071_2100/370/MPI_ESM1_2_HR/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2071-2100_mpi-esm1-2-hr_ssp370_V.2.1.tif"))
+mpi_2071_2100_370_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2071_2100/370/MPI_ESM1_2_HR/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2071-2100_mpi-esm1-2-hr_ssp370_V.2.1.tif"))
 
 mpi_2071_2100_370_crop <- terra::crop(mpi_2071_2100_370_stack, indomalay_region)
 
 for (i in layers){
   r <- mpi_2071_2100_370_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  terra::writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/370/MPI_ESM1_2_HR/mpi_2071_2100_370_bio", i, ".tif"), overwrite = FALSE)
+  terra::writeRaster(agg, paste0(HWC_data, "/R_files/R_output_data/chelsa_asia/2071_2100/370/MPI_ESM1_2_HR/mpi_2071_2100_370_bio", i, ".tif"), overwrite = FALSE)
 }
 ```
 
@@ -161,14 +166,14 @@ for (i in layers){
 # MRI-ESM2-0
 DONE
 ```{r}
-mri_2071_2100_370_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2071_2100/370/MRI_ESM2_0/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2071-2100_mri-esm2-0_ssp370_V.2.1.tif"))
+mri_2071_2100_370_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2071_2100/370/MRI_ESM2_0/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2071-2100_mri-esm2-0_ssp370_V.2.1.tif"))
 
 mri_2071_2100_370_crop <- terra::crop(mri_2071_2100_370_stack, indomalay_region)
 
 for (i in layers){
   r <- mri_2071_2100_370_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  terra::writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/370/MRI_ESM2_0/mri_2071_2100_370_bio", i, ".tif"), overwrite = FALSE)
+  terra::writeRaster(agg, paste0(HWC_data, "/R_files/R_output_data/chelsa_asia/2071_2100/370/MRI_ESM2_0/mri_2071_2100_370_bio", i, ".tif"), overwrite = FALSE)
 }
 ```
 
@@ -177,14 +182,14 @@ for (i in layers){
 # UKESM1-0-LL
 DONE
 ```{r}
-ukesm_2071_2100_370_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2071_2100/370/UKESM1_0_LL/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2071-2100_ukesm1-0-ll_ssp370_V.2.1.tif"))
+ukesm_2071_2100_370_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2071_2100/370/UKESM1_0_LL/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2071-2100_ukesm1-0-ll_ssp370_V.2.1.tif"))
 
 ukesm_2071_2100_370_crop <- terra::crop(ukesm_2071_2100_370_stack, indomalay_region)
 
 for (i in layers){
   r <- ukesm_2071_2100_370_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  terra::writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/370/UKESM1_0_LL/ukesm_2071_2100_370_bio", i, ".tif"), overwrite = FALSE)
+  terra::writeRaster(agg, paste0(HWC_data, "/R_files/R_output_data/chelsa_asia/2071_2100/370/UKESM1_0_LL/ukesm_2071_2100_370_bio", i, ".tif"), overwrite = FALSE)
 }
 ```
 
@@ -195,14 +200,14 @@ for (i in layers){
 # GFDL-ESM4 MODEL
 DONE
 ```{r}
-gfdl_2071_2100_585_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2071_2100/585/GFDL_ESM4/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2071-2100_gfdl-esm4_ssp585_V.2.1.tif"))
+gfdl_2071_2100_585_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2071_2100/585/GFDL_ESM4/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2071-2100_gfdl-esm4_ssp585_V.2.1.tif"))
 
 gfdl_2071_2100_585_crop <- terra::crop(gfdl_2071_2100_585_stack, indomalay_region)
 
 for (i in layers){
   r <- gfdl_2071_2100_585_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  terra::writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/GFDL_ESM4/gfdl_2071_2100_585_bio", i, ".tif"), overwrite = FALSE)
+  terra::writeRaster(agg, paste0(HWC_data, "/R_files/R_output_data/chelsa_asia/2071_2100/585/GFDL_ESM4/gfdl_2071_2100_585_bio", i, ".tif"), overwrite = FALSE)
 }
 ```
 
@@ -211,14 +216,14 @@ for (i in layers){
 # IPSL-CM6A-LR
 DONE
 ```{r}
-ipsl_2071_2100_585_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2071_2100/585/IPSL_CM6A_LR/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2071-2100_ipsl-cm6a-lr_ssp585_V.2.1.tif"))
+ipsl_2071_2100_585_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2071_2100/585/IPSL_CM6A_LR/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2071-2100_ipsl-cm6a-lr_ssp585_V.2.1.tif"))
 
 ipsl_2071_2100_585_crop <- terra::crop(ipsl_2071_2100_585_stack, indomalay_region)
 
 for (i in layers){
   r <- ipsl_2071_2100_585_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  terra::writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/IPSL_CM6A_LR/ipsl_2071_2100_585_bio", i, ".tif"), overwrite = FALSE) 
+  terra::writeRaster(agg, paste0(HWC_data, "/R_files/R_output_data/chelsa_asia/2071_2100/585/IPSL_CM6A_LR/ipsl_2071_2100_585_bio", i, ".tif"), overwrite = FALSE) 
 }
 ```
 
@@ -227,14 +232,14 @@ for (i in layers){
 # MPI-ESM1-2-HR
 DONE
 ```{r}
-mpi_2071_2100_585_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2071_2100/585/MPI_ESM1_2_HR/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2071-2100_mpi-esm1-2-hr_ssp585_V.2.1.tif"))
+mpi_2071_2100_585_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2071_2100/585/MPI_ESM1_2_HR/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2071-2100_mpi-esm1-2-hr_ssp585_V.2.1.tif"))
 
 mpi_2071_2100_585_crop <- terra::crop(mpi_2071_2100_585_stack, indomalay_region)
 
 for (i in layers){
   r <- mpi_2071_2100_585_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  terra::writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/MPI_ESM1_2_HR/mpi_2071_2100_585_bio", i, ".tif"), overwrite = FALSE)
+  terra::writeRaster(agg, paste0(HWC_data, "/R_files/R_output_data/chelsa_asia/2071_2100/585/MPI_ESM1_2_HR/mpi_2071_2100_585_bio", i, ".tif"), overwrite = FALSE)
 }
 ```
 
@@ -243,14 +248,14 @@ for (i in layers){
 # MRI-ESM2-0
 DONE
 ```{r}
-mri_2071_2100_585_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2071_2100/585/MRI_ESM2_0/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2071-2100_mri-esm2-0_ssp585_V.2.1.tif"))
+mri_2071_2100_585_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2071_2100/585/MRI_ESM2_0/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2071-2100_mri-esm2-0_ssp585_V.2.1.tif"))
 
 mri_2071_2100_585_crop <- terra::crop(mri_2071_2100_585_stack, indomalay_region)
 
 for (i in layers){
   r <- mri_2071_2100_585_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  terra::writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/MRI_ESM2_0/mri_2071_2100_585_bio", i, ".tif"), overwrite = FALSE)
+  terra::writeRaster(agg, paste0(HWC_data, "/R_files/R_output_data/chelsa_asia/2071_2100/585/MRI_ESM2_0/mri_2071_2100_585_bio", i, ".tif"), overwrite = FALSE)
 }
 ```
 
@@ -259,14 +264,14 @@ for (i in layers){
 # UKESM1-0-LL
 DONE
 ```{r}
-ukesm_2071_2100_585_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2071_2100/585/UKESM1_0_LL/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2071-2100_ukesm1-0-ll_ssp585_V.2.1.tif"))
+ukesm_2071_2100_585_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2071_2100/585/UKESM1_0_LL/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2071-2100_ukesm1-0-ll_ssp585_V.2.1.tif"))
 
 ukesm_2071_2100_585_crop <- terra::crop(ukesm_2071_2100_585_stack, indomalay_region)
 
 for (i in layers){
   r <- ukesm_2071_2100_585_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  terra::writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2071_2100/585/UKESM1_0_LL/ukesm_2071_2100_585_bio", i, ".tif"), overwrite = FALSE)
+  terra::writeRaster(agg, paste0(HWC_data, "/R_files/R_output_data/chelsa_asia/2071_2100/585/UKESM1_0_LL/ukesm_2071_2100_585_bio", i, ".tif"), overwrite = FALSE)
 }
 ```
 
@@ -279,14 +284,14 @@ for (i in layers){
 # GFDL-ESM4 MODEL
 DONE
 ```{r}
-gfdl_2041_2070_126_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2041_2070/126/GFDL_ESM4/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2041-2070_gfdl-esm4_ssp126_V.2.1.tif"))
+gfdl_2041_2070_126_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2041_2070/126/GFDL_ESM4/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2041-2070_gfdl-esm4_ssp126_V.2.1.tif"))
 
 gfdl_2041_2070_126_crop <- terra::crop(gfdl_2041_2070_126_stack, indomalay_region)
 
 for (i in layers){
   r <- gfdl_2041_2070_126_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  terra::writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/GFDL_ESM4/gfdl_2041_2070_126_bio", i, ".tif"), overwrite = FALSE)
+  terra::writeRaster(agg, paste0(HWC_data, "/R_files/R_output_data/chelsa_asia/2041_2070/126/GFDL_ESM4/gfdl_2041_2070_126_bio", i, ".tif"), overwrite = FALSE)
 }
 ```
 
@@ -295,14 +300,14 @@ for (i in layers){
 # IPSL-CM6A-LR
 DONE
 ```{r}
-ipsl_2041_2070_126_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2041_2070/126/IPSL_CM6A_LR/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2041-2070_ipsl-cm6a-lr_ssp126_V.2.1.tif"))
+ipsl_2041_2070_126_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2041_2070/126/IPSL_CM6A_LR/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2041-2070_ipsl-cm6a-lr_ssp126_V.2.1.tif"))
 
 ipsl_2041_2070_126_crop <- terra::crop(ipsl_2041_2070_126_stack, indomalay_region)
 
 for (i in layers){
   r <- ipsl_2041_2070_126_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  terra::writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/IPSL_CM6A_LR/ipsl_2041_2070_126_bio", i, ".tif"), overwrite = FALSE)
+  terra::writeRaster(agg, paste0(HWC_data, "/R_files/R_output_data/chelsa_asia/2041_2070/126/IPSL_CM6A_LR/ipsl_2041_2070_126_bio", i, ".tif"), overwrite = FALSE)
 }
 ```
 
@@ -311,14 +316,14 @@ for (i in layers){
 # MPI-ESM1-2-HR
 DONE
 ```{r}
-mpi_2041_2070_126_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2041_2070/126/MPI_ESM1_2_HR/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2041-2070_mpi-esm1-2-hr_ssp126_V.2.1.tif"))
+mpi_2041_2070_126_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2041_2070/126/MPI_ESM1_2_HR/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2041-2070_mpi-esm1-2-hr_ssp126_V.2.1.tif"))
 
 mpi_2041_2070_126_crop <- terra::crop(mpi_2041_2070_126_stack, indomalay_region)
 
 for (i in layers){
   r <- mpi_2041_2070_126_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  terra::writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/MPI_ESM1_2_HR/mpi_2041_2070_126_bio", i, ".tif"), overwrite = FALSE)
+  terra::writeRaster(agg, paste0(HWC_data, "/R_files/R_output_data/chelsa_asia/2041_2070/126/MPI_ESM1_2_HR/mpi_2041_2070_126_bio", i, ".tif"), overwrite = FALSE)
 }
 ```
 
@@ -327,14 +332,14 @@ for (i in layers){
 # MRI-ESM2-0
 DONE
 ```{r}
-mri_2041_2070_126_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2041_2070/126/MRI_ESM2_0/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2041-2070_mri-esm2-0_ssp126_V.2.1.tif"))
+mri_2041_2070_126_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2041_2070/126/MRI_ESM2_0/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2041-2070_mri-esm2-0_ssp126_V.2.1.tif"))
 
 mri_2041_2070_126_crop <- terra::crop(mri_2041_2070_126_stack, indomalay_region)
 
 for (i in layers){
   r <- mri_2041_2070_126_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  terra::writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/MRI_ESM2_0/mri_2041_2070_126_bio", i, ".tif"), overwrite = FALSE)
+  terra::writeRaster(agg, paste0(HWC_data, "/R_files/R_output_data/chelsa_asia/2041_2070/126/MRI_ESM2_0/mri_2041_2070_126_bio", i, ".tif"), overwrite = FALSE)
 }
 ```
 
@@ -343,14 +348,14 @@ for (i in layers){
 # UKESM1-0-LL
 DONE
 ```{r}
-ukesm_2041_2070_126_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2041_2070/126/UKESM1_0_LL/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2041-2070_ukesm1-0-ll_ssp126_V.2.1.tif"))
+ukesm_2041_2070_126_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2041_2070/126/UKESM1_0_LL/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2041-2070_ukesm1-0-ll_ssp126_V.2.1.tif"))
 
 ukesm_2041_2070_126_crop <- terra::crop(ukesm_2041_2070_126_stack, indomalay_region)
 
 for (i in layers){
   r <- ukesm_2041_2070_126_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  terra::writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/126/UKESM1_0_LL/ukesm_2041_2070_126_bio", i, ".tif"), overwrite = FALSE)
+  terra::writeRaster(agg, paste0(HWC_data, "/R_files/R_output_data/chelsa_asia/2041_2070/126/UKESM1_0_LL/ukesm_2041_2070_126_bio", i, ".tif"), overwrite = FALSE)
 }
 ```
 
@@ -361,14 +366,14 @@ for (i in layers){
 # GFDL-ESM4 MODEL
 DONE
 ```{r}
-gfdl_2041_2070_370_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2041_2070/370/GFDL_ESM4/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2041-2070_gfdl-esm4_ssp370_V.2.1.tif"))
+gfdl_2041_2070_370_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2041_2070/370/GFDL_ESM4/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2041-2070_gfdl-esm4_ssp370_V.2.1.tif"))
 
 gfdl_2041_2070_370_crop <- terra::crop(gfdl_2041_2070_370_stack, indomalay_region)
 
 for (i in layers){
   r <- gfdl_2041_2070_370_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  terra::writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/GFDL_ESM4/gfdl_2041_2070_370_bio", i, ".tif"), overwrite = FALSE)
+  terra::writeRaster(agg, paste0(HWC_data, "/R_files/R_output_data/chelsa_asia/2041_2070/370/GFDL_ESM4/gfdl_2041_2070_370_bio", i, ".tif"), overwrite = FALSE)
 }
 ```
 
@@ -377,14 +382,14 @@ for (i in layers){
 # IPSL-CM6A-LR
 DONE
 ```{r}
-ipsl_2041_2070_370_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2041_2070/370/IPSL_CM6A_LR/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2041-2070_ipsl-cm6a-lr_ssp370_V.2.1.tif"))
+ipsl_2041_2070_370_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2041_2070/370/IPSL_CM6A_LR/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2041-2070_ipsl-cm6a-lr_ssp370_V.2.1.tif"))
 
 ipsl_2041_2070_370_crop <- terra::crop(ipsl_2041_2070_370_stack, indomalay_region)
 
 for (i in layers){
   r <- ipsl_2041_2070_370_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  terra::writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/IPSL_CM6A_LR/ipsl_2041_2070_370_bio", i, ".tif"), overwrite = FALSE)
+  terra::writeRaster(agg, paste0(HWC_data, "/R_files/R_output_data/chelsa_asia/2041_2070/370/IPSL_CM6A_LR/ipsl_2041_2070_370_bio", i, ".tif"), overwrite = FALSE)
 }
 ```
 
@@ -393,14 +398,14 @@ for (i in layers){
 # MPI-ESM1-2-HR
 DONE
 ```{r}
-mpi_2041_2070_370_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2041_2070/370/MPI_ESM1_2_HR/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2041-2070_mpi-esm1-2-hr_ssp370_V.2.1.tif"))
+mpi_2041_2070_370_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2041_2070/370/MPI_ESM1_2_HR/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2041-2070_mpi-esm1-2-hr_ssp370_V.2.1.tif"))
 
 mpi_2041_2070_370_crop <- terra::crop(mpi_2041_2070_370_stack, indomalay_region)
 
 for (i in layers){
   r <- mpi_2041_2070_370_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  terra::writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/MPI_ESM1_2_HR/mpi_2041_2070_370_bio", i, ".tif"), overwrite = FALSE)
+  terra::writeRaster(agg, paste0(HWC_data, "/R_files/R_output_data/chelsa_asia/2041_2070/370/MPI_ESM1_2_HR/mpi_2041_2070_370_bio", i, ".tif"), overwrite = FALSE)
 }
 ```
 
@@ -409,14 +414,14 @@ for (i in layers){
 # MRI-ESM2-0
 DONE
 ```{r}
-mri_2041_2070_370_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2041_2070/370/MRI_ESM2_0/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2041-2070_mri-esm2-0_ssp370_V.2.1.tif"))
+mri_2041_2070_370_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2041_2070/370/MRI_ESM2_0/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2041-2070_mri-esm2-0_ssp370_V.2.1.tif"))
 
 mri_2041_2070_370_crop <- terra::crop(mri_2041_2070_370_stack, indomalay_region)
 
 for (i in layers){
   r <- mri_2041_2070_370_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  terra::writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/MRI_ESM2_0/mri_2041_2070_370_bio", i, ".tif"), overwrite = FALSE)
+  terra::writeRaster(agg, paste0(HWC_data, "/R_files/R_output_data/chelsa_asia/2041_2070/370/MRI_ESM2_0/mri_2041_2070_370_bio", i, ".tif"), overwrite = FALSE)
 }
 ```
 
@@ -425,14 +430,14 @@ for (i in layers){
 # UKESM1-0-LL
 DONE
 ```{r}
-ukesm_2041_2070_370_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2041_2070/370/UKESM1_0_LL/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2041-2070_ukesm1-0-ll_ssp370_V.2.1.tif"))
+ukesm_2041_2070_370_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2041_2070/370/UKESM1_0_LL/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2041-2070_ukesm1-0-ll_ssp370_V.2.1.tif"))
 
 ukesm_2041_2070_370_crop <- terra::crop(ukesm_2041_2070_370_stack, indomalay_region)
 
 for (i in layers){
   r <- ukesm_2041_2070_370_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  terra::writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/370/UKESM1_0_LL/ukesm_2041_2070_370_bio", i, ".tif"), overwrite = FALSE)
+  terra::writeRaster(agg, paste0(HWC_data, "/R_files/R_output_data/chelsa_asia/2041_2070/370/UKESM1_0_LL/ukesm_2041_2070_370_bio", i, ".tif"), overwrite = FALSE)
 }
 ```
 
@@ -443,14 +448,14 @@ for (i in layers){
 # GFDL-ESM4 MODEL
 DONE
 ```{r}
-gfdl_2041_2070_585_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2041_2070/585/GFDL_ESM4/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2041-2070_gfdl-esm4_ssp585_V.2.1.tif"))
+gfdl_2041_2070_585_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2041_2070/585/GFDL_ESM4/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2041-2070_gfdl-esm4_ssp585_V.2.1.tif"))
 
 gfdl_2041_2070_585_crop <- terra::crop(gfdl_2041_2070_585_stack, indomalay_region)
 
 for (i in layers){
   r <- gfdl_2041_2070_585_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  terra::writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/GFDL_ESM4/gfdl_2041_2070_585_bio", i, ".tif"), overwrite = FALSE)
+  terra::writeRaster(agg, paste0(HWC_data, "/R_files/R_output_data/chelsa_asia/2041_2070/585/GFDL_ESM4/gfdl_2041_2070_585_bio", i, ".tif"), overwrite = FALSE)
 }
 ```
 
@@ -459,14 +464,14 @@ for (i in layers){
 # IPSL-CM6A-LR
 DONE
 ```{r}
-ipsl_2041_2070_585_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2041_2070/585/IPSL_CM6A_LR/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2041-2070_ipsl-cm6a-lr_ssp585_V.2.1.tif"))
+ipsl_2041_2070_585_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2041_2070/585/IPSL_CM6A_LR/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2041-2070_ipsl-cm6a-lr_ssp585_V.2.1.tif"))
 
 ipsl_2041_2070_585_crop <- terra::crop(ipsl_2041_2070_585_stack, indomalay_region)
 
 for (i in layers){
   r <- ipsl_2041_2070_585_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  terra::writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/IPSL_CM6A_LR/ipsl_2041_2070_585_bio", i, ".tif"), overwrite = FALSE)
+  terra::writeRaster(agg, paste0(HWC_data, "/R_files/R_output_data/chelsa_asia/2041_2070/585/IPSL_CM6A_LR/ipsl_2041_2070_585_bio", i, ".tif"), overwrite = FALSE)
 }
 ```
 
@@ -475,14 +480,14 @@ for (i in layers){
 # MPI-ESM1-2-HR
 DONE
 ```{r}
-mpi_2041_2070_585_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2041_2070/585/MPI_ESM1_2_HR/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2041-2070_mpi-esm1-2-hr_ssp585_V.2.1.tif"))
+mpi_2041_2070_585_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2041_2070/585/MPI_ESM1_2_HR/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2041-2070_mpi-esm1-2-hr_ssp585_V.2.1.tif"))
 
 mpi_2041_2070_585_crop <- terra::crop(mpi_2041_2070_585_stack, indomalay_region)
 
 for (i in layers){
   r <- mpi_2041_2070_585_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  terra::writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/MPI_ESM1_2_HR/mpi_2041_2070_585_bio", i, ".tif"), overwrite = FALSE)
+  terra::writeRaster(agg, paste0(HWC_data, "/R_files/R_output_data/chelsa_asia/2041_2070/585/MPI_ESM1_2_HR/mpi_2041_2070_585_bio", i, ".tif"), overwrite = FALSE)
 }
 ```
 
@@ -491,14 +496,14 @@ for (i in layers){
 # MRI-ESM2-0
 DONE
 ```{r}
-mri_2041_2070_585_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2041_2070/585/MRI_ESM2_0/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2041-2070_mri-esm2-0_ssp585_V.2.1.tif"))
+mri_2041_2070_585_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2041_2070/585/MRI_ESM2_0/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2041-2070_mri-esm2-0_ssp585_V.2.1.tif"))
 
 mri_2041_2070_585_crop <- terra::crop(mri_2041_2070_585_stack, indomalay_region)
 
 for (i in layers){
   r <- mri_2041_2070_585_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  terra::writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/MRI_ESM2_0/mri_2041_2070_585_bio", i, ".tif"), overwrite = FALSE)
+  terra::writeRaster(agg, paste0(HWC_data, "/R_files/R_output_data/chelsa_asia/2041_2070/585/MRI_ESM2_0/mri_2041_2070_585_bio", i, ".tif"), overwrite = FALSE)
 }
 ```
 
@@ -507,14 +512,14 @@ for (i in layers){
 # UKESM1-0-LL
 DONE
 ```{r}
-ukesm_2041_2070_585_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2041_2070/585/UKESM1_0_LL/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2041-2070_ukesm1-0-ll_ssp585_V.2.1.tif"))
+ukesm_2041_2070_585_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2041_2070/585/UKESM1_0_LL/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2041-2070_ukesm1-0-ll_ssp585_V.2.1.tif"))
 
 ukesm_2041_2070_585_crop <- terra::crop(ukesm_2041_2070_585_stack, indomalay_region)
 
 for (i in layers){
   r <- ukesm_2041_2070_585_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  terra::writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2041_2070/585/UKESM1_0_LL/ukesm_2041_2070_585_bio", i, ".tif"), overwrite = FALSE)
+  terra::writeRaster(agg, paste0(HWC_data, "/R_files/R_output_data/chelsa_asia/2041_2070/585/UKESM1_0_LL/ukesm_2041_2070_585_bio", i, ".tif"), overwrite = FALSE)
 }
 ```
 
@@ -527,14 +532,14 @@ for (i in layers){
 # GFDL-ESM4 MODEL
 DONE
 ```{r}
-gfdl_2011_2040_126_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2011_2040/126/GFDL_ESM4/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2011-2040_gfdl-esm4_ssp126_V.2.1.tif"))
+gfdl_2011_2040_126_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2011_2040/126/GFDL_ESM4/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2011-2040_gfdl-esm4_ssp126_V.2.1.tif"))
 
 gfdl_2011_2040_126_crop <- terra::crop(gfdl_2011_2040_126_stack, indomalay_region)
 
 for (i in layers){
   r <- gfdl_2011_2040_126_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/GFDL_ESM4/gfdl_2011_2040_126_bio", i, ".tif"), overwrite = FALSE)
+  writeRaster(agg, paste0(HWC_data, "/R_files/R_output_data/chelsa_asia/2011_2040/126/GFDL_ESM4/gfdl_2011_2040_126_bio", i, ".tif"), overwrite = FALSE)
 }
 ```
 
@@ -543,14 +548,14 @@ for (i in layers){
 # IPSL-CM6A-LR
 DONE
 ```{r}
-ipsl_2011_2040_126_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2011_2040/126/IPSL_CM6A_LR/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2011-2040_ipsl-cm6a-lr_ssp126_V.2.1.tif"))
+ipsl_2011_2040_126_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2011_2040/126/IPSL_CM6A_LR/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2011-2040_ipsl-cm6a-lr_ssp126_V.2.1.tif"))
 
 ipsl_2011_2040_126_crop <- terra::crop(ipsl_2011_2040_126_stack, indomalay_region)
 
 for (i in layers){
   r <- ipsl_2011_2040_126_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/IPSL_CM6A_LR/ipsl_2011_2040_126_bio", i, ".tif"), overwrite = FALSE)
+  writeRaster(agg, paste0(HWC_data, "/R_files/R_output_data/chelsa_asia/2011_2040/126/IPSL_CM6A_LR/ipsl_2011_2040_126_bio", i, ".tif"), overwrite = FALSE)
 }
 ```
 
@@ -559,14 +564,14 @@ for (i in layers){
 # MPI-ESM1-2-HR
 DONE
 ```{r}
-mpi_2011_2040_126_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2011_2040/126/MPI_ESM1_2_HR/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2011-2040_mpi-esm1-2-hr_ssp126_V.2.1.tif"))
+mpi_2011_2040_126_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2011_2040/126/MPI_ESM1_2_HR/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2011-2040_mpi-esm1-2-hr_ssp126_V.2.1.tif"))
 
 mpi_2011_2040_126_crop <- terra::crop(mpi_2011_2040_126_stack, indomalay_region)
 
 for (i in layers){
   r <- mpi_2011_2040_126_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/MPI_ESM1_2_HR/mpi_2011_2040_126_bio", i, ".tif"), overwrite = FALSE)
+  writeRaster(agg, paste0(HWC_data, "/R_files/R_output_data/chelsa_asia/2011_2040/126/MPI_ESM1_2_HR/mpi_2011_2040_126_bio", i, ".tif"), overwrite = FALSE)
 }
 ```
 
@@ -575,14 +580,14 @@ for (i in layers){
 # MRI-ESM2-0
 DONE
 ```{r}
-mri_2011_2040_126_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2011_2040/126/MRI_ESM2_0/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2011-2040_mri-esm2-0_ssp126_V.2.1.tif"))
+mri_2011_2040_126_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2011_2040/126/MRI_ESM2_0/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2011-2040_mri-esm2-0_ssp126_V.2.1.tif"))
 
 mri_2011_2040_126_crop <- terra::crop(mri_2011_2040_126_stack, indomalay_region)
 
 for (i in layers){
   r <- mri_2011_2040_126_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/MRI_ESM2_0/mri_2011_2040_126_bio", i, ".tif"), overwrite = FALSE)
+  writeRaster(agg, paste0(HWC_data, "/R_files/R_output_data/chelsa_asia/2011_2040/126/MRI_ESM2_0/mri_2011_2040_126_bio", i, ".tif"), overwrite = FALSE)
 }
 ```
 
@@ -591,14 +596,14 @@ for (i in layers){
 # UKESM1-0-LL
 DONE
 ```{r}
-ukesm_2011_2040_126_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2011_2040/126/UKESM1_0_LL/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2011-2040_ukesm1-0-ll_ssp126_V.2.1.tif"))
+ukesm_2011_2040_126_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2011_2040/126/UKESM1_0_LL/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2011-2040_ukesm1-0-ll_ssp126_V.2.1.tif"))
 
 ukesm_2011_2040_126_crop <- terra::crop(ukesm_2011_2040_126_stack, indomalay_region)
 
 for (i in layers){
   r <- ukesm_2011_2040_126_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/126/UKESM1_0_LL/ukesm_2011_2040_126_bio", i, ".tif"), overwrite = FALSE)
+  writeRaster(agg, paste0(HWC_data, "/R_files/R_output_data/chelsa_asia/2011_2040/126/UKESM1_0_LL/ukesm_2011_2040_126_bio", i, ".tif"), overwrite = FALSE)
 }
 ```
 
@@ -609,14 +614,14 @@ for (i in layers){
 # GFDL-ESM4 MODEL
 DONE
 ```{r}
-gfdl_2011_2040_370_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2011_2040/370/GFDL_ESM4/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2011-2040_gfdl-esm4_ssp370_V.2.1.tif"))
+gfdl_2011_2040_370_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2011_2040/370/GFDL_ESM4/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2011-2040_gfdl-esm4_ssp370_V.2.1.tif"))
 
 gfdl_2011_2040_370_crop <- terra::crop(gfdl_2011_2040_370_stack, indomalay_region)
 
 for (i in layers){
   r <- gfdl_2011_2040_370_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/GFDL_ESM4/gfdl_2011_2040_370_bio", i, ".tif"), overwrite = FALSE)
+  writeRaster(agg, paste0(HWC_data, "/R_files/R_output_data/chelsa_asia/2011_2040/370/GFDL_ESM4/gfdl_2011_2040_370_bio", i, ".tif"), overwrite = FALSE)
 }
 ```
 
@@ -625,14 +630,14 @@ for (i in layers){
 # IPSL-CM6A-LR
 DONE
 ```{r}
-ipsl_2011_2040_370_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2011_2040/370/IPSL_CM6A_LR/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2011-2040_ipsl-cm6a-lr_ssp370_V.2.1.tif"))
+ipsl_2011_2040_370_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2011_2040/370/IPSL_CM6A_LR/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2011-2040_ipsl-cm6a-lr_ssp370_V.2.1.tif"))
 
 ipsl_2011_2040_370_crop <- terra::crop(ipsl_2011_2040_370_stack, indomalay_region)
 
 for (i in layers){
   r <- ipsl_2011_2040_370_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/IPSL_CM6A_LR/ipsl_2011_2040_370_bio", i, ".tif"), overwrite = FALSE)
+  writeRaster(agg, paste0(HWC_data, "/R_files/R_output_data/chelsa_asia/2011_2040/370/IPSL_CM6A_LR/ipsl_2011_2040_370_bio", i, ".tif"), overwrite = FALSE)
 }
 ```
 
@@ -641,14 +646,14 @@ for (i in layers){
 # MPI-ESM1-2-HR
 DONE
 ```{r}
-mpi_2011_2040_370_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2011_2040/370/MPI_ESM1_2_HR/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2011-2040_mpi-esm1-2-hr_ssp370_V.2.1.tif"))
+mpi_2011_2040_370_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2011_2040/370/MPI_ESM1_2_HR/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2011-2040_mpi-esm1-2-hr_ssp370_V.2.1.tif"))
 
 mpi_2011_2040_370_crop <- terra::crop(mpi_2011_2040_370_stack, indomalay_region)
 
 for (i in layers){
   r <- mpi_2011_2040_370_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/MPI_ESM1_2_HR/mpi_2011_2040_370_bio", i, ".tif"), overwrite = FALSE)
+  writeRaster(agg, paste0(HWC_data, "/R_files/R_output_data/chelsa_asia/2011_2040/370/MPI_ESM1_2_HR/mpi_2011_2040_370_bio", i, ".tif"), overwrite = FALSE)
 }
 ```
 
@@ -657,14 +662,14 @@ for (i in layers){
 # MRI-ESM2-0
 DONE
 ```{r}
-mri_2011_2040_370_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2011_2040/370/MRI_ESM2_0/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2011-2040_mri-esm2-0_ssp370_V.2.1.tif"))
+mri_2011_2040_370_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2011_2040/370/MRI_ESM2_0/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2011-2040_mri-esm2-0_ssp370_V.2.1.tif"))
 
 mri_2011_2040_370_crop <- terra::crop(mri_2011_2040_370_stack, indomalay_region)
 
 for (i in layers){
   r <- mri_2011_2040_370_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/MRI_ESM2_0/mri_2011_2040_370_bio", i, ".tif"), overwrite = FALSE)
+  writeRaster(agg, paste0(HWC_data, "/R_files/R_output_data/chelsa_asia/2011_2040/370/MRI_ESM2_0/mri_2011_2040_370_bio", i, ".tif"), overwrite = FALSE)
 }
 ```
 
@@ -673,14 +678,14 @@ for (i in layers){
 # UKESM1-0-LL
 DONE
 ```{r}
-ukesm_2011_2040_370_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2011_2040/370/UKESM1_0_LL/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2011-2040_ukesm1-0-ll_ssp370_V.2.1.tif"))
+ukesm_2011_2040_370_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2011_2040/370/UKESM1_0_LL/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2011-2040_ukesm1-0-ll_ssp370_V.2.1.tif"))
 
 ukesm_2011_2040_370_crop <- terra::crop(ukesm_2011_2040_370_stack, indomalay_region)
 
 for (i in layers){
   r <- ukesm_2011_2040_370_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  terra::writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/370/UKESM1_0_LL/ukesm1_2011_2040_370_bio", i, ".tif"), overwrite = FALSE)
+  terra::writeRaster(agg, paste0(HWC_data, "/R_files/R_output_data/chelsa_asia/2011_2040/370/UKESM1_0_LL/ukesm1_2011_2040_370_bio", i, ".tif"), overwrite = FALSE)
 }
 ```
 
@@ -691,14 +696,14 @@ for (i in layers){
 # GFDL-ESM4 MODEL
 DONE
 ```{r}
-gfdl_2011_2040_585_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2011_2040/585/GFDL_ESM4/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2011-2040_gfdl-esm4_ssp585_V.2.1.tif"))
+gfdl_2011_2040_585_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2011_2040/585/GFDL_ESM4/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2011-2040_gfdl-esm4_ssp585_V.2.1.tif"))
 
 gfdl_2011_2040_585_crop <- terra::crop(gfdl_2011_2040_585_stack, indomalay_region)
 
 for (i in layers){
   r <- gfdl_2011_2040_585_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  terra::writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/585/GFDL_ESM4/gfdl_2011_2040_585_bio", i, ".tif"), overwrite = FALSE)
+  terra::writeRaster(agg, paste0(HWC_data, "/R_files/R_output_data/chelsa_asia/2011_2040/585/GFDL_ESM4/gfdl_2011_2040_585_bio", i, ".tif"), overwrite = FALSE)
 }
 ```
 
@@ -707,14 +712,14 @@ for (i in layers){
 # IPSL-CM6A-LR
 DONE
 ```{r}
-ipsl_2011_2040_585_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2011_2040/585/IPSL_CM6A_LR/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2011-2040_ipsl-cm6a-lr_ssp585_V.2.1.tif"))
+ipsl_2011_2040_585_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2011_2040/585/IPSL_CM6A_LR/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2011-2040_ipsl-cm6a-lr_ssp585_V.2.1.tif"))
 
 ipsl_2011_2040_585_crop <- terra::crop(ipsl_2011_2040_585_stack, indomalay_region)
 
 for (i in layers){
   r <- ipsl_2011_2040_585_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  terra::writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/585/IPSL_CM6A_LR/ipsl_2011_2040_585_bio", i, ".tif"), overwrite = FALSE)
+  terra::writeRaster(agg, paste0(HWC_data, "/R_files/R_output_data/chelsa_asia/2011_2040/585/IPSL_CM6A_LR/ipsl_2011_2040_585_bio", i, ".tif"), overwrite = FALSE)
 }
 ```
 
@@ -723,14 +728,14 @@ for (i in layers){
 # MPI-ESM1-2-HR
 DONE
 ```{r}
-mpi_2011_2040_585_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2011_2040/585/MPI_ESM1_2_HR/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2011-2040_mpi-esm1-2-hr_ssp585_V.2.1.tif"))
+mpi_2011_2040_585_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2011_2040/585/MPI_ESM1_2_HR/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2011-2040_mpi-esm1-2-hr_ssp585_V.2.1.tif"))
 
 mpi_2011_2040_585_crop <- terra::crop(mpi_2011_2040_585_stack, indomalay_region)
 
 for (i in layers){
   r <- mpi_2011_2040_585_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  terra::writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/585/MPI_ESM1_2_HR/mpi_2011_2040_585_bio", i, ".tif"), overwrite = FALSE)
+  terra::writeRaster(agg, paste0(HWC_data, "/R_files/R_output_data/chelsa_asia/2011_2040/585/MPI_ESM1_2_HR/mpi_2011_2040_585_bio", i, ".tif"), overwrite = FALSE)
 }
 ```
 
@@ -739,14 +744,14 @@ for (i in layers){
 # MRI-ESM2-0
 DONE
 ```{r}
-mri_2011_2040_585_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2011_2040/585/MRI_ESM2_0/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2011-2040_mri-esm2-0_ssp585_V.2.1.tif"))
+mri_2011_2040_585_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2011_2040/585/MRI_ESM2_0/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2011-2040_mri-esm2-0_ssp585_V.2.1.tif"))
 
 mri_2011_2040_585_crop <- terra::crop(mri_2011_2040_585_stack, indomalay_region)
 
 for (i in layers){
   r <- mri_2011_2040_585_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  terra::writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/585/MRI_ESM2_0/mri_2011_2040_585_bio", i, ".tif"), overwrite = FALSE)
+  terra::writeRaster(agg, paste0(HWC_data, "/R_files/R_output_data/chelsa_asia/2011_2040/585/MRI_ESM2_0/mri_2011_2040_585_bio", i, ".tif"), overwrite = FALSE)
 }
 ```
 
@@ -755,14 +760,14 @@ for (i in layers){
 # UKESM1-0-LL
 DONE
 ```{r}
-ukesm_2011_2040_585_stack <- stack(paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_input_data/chelsa_asia/2011_2040/585/UKESM1_0_LL/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2011-2040_ukesm1-0-ll_ssp585_V.2.1.tif"))
+ukesm_2011_2040_585_stack <- stack(paste0(HWC_data, "/R_files/R_input_data/chelsa_asia/2011_2040/585/UKESM1_0_LL/CHELSA_bio", c(1,2,4,6,7,12,14,15), "_2011-2040_ukesm1-0-ll_ssp585_V.2.1.tif"))
 
 ukesm_2011_2040_585_crop <- terra::crop(ukesm_2011_2040_585_stack, indomalay_region)
 
 for (i in layers){
   r <- ukesm_2011_2040_585_crop[[i]]
   agg <- aggregate(r, fact = 5, fun = mean)
-  terra::writeRaster(agg, paste0("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/R_files/R_output_data/chelsa_asia/2011_2040/585/UKESM1_0_LL/ukesm_2011_2040_585_bio", i, ".tif"), overwrite = FALSE)
+  terra::writeRaster(agg, paste0(HWC_data, "/R_files/R_output_data/chelsa_asia/2011_2040/585/UKESM1_0_LL/ukesm_2011_2040_585_bio", i, ".tif"), overwrite = FALSE)
 }
 ```
 
