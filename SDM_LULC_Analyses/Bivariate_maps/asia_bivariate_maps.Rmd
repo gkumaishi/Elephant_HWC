@@ -12,6 +12,8 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(terra)
 library(raster)
+
+HWC_data <- "G:/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data"
 ```
 
 
@@ -21,8 +23,8 @@ library(raster)
 # Read in the baseline land use and SDM
 
 ```{r}
-sdm <- rast("G:/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/asia/1981_2010/indicus_historic.tif")
-lu <- rast("G:/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Geospatial Data/Chen_LULC_data/global_LULC_2015.tif")
+sdm <- rast(paste0(HWC_data, "/Wallace SDM Rasters/asia/1981_2010/indicus_historic.tif"))
+lu <- rast(paste0(HWC_data, "/Geospatial Data/Chen_LULC_data/global_LULC_2015.tif"))
 ```
 
 
