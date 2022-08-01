@@ -116,7 +116,7 @@ plot(baseline_bivariate)
 #### Write the file to a .tif to export to QGIS
 
 ```{r}
-writeRaster(baseline_bivariate, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/afel_bivariate_baseline.tif", overwrite = TRUE))
+writeRaster(baseline_bivariate, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/afel_bivariate_baseline.tif"), overwrite = TRUE)
 ```
 
 
@@ -211,7 +211,7 @@ plot(baseline_urban_bivariate)
 #### Write the file to a .tif to export to QGIS
 
 ```{r}
-writeRaster(baseline_urban_bivariate, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/afel_urban_bivariate_baseline.tif", overwrite = TRUE))
+writeRaster(baseline_urban_bivariate, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/afel_urban_bivariate_baseline.tif"), overwrite = TRUE)
 ```
 
 
@@ -350,7 +350,7 @@ plot(bivariate_change_126_2050)
 #### Write the file to a .tif to export to QGIS
 
 ```{r}
-writeRaster(bivariate_change_126_2050, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/afel_bivariate_change_126_2050.tif", overwrite = TRUE))
+writeRaster(bivariate_change_126_2050, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/afel_bivariate_change_126_2050.tif"), overwrite = TRUE)
 ```
 
 
@@ -487,7 +487,7 @@ plot(bivariate_change_585_2050)
 #### Write the file to a .tif to export to QGIS
 
 ```{r}
-writeRaster(bivariate_change_585_2050, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/afel_bivariate_change_585_2050.tif", overwrite = TRUE))
+writeRaster(bivariate_change_585_2050, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/afel_bivariate_change_585_2050.tif"), overwrite = TRUE)
 ```
 
 
@@ -756,7 +756,7 @@ plot(bivariate_change_585_2080)
 #### Write the file to a .tif to export to QGIS
 
 ```{r}
-writeRaster(bivariate_change_585_2080, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/afel_bivariate_change_585_2080.tif", overwrite = TRUE))
+writeRaster(bivariate_change_585_2080, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/afel_bivariate_change_585_2080.tif"), overwrite = TRUE)
 ```
 
 
