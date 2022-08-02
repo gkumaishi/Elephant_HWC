@@ -1,0 +1,63 @@
+---
+title: "HEC in Namibia"
+author: "Roshni Katrak-Adefowora"
+date: "5/17/2022"
+output: html_document
+---
+
+## Description:
+Exploring data provided by Namibia team that has information on HEC incidents in conservancies in Namibia.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(here)
+library(readxl)
+library(sf)
+library(rgdal)
+library(raster)
+library(janitor)
+
+#HWC data file path (# Enter file path to YOUR HWC_data folder, including "HWC_data")
+hwc_data <- "I:/My Drive/HWC_data"
+```
+
+```{r}
+#read in HEC data
+hec <- read_excel(here(hwc_data, "R_files/R_input_data/namibia_hec.xlsx")) %>% 
+  clean_names() %>% 
+  rename(name = location)
+
+#read in conservancies shapefile
+conservancies <- read_sf(dsn = here(hwc_data, "R_files/R_input_data/shapefilesforconservancies/communal_conservancies.shp")) %>% 
+  clean_names()
+
+#read in SDM
+historic_elephant <- raster(here(hwc_data, "Wallace SDM Rasters/LQ/1981_2010/afel_historic_sdm.tif"))
+
+#crop SDM to Namibia
+historic_elephant_cropped <- crop(historic_elephant, conservancies)
+```
+
+```{r}
+#merge conservancies shapefile and HEC data
+conservancies_hec <- merge(conservancies, hec, by = "name", all.x = TRUE)
+
+conservancies_hec$number_of_incidents[is.na(conservancies_hec$number_of_incidents)] <- 0
+
+#save
+st_write(conservancies_hec, here(hwc_data, "R_files/R_output_data/conservancies_hec.shp"))
+
+#make choropleth
+ggplot(data = conservancies_hec)+
+  geom_sf(aes(fill = number_of_incidents), color = "white", size = 0.1)+
+  scale_fill_gradientn(colors = c("#020024","#5757d0", "#5ae3ff"))+
+  theme_light()+
+  labs(x = "Longitude",
+       y = "Latitude",
+       fill = "Number of incidents")
+
+#plot cropped SDM
+plot(historic_elephant_cropped)
+```
+

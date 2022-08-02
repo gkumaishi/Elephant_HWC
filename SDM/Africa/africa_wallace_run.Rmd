@@ -1,30 +1,285 @@
 ---
-title: "Africa Wallace"
-author: "Grace Kumaishi"
-date: "7/19/2022"
+title: "HWC Wallace"
+author: "Roshni Katrak-Adefowora"
+date: "02/17/2022"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+Below is the R code history from a *Wallace* v1.1.0 session.
+
+### Package installation
+
+Wallace uses the following R packages that must be installed and loaded
+before starting.
+
+```{r}
+library(spocc)
+library(spThin)
+library(dismo)
+library(rgeos)
+library(ENMeval)
+library(dplyr)
+
+#HWC data file path (# Enter file path to YOUR HWC_data folder, including "HWC_data")
+hwc_data <- "I:/My Drive/HWC_data"
 ```
 
-## R Markdown
+Wallace also includes several functions developed to help integrate
+different packages and some additional functionality. For this reason,
+it is necessary to load the file `functions.R`, The function
+`system.file()` finds this script, and `source()` loads it.
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+```{r}
+source(system.file('shiny/funcs', 'functions.R', package = 'wallace'))
 ```
 
-## Including Plots
+## Record of analysis for \*\*.
 
-You can also embed plots, for example:
+User CSV path with occurrence data. If the CSV file is not in the
+current workspace, change to the correct file path
+(e.g. “/Users/darwin/Documents/occs.csv”).
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r}
+# NOTE: provide the path to the folder that contains the CSV file
+d.occs <- here(hwc_data, "R_files/R_output_data/occurrence_points")
+
+# create path to user occurrences csv file
+userOccs.path <- file.path(d.occs, "savanna_elephant_chelsa_points_thinned.csv")
+
+# read in csv
+userOccs.csv <- read.csv(userOccs.path, header = TRUE)
+
+# remove rows with duplicate coordinates
+occs.dups <- duplicated(userOccs.csv[c('longitude', 'latitude')])
+occs <- userOccs.csv[!occs.dups,]
+
+# remove NAs
+occs <- occs[complete.cases(occs$longitude, occs$latitude), ]
+
+# give all records a unique ID
+occs$occID <- row.names(occs)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+### Obtain Environmental Data
+
+```{r}
+# NOTE: provide the path to the folder that contains the rasters
+d.envs <- here(hwc_data, "R_files/R_output_data/chelsa/1981_2010")
+
+# create paths to the raster files
+userRas.paths <- file.path(d.envs, c('agg_cropped_CHELSA_bio01.tif','agg_cropped_CHELSA_bio02.tif', 'agg_cropped_CHELSA_bio03.tif', 'agg_cropped_CHELSA_bio05.tif', 'agg_cropped_CHELSA_bio12.tif', 'agg_cropped_CHELSA_bio13.tif', 'agg_cropped_CHELSA_bio17.tif'))
+
+# make a RasterStack out of the raster files
+envs <- raster::stack(userRas.paths)
+```
+
+### Process Environmental Data
+
+Background selection technique chosen as .
+
+Read in the .shp file and generate a Spatial Polygon object.
+
+```{r}
+# NOTE: provide the path to the folder that contains the shapefile
+d.bg <- here(hwc_data, "R_files/R_output_data/afrotropical_region")
+
+# read csv with coordinates for polygon
+bgExt <- rgdal::readOGR(d.bg, "afrotropical_no_mdg")
+```
+
+Mask environmental variables by , and take a random sample of background
+values from the study extent. As the sample is random, your results may
+be different than those in the session. If there seems to be too much
+variability in these background samples, try increasing the number from
+10,000 to something higher (e.g. 50,000 or 100,000). The better your
+background sample, the less variability you’ll have between runs.
+
+```{r}
+# crop the environmental rasters by the background extent shape
+envsBgCrop <- raster::crop(envs, bgExt)
+
+# mask the background extent shape from the cropped raster
+envsBgMsk <- raster::mask(envsBgCrop, bgExt)
+
+# sample random background points
+bg.xy <- dismo::randomPoints(envsBgMsk, 10000)
+
+# convert matrix output to data frame
+bg.xy <- as.data.frame(bg.xy)  
+colnames(bg.xy) <- c("longitude", "latitude")
+```
+
+### Partition Occurrence Data
+
+Occurrence data is now partitioned for cross-validation, a method that
+iteratively builds a model on all but one group and evaluates that model
+on the left-out group.
+
+For example, if the data is partitioned into 3 groups A, B, and C, a
+model is first built with groups A and B and is evaluated on C. This is
+repeated by building a model with B and C and evaluating on A, and so on
+until all combinations are done.
+
+Cross-validation operates under the assumption that the groups are
+independent of each other, which may or may not be a safe assumption for
+your dataset. Spatial partitioning is one way to ensure more
+independence between groups.
+
+You selected to partition your occurrence data by the method.
+
+```{r}
+occs.xy <- occs[c('longitude', 'latitude')]
+group.data <- ENMeval::get.checkerboard2(occ = occs.xy, env = envsBgMsk,
+                                         bg = bg.xy, aggregation.factor = 2)
+```
+
+```{r}
+# pull out the occurrence and background partition group numbers from the list
+occs.grp <- group.data[[1]]
+bg.grp <- group.data[[2]]
+```
+
+### Build and Evaluate Niche Model
+
+You selected the maxent model.
+
+```{r}
+# define the vector of regularization multipliers to test
+rms <- seq(1, 2, 1)
+
+# iterate model building over all chosen parameter settings
+e <- ENMeval::ENMevaluate(occ = occs.xy, env = envsBgMsk, bg.coords = bg.xy,
+                          RMvalues = rms, fc = c('L', 'LQ'), method = 'user', 
+                          occ.grp = occs.grp, bg.grp = bg.grp, 
+                          clamp = TRUE, algorithm = "maxnet")
+
+# unpack the results data frame, the list of models, and the RasterStack of raw predictions
+evalTbl <- e@results
+evalMods <- e@models
+names(evalMods) <- e@tune.settings$tune.args
+evalPreds <- e@predictions
+```
+
+```{r}
+# view ENMeval results
+ENMeval::evalplot.stats(e, stats = "auc.val", "rm", "fc")
+```
+
+```{r}
+# view response curves for environmental variables with non-zero coefficients
+response <- plot(evalMods[["rm.1_fc.L"]], type = "cloglog")
+response <- plot(evalMods[["rm.2_fc.L"]], type = "cloglog")
+response <- plot(evalMods[["rm.1_fc.LQ"]], type = "cloglog")
+response <- plot(evalMods[["rm.1_fc.LQ"]], type = "cloglog")
+```
+
+```{r}
+# Select your model from the models list
+modL_1 <- evalMods[["rm.1_fc.L"]]
+modL_2 <- evalMods[["rm.2_fc.L"]]
+modLQ_1 <- evalMods[["rm.1_fc.LQ"]]
+modLQ_2 <- evalMods[["rm.1_fc.LQ"]]
+```
+
+```{r}
+# generate cloglog prediction
+predL_1 <- predictMaxnet(modL_1, envsBgMsk, type = 'cloglog', clamp = TRUE) 
+predL_2 <- predictMaxnet(modL_2, envsBgMsk, type = 'cloglog', clamp = TRUE) 
+predLQ_1 <- predictMaxnet(modLQ_1, envsBgMsk, type = 'cloglog', clamp = TRUE) 
+predLQ_2 <- predictMaxnet(modLQ_2, envsBgMsk, type = 'cloglog', clamp = TRUE) 
+```
+
+```{r}
+# create function for 20th percentile training presence threshold
+thresh_20 <- function(modOccVals, type) {
+ # remove all NA
+ modOccVals <- na.omit(modOccVals)
+ if (type == 'mtp') {
+   # apply minimum training presence threshold
+   x <- min(modOccVals)
+ } else if (type == 'p20') {
+   # Define 10% training presence threshold
+   if (length(modOccVals) < 10) { # if less than 10 occ values, find 80% of total and round down
+     n80 <- floor(length(modOccVals) * 0.8)
+   } else { # if greater than or equal to 10 occ values, round up
+     n80 <- ceiling(length(modOccVals) * 0.8)
+   }
+   x <- rev(sort(modOccVals))[n80] # apply 10% training presence threshold over all models
+ }
+ return(x)
+}
+```
+
+```{r}
+# get predicted values for occurrence grid cells
+occPredVals <- raster::extract(predLQ_1, occs.xy)
+# define minimum training presence threshold
+thr <- thresh_20(occPredVals, "p20")
+# threshold model prediction
+pred_thr <- predLQ_1 > thr
+```
+
+```{r}
+# plot the model prediction
+plot(predLQ_1)
+points(occs.xy$longitude, occs.xy$latitude, col = "black")
+
+# save as raster
+# lion_historic_20p_sdm <- writeRaster(pred_thr, filename = file.path(here(hwc_data, "Wallace SDM Rasters/LQ/1981_2010/lion_historic_20p_sdm.tif")))
+```
+
+### Project Niche Model to New Time
+
+Now download the future climate variables chosen with *Wallace*, crop
+and mask them by projPoly, and use the maxnet.predictRaster() function
+to predict the values for the new time based on the model selected.
+
+```{r}
+# NOTE: provide the path to the folder that contains the rasters
+d.envsFuture <- here(hwc_data, "R_files/R_output_data/chelsa/2041_2070/585/GFDL_ESM4")
+
+# create paths to the raster files
+userRas.pathsFuture <- file.path(d.envsFuture, c('gfdl_2041_2070_585_bio1.tif','gfdl_2041_2070_585_bio2.tif', 'gfdl_2041_2070_585_bio5.tif', 'gfdl_2041_2070_585_bio6.tif', 'gfdl_2041_2070_585_bio12.tif', 'gfdl_2041_2070_585_bio13.tif', 'gfdl_2041_2070_585_bio17.tif'))
+
+# make a RasterStack out of the raster files
+envsFuture <- raster::stack(userRas.pathsFuture)
+
+presProj <- raster::crop(envsFuture, bgExt)
+predsProj <- raster::mask(presProj, bgExt)
+```
+
+```{r}
+# rename future climate variable names
+names(predsProj) <- paste0('agg_cropped_CHELSA_bio', sprintf("%02d", c(1, 2, 5, 6, 12, 13, 17)))
+
+#plot future climate variables (as a check)
+#plot(predsProj[[6]])
+```
+
+```{r}
+# predict model
+proj <- wallace::predictMaxnet(mod, predsProj, type = 'cloglog', clamp = TRUE)
+```
+
+```{r}
+# get predicted values for occurrence grid cells
+occPredVals <- raster::extract(pred, occs.xy)
+# define minimum training presence threshold
+thr <- thresh_20(occPredVals, "p20")
+# threshold model prediction
+proj_thr <- proj > thr
+```
+
+```{r}
+# plot the model prediction
+plot(proj_thr)
+
+# save as raster (continuous)
+# ukesm_2011_2040_585_sdm <- writeRaster(proj, filename = file.path(here(hwc_data, "Wallace SDM Rasters/2011_2040/585/ukesm_2011_2040_585_sdm.tif")))
+
+# save as raster (10th percentile threshold)
+# ukesm_2011_2040_585_10p_sdm <- writeRaster(proj_thr, filename = file.path(here(hwc_data, "Wallace SDM Rasters/2011_2040/585/ukesm_2011_2040_585_10p_sdm.tif")))
+
+# save as raster (20th percentile threshold)
+# gfdl_2041_2070_585_20p_sdm <- writeRaster(proj_thr, filename = file.path(here(hwc_data, "Wallace SDM Rasters/2041_2070/585/gfdl_2041_2070_585_20p_sdm.tif")))
+```
