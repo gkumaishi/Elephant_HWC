@@ -12,6 +12,9 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(terra)
 library(raster)
+
+# Enter google filestream path including "HWC_data"
+HWC_data <- "G:/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data"
 ```
 
 
@@ -21,8 +24,8 @@ library(raster)
 
 ```{r}
 # Read in the baseline land use and SDM
-sdm <- rast("G:/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/LQ/1981_2010/afel_historic_sdm.tif")
-lu <- rast("G:/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Geospatial Data/Chen_LULC_data/global_LULC_2015.tif")
+sdm <- rast(paste0(HWC_data, "/Wallace SDM Rasters/LQ/1981_2010/afel_historic_sdm.tif"))
+lu <- rast(paste0(HWC_data, "/Geospatial Data/Chen_LULC_data/global_LULC_2015.tif"))
 ```
 
 
@@ -113,7 +116,7 @@ plot(baseline_bivariate)
 #### Write the file to a .tif to export to QGIS
 
 ```{r}
-writeRaster(baseline_bivariate, "G:/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Geospatial Data/bivariate_outputs/afel_bivariate_baseline.tif", overwrite = TRUE)
+writeRaster(baseline_bivariate, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/afel_bivariate_baseline.tif"), overwrite = TRUE)
 ```
 
 
@@ -125,8 +128,8 @@ writeRaster(baseline_bivariate, "G:/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM8
 
 ```{r}
 # Read in the baseline land use and SDM
-sdm <- rast("G:/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/LQ/1981_2010/afel_historic_sdm.tif")
-lu <- rast("G:/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Geospatial Data/Chen_LULC_data/global_LULC_2015.tif")
+sdm <- rast(paste0(HWC_data, "/Wallace SDM Rasters/LQ/1981_2010/afel_historic_sdm.tif"))
+lu <- rast(paste0(HWC_data, "/Geospatial Data/Chen_LULC_data/global_LULC_2015.tif"))
 ```
 
 
@@ -208,15 +211,8 @@ plot(baseline_urban_bivariate)
 #### Write the file to a .tif to export to QGIS
 
 ```{r}
-writeRaster(baseline_urban_bivariate, "G:/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Geospatial Data/bivariate_outputs/afel_urban_bivariate_baseline.tif", overwrite = TRUE)
+writeRaster(baseline_urban_bivariate, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/afel_urban_bivariate_baseline.tif"), overwrite = TRUE)
 ```
-
-
-
-
-
-
-
 
 
 
@@ -237,8 +233,8 @@ library(raster)
 
 #### Read in the PROJECTED land use and SDM
 ```{r}
-sdm_126_2050 <- rast("G:/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/LQ/2041_2070/126/change_maps/afel_change_2041_2070_126_gfdl.tif")
-lu_126_2050 <- rast("G:/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Geospatial Data/Chen_LULC_data/SSP1_RCP26/global_SSP1_RCP26_2055.tif")
+sdm_126_2050 <- rast(paste0(HWC_data, "/Wallace SDM Rasters/LQ/2041_2070/126/change_maps/afel_change_2041_2070_126_gfdl.tif"))
+lu_126_2050 <- rast(paste0(HWC_data, "/Geospatial Data/Chen_LULC_data/SSP1_RCP26/global_SSP1_RCP26_2055.tif"))
 ```
 
 
@@ -344,7 +340,7 @@ plot(crops_change_126_2050)
 ```
 
 
-#### Raster math - Cropland change vs SDM change (RCP1/SSP2.6, 2055)
+#### Raster math - Cropland change vs SDM change (SSP1/RCP2.6, 2055)
 
 ```{r}
 bivariate_change_126_2050 <- (sdm_126_2050 + crops_change_126_2050)
@@ -354,7 +350,7 @@ plot(bivariate_change_126_2050)
 #### Write the file to a .tif to export to QGIS
 
 ```{r}
-writeRaster(bivariate_change_126_2050, "G:/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Geospatial Data/bivariate_outputs/afel_bivariate_change_126_2050.tif", overwrite = TRUE)
+writeRaster(bivariate_change_126_2050, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/afel_bivariate_change_126_2050.tif"), overwrite = TRUE)
 ```
 
 
@@ -374,8 +370,8 @@ library(raster)
 
 #### Read in the PROJECTED land use and SDM
 ```{r}
-sdm_585_2050 <- rast("G:/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Wallace SDM Rasters/LQ/2041_2070/585/change_maps/afel_change_2041_2070_585_gfdl.tif")
-lu_585_2050 <- rast("G:/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Geospatial Data/Chen_LULC_data/SSP5_RCP85/global_SSP5_RCP85_2055.tif")
+sdm_585_2050 <- rast(paste0(HWC_data, "/Wallace SDM Rasters/LQ/2041_2070/585/change_maps/afel_change_2041_2070_585_gfdl.tif"))
+lu_585_2050 <- rast(paste0(HWC_data, "/Geospatial Data/Chen_LULC_data/SSP5_RCP85/global_SSP5_RCP85_2055.tif"))
 ```
 
 
@@ -481,7 +477,7 @@ plot(crops_change_585_2050)
 ```
 
 
-#### Raster math - Cropland change vs SDM change (RCP1/SSP2.6, 2055)
+#### Raster math - Cropland change vs SDM change (SSP1/RCP2.6, 2055)
 
 ```{r}
 bivariate_change_585_2050 <- (sdm_585_2050 + crops_change_585_2050)
@@ -491,8 +487,280 @@ plot(bivariate_change_585_2050)
 #### Write the file to a .tif to export to QGIS
 
 ```{r}
-writeRaster(bivariate_change_585_2050, "G:/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Geospatial Data/bivariate_outputs/afel_bivariate_change_585_2050.tif", overwrite = TRUE)
+writeRaster(bivariate_change_585_2050, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/afel_bivariate_change_585_2050.tif"), overwrite = TRUE)
 ```
+
+
+### Year: 2070-2100
+### Scenario: SSP1/RCP2.6
+### GCM: GFDL
+
+```{r}
+# Load in packages
+library(tidyverse)
+library(terra)
+library(raster)
+```
+
+
+#### Read in the PROJECTED land use and SDM
+```{r}
+sdm_126_2080 <- rast(paste0(HWC_data, "/Wallace SDM Rasters/LQ/2071_2100/126/afel_historic_2071_2100_126_change_sdm.tif"))
+lu_126_2080 <- rast(paste0(HWC_data, "/Geospatial Data/Chen_LULC_data/SSP1_RCP26/global_SSP1_RCP26_2085.tif"))
+```
+
+
+#### SDM raster does not have an extent, so we're going to assign it (found by importing to QGIS)
+
+```{r}
+ext(sdm_126_2080) <- c(-25.3584728410000011,
+              77.5998600799999849,
+              -40.4084724209999990,
+              26.3831939790000014)
+```
+
+
+#### Plot to look at them
+
+FOR SDM:
+1 - decreasing suitability
+2 - no change, not suitable
+3 - no change, suitable
+4 - increasing suitability
+
+```{r}
+plot(sdm_126_2080)
+plot(lu_126_2080)
+```
+
+
+#### Re-project the land use layer to have the same CRS as the SDM layer
+
+```{r}
+lu_reproj_126_2080 <- lu_126_2080 %>% 
+  project(crs(sdm_126_2080))
+
+plot(lu_reproj_126_2080)
+```
+
+
+#### Make both of the rasters have the same resolution
+
+```{r}
+crops_126_2080_resampled <- resample(lu_reproj_126_2080, sdm_126_2080, method = "near")
+```
+
+
+#### Reclassify values of the SDM Change map
+
+In original:
+1 - decreasing suitability
+2 - no change, not suitable
+3 - no change, suitable
+4 - increasing suitability
+
+Now:
+Same, except reclassify 2 (no change, not suitable) as NA
+
+```{r}
+sdm_126_2080[sdm_126_2080 == 2] <- NA
+plot(sdm_126_2080)
+```
+
+
+
+#### Reclassify values of the year 2085 for cropland
+We want cropland (category 5) to be 1, everything else to be 0
+
+```{r}
+cropland_126_2080 <- crops_126_2080_resampled
+cropland_126_2080[cropland_126_2080 != 5] <- 0
+cropland_126_2080[cropland_126_2080 == 5] <- 1
+plot(cropland_126_2080)
+```
+
+
+#### Next, crop the cropland map to the extent of the SDM
+
+```{r}
+afrotrop_crops_126_2080 <- crop(cropland_126_2080, sdm_126_2080)
+plot(afrotrop_crops_126_2080)
+```
+
+
+#### Make a map of cropland CHANGE
+
+We want (future crops - present crops)
+
+-1: Decrease in cropland (crops -> no crops)
+0: No change
+1: Increase in cropland (no crop -> crops)
+
+```{r}
+crops_change_126_2080 <- (afrotrop_crops_126_2080 - baseline_afrotrop_crops_resampled)
+plot(crops_change_126_2080)
+```
+
+#### Reclassify cropland change map for easier raster math
+
+```{r}
+crops_change_126_2080[crops_change_126_2080 == -1] <- 10
+crops_change_126_2080[crops_change_126_2080 == 0] <- 20
+crops_change_126_2080[crops_change_126_2080 == 1] <- 30
+
+plot(crops_change_126_2080)
+```
+
+
+#### Raster math - Cropland change vs SDM change (SSP1/RCP2.6, 2085)
+
+```{r}
+bivariate_change_126_2080 <- (sdm_126_2080 + crops_change_126_2080)
+plot(bivariate_change_126_2080)
+```
+
+#### Write the file to a .tif to export to QGIS
+
+```{r}
+writeRaster(bivariate_change_126_2080, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/afel_bivariate_change_126_2080.tif"), overwrite = TRUE)
+```
+
+### Year: 2070-2100
+### Scenario: SSP5/RCP8.5
+### GCM: GFDL
+
+```{r}
+# Load in packages
+library(tidyverse)
+library(terra)
+library(raster)
+```
+
+
+#### Read in the PROJECTED land use and SDM
+```{r}
+sdm_585_2080 <- rast(paste0(HWC_data, "/Wallace SDM Rasters/LQ/2071_2100/585/afel_historic_2071_2100_585_change_sdm.tif"))
+lu_585_2080 <- rast(paste0(HWC_data, "/Geospatial Data/Chen_LULC_data/SSP5_RCP85/global_SSP5_RCP85_2085.tif"))
+```
+
+
+#### SDM raster does not have an extent, so we're going to assign it (found by importing to QGIS)
+
+```{r}
+ext(sdm_585_2080) <- c(-25.3584728410000011,
+              77.5998600799999849,
+              -40.4084724209999990,
+              26.3831939790000014)
+```
+
+
+#### Plot to look at them
+
+FOR SDM:
+1 - decreasing suitability
+2 - no change, not suitable
+3 - no change, suitable
+4 - increasing suitability
+
+```{r}
+plot(sdm_585_2080)
+plot(lu_585_2080)
+```
+
+
+#### Re-project the land use layer to have the same CRS as the SDM layer
+
+```{r}
+lu_reproj_585_2080 <- lu_585_2080 %>% 
+  project(crs(sdm_585_2080))
+
+plot(lu_reproj_585_2080)
+```
+
+
+#### Make both of the rasters have the same resolution
+
+```{r}
+crops_585_2080_resampled <- resample(lu_reproj_585_2080, sdm_585_2080, method = "near")
+```
+
+
+#### Reclassify values of the SDM Change map
+
+In original:
+1 - decreasing suitability
+2 - no change, not suitable
+3 - no change, suitable
+4 - increasing suitability
+
+Now:
+Same, except reclassify 2 (no change, not suitable) as NA
+
+```{r}
+sdm_585_2080[sdm_585_2080 == 2] <- NA
+plot(sdm_585_2080)
+```
+
+
+
+#### Reclassify values of the year 2085 for cropland
+We want cropland (category 5) to be 1, everything else to be 0
+
+```{r}
+cropland_585_2080 <- crops_585_2080_resampled
+cropland_585_2080[cropland_585_2080 != 5] <- 0
+cropland_585_2080[cropland_585_2080 == 5] <- 1
+plot(cropland_585_2080)
+```
+
+
+#### Next, crop the cropland map to the extent of the SDM
+
+```{r}
+afrotrop_crops_585_2080 <- crop(cropland_585_2080, sdm_585_2080)
+plot(afrotrop_crops_585_2080)
+```
+
+
+#### Make a map of cropland CHANGE
+
+We want (future crops - present crops)
+
+-1: Decrease in cropland (crops -> no crops)
+0: No change
+1: Increase in cropland (no crop -> crops)
+
+```{r}
+crops_change_585_2080 <- (afrotrop_crops_585_2080 - baseline_afrotrop_crops_resampled)
+plot(crops_change_585_2080)
+```
+
+#### Reclassify cropland change map for easier raster math
+
+```{r}
+crops_change_585_2080[crops_change_585_2080 == -1] <- 10
+crops_change_585_2080[crops_change_585_2080 == 0] <- 20
+crops_change_585_2080[crops_change_585_2080 == 1] <- 30
+
+plot(crops_change_585_2080)
+```
+
+
+#### Raster math - Cropland change vs SDM change (SSP5/RCP8.5, 2085)
+
+```{r}
+bivariate_change_585_2080 <- (sdm_585_2080 + crops_change_585_2080)
+plot(bivariate_change_585_2080)
+```
+
+#### Write the file to a .tif to export to QGIS
+
+```{r}
+writeRaster(bivariate_change_585_2080, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/afel_bivariate_change_585_2080.tif"), overwrite = TRUE)
+```
+
+
+
 
 
 
