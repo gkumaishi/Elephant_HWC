@@ -19,23 +19,17 @@ HWC_data <- "G:/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_da
 
 # BASELINE/HISTORIC MAPPING
 
-<<<<<<< HEAD
-#### Read in the baseline land use and SDM
-=======
 ### Read in the baseline land use and SDM
->>>>>>> b7466127ccf1aa5a2e2bab4c9c9e31ac2f23cd2c
+
 ```{r}
 sdm <- rast(paste0(HWC_data, "/Wallace SDM Rasters/asia/1981_2010/indicus_historic.tif"))
 lu <- rast(paste0(HWC_data, "/Geospatial Data/Chen_LULC_data/global_LULC_2015.tif"))
 ```
 
-<<<<<<< HEAD
-### SDM
-=======
-## SDM
->>>>>>> b7466127ccf1aa5a2e2bab4c9c9e31ac2f23cd2c
 
-### SDM raster does not have an extent, so we're going to assign it (found by importing to QGIS)
+### SDM
+
+#### SDM raster does not have an extent, so we're going to assign it (found by importing to QGIS)
               
 ```{r}
 ext(sdm) <- c(65.8581934609999990,
@@ -44,11 +38,7 @@ ext(sdm) <- c(65.8581934609999990,
               35.8248606080000016)
 ```
 
-<<<<<<< HEAD
 #### Re-project SDM to have same CRS and extent as the LU layer
-=======
-### Re-project SDM to have same CRS and extent as the LU layer
->>>>>>> b7466127ccf1aa5a2e2bab4c9c9e31ac2f23cd2c
 
 ```{r}
 sdm_reproj_as <- sdm %>% 
@@ -57,7 +47,7 @@ sdm_reproj_as <- sdm %>%
 plot(sdm_reproj_as)
 ```
 
-<<<<<<< HEAD
+
 #### Reclassify SDM
 
 ```{r}
@@ -109,84 +99,15 @@ base_cropland_factor <- baseline_cropland_agg %>%
 plot(base_cropland_factor)
 ```
 
-### Add SDM and cropland
+### Add SDM and Cropland
 
 #### Make both of the rasters have the same resolution
-=======
-### Reclassify SDM
-
-```{r}
-baseline_sdm <- sdm_reproj_as
-baseline_sdm[baseline_sdm >= 0 & baseline_sdm < 0.33] <- 10
-baseline_sdm[baseline_sdm >= 0.33 & baseline_sdm < 0.66] <- 20
-baseline_sdm[baseline_sdm >=0.66 & baseline_sdm <= 1] <- 30
-
-plot(baseline_sdm)
-```
-
-## Cropland
-
-### Crop land use to asia
-
-```{r}
-lu_as <- lu %>% crop(sdm_reproj_as)
-plot(lu_as)
-```
-
-
-
-### Reclassify values of the baseline year for cropland
-We want cropland (category 5) to be 1, everything else to be 0
-
-```{r}
-baseline_cropland <- lu_as
-baseline_cropland[baseline_cropland != 5] <- 0
-baseline_cropland[baseline_cropland == 5] <- 1
-plot(baseline_cropland)
-```
-### Aggregate cropland 
-aggregate by factor of 10 (1km -> 10km)
-factor <- ceiling(res(sdm)[1]/res(chen)[1])
-terra::aggregate() (fact -> factor, function  -> mean, na.rm=true)
-Then resample
-Then reclassify into l/m/h categories (want to maintain No Cropland/0 category) (0, 0-0.5, 0.5-1)
-
-```{r}
-factor <- ceiling(res(sdm_reproj_as)[1]/res(baseline_cropland)[1])
-
-baseline_cropland_agg <- terra::aggregate(baseline_cropland, fact = factor, fun = mean, na.rm = TRUE)
-
-plot(baseline_cropland_agg)
-```
-
-### Reclassify cropland into 3 categories
-
-```{r}
-cropland3categories <- rbind(c(0,0,0),
-                        c(0,0.5,1),
-                        c(0.5,1,2))
-
-base_cropland_factor <- baseline_cropland_agg %>% 
-  classify(cropland3categories, include.lowest = FALSE)
-
-plot(base_cropland_factor)
-```
-
-## Add SDM and Cropland
-
-### Make both of the rasters have the same resolution
->>>>>>> b7466127ccf1aa5a2e2bab4c9c9e31ac2f23cd2c
 ```{r}
 base_sdm <- resample(baseline_sdm, base_cropland_factor, method = "near")
 plot(base_sdm)
 ```
 
-<<<<<<< HEAD
 #### Add the two layers together
-=======
-### Add the two layers together
-
->>>>>>> b7466127ccf1aa5a2e2bab4c9c9e31ac2f23cd2c
 ```{r}
 baseline_bivariate_indomalaya <- (base_sdm + base_cropland_factor)
 
@@ -196,29 +117,10 @@ plot(as.factor(baseline_bivariate_indomalaya), main = "Baseline SDM and Cropland
 
 ```
 
-<<<<<<< HEAD
 #### Write the file to a .tif to export to QGIS
-=======
-### Write the file to a .tif to export to QGIS
->>>>>>> b7466127ccf1aa5a2e2bab4c9c9e31ac2f23cd2c
-
-#### Write the file to a .tif to export to QGIS 
 ```{r}
 writeRaster(baseline_bivariate_indomalaya, "G:/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Geospatial Data/bivariate_outputs/asel_bivariate_baseline.tif", overwrite = TRUE)
 ```
-
-
-<<<<<<< HEAD
-=======
-
-
-
-
-# FUTURE PROJECTIONS
-
-## Year: 2041-2070, Scenario: SSP1/RCP2.6, GCM: GFDL
->>>>>>> b7466127ccf1aa5a2e2bab4c9c9e31ac2f23cd2c
-
 
 # FUTURE PROJECTIONS
 
@@ -261,13 +163,7 @@ plot(sdm_126_2050)
 plot(lu_126_2050)
 ```
 
-
-<<<<<<< HEAD
 ####  Re-project SDM to have same CRS as the LU layer
-=======
-####  Re-project SDM to have same CRS and extent as the LU layer
->>>>>>> b7466127ccf1aa5a2e2bab4c9c9e31ac2f23cd2c
-
 ```{r}
 sdm_126_2050_reproj_as <- sdm_126_2050 %>% 
   project(crs(lu), method = "near")
@@ -286,14 +182,9 @@ sdm_126_2050_reclass <- sdm_126_2050_reproj_as %>%
 plot(as.factor(sdm_126_2050_reclass))
 ```
 
-<<<<<<< HEAD
-### LU
-=======
 ### Land Use
->>>>>>> b7466127ccf1aa5a2e2bab4c9c9e31ac2f23cd2c
 
 #### Crop land use to asia
-
 ```{r}
 lu_as <- lu %>% crop(sdm_126_2050_reclass)
 plot(lu_as)
@@ -311,7 +202,6 @@ plot(cropland_126_2050)
 
 #### Aggregate cropland 
 factor <- ceiling(res(sdm)[1]/res(chen)[1])
-
 ```{r}
 factor <- ceiling(res(sdm_126_2050_reclass)[1]/res(cropland_126_2050)[1])
 
@@ -321,8 +211,6 @@ plot(cropland_126_2050_agg)
 ```
 
 #### Reclassify cropland into 3 categories
-
-<<<<<<< HEAD
 ```{r}
 cropland3categories <- rbind(c(0,0,0),
                         c(0,0.5,1),
@@ -334,28 +222,12 @@ cropland_126_2050_factor <- cropland_126_2050_agg %>%
 plot(cropland_126_2050_factor)
 ```
 
-### Add SDM and cropland
-
-#### Make both of the rasters have the same resolution
-```{r}
-sdm_126_2050_resamp <- resample(sdm_126_2050_reclass, cropland_126_2050_factor, method = "near")
-
-=======
-```{r}
-cropland3categories <- rbind(c(0,0,0),
-                        c(0,0.5,1),
-                        c(0.5,1,2))
-
-cropland_126_2050_factor <- cropland_126_2050_agg %>% 
-  classify(cropland3categories, include.lowest = FALSE)
-
-plot(cropland_126_2050_factor)
-```
 ### Add SDM and Cropland
+
 #### Make both of the rasters have the same resolution
 ```{r}
 sdm_126_2050_resamp <- resample(sdm_126_2050_reclass, cropland_126_2050_factor, method = "near")
->>>>>>> b7466127ccf1aa5a2e2bab4c9c9e31ac2f23cd2c
+
 plot(sdm_126_2050_resamp)
 ```
 
@@ -375,15 +247,9 @@ plot(sdm_change_ag_126_2050, main = "SDM Change and Cropland in 2055
 writeRaster(sdm_change_ag_126_2050, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/asel_sdm_change_ag_126_2050.tif"), overwrite = TRUE)
 ```
 
-<<<<<<< HEAD
+
 ### Map of cropland change
 future crops - present crops
-=======
-### Map of Cropland Change
-
-future crops - present crops
-
->>>>>>> b7466127ccf1aa5a2e2bab4c9c9e31ac2f23cd2c
 ```{r}
 base_cropland_resamp <- resample(baseline_cropland_agg, 
                                  cropland_126_2050_agg, 
@@ -421,6 +287,7 @@ writeRaster(bivariate_change_126_2050, paste0(HWC_data, "/Geospatial Data/bivari
 
 
 
+
 ## Year: 2041-2070, Scenario: SSP5/RCP8.5, GCM: GFDL
 
 ```{r}
@@ -429,7 +296,6 @@ library(tidyverse)
 library(terra)
 library(raster)
 ```
-
 
 #### Read in the PROJECTED land use and SDM
 ```{r}
@@ -527,11 +393,7 @@ cropland_585_2050_factor <- cropland_585_2050_agg %>%
 plot(cropland_585_2050_factor)
 ```
 
-<<<<<<< HEAD
 ### Add SDM and cropland
-=======
-### Add SDM and Cropland
->>>>>>> b7466127ccf1aa5a2e2bab4c9c9e31ac2f23cd2c
 
 #### Make both of the rasters have the same resolution
 ```{r}
@@ -555,6 +417,7 @@ plot(sdm_change_ag_585_2050, main = "SDM Change and Cropland in 2055
 ```{r}
 writeRaster(sdm_change_ag_585_2050, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/asel_bivariate_sdm_change_585_2050.tif"), overwrite = TRUE)
 ```
+
 
 
 ## Year: 2071-2100, Scenario: SSP1/RCP2.6, GCM: GFDL
@@ -618,11 +481,7 @@ sdm_126_2080_reclass <- sdm_126_2080_reproj_as %>%
 plot(as.factor(sdm_126_2080_reclass))
 ```
 
-<<<<<<< HEAD
 ### Land Use
-=======
-### Cropland
->>>>>>> b7466127ccf1aa5a2e2bab4c9c9e31ac2f23cd2c
 
 #### Crop land use to asia
 
@@ -666,11 +525,7 @@ cropland_126_2080_factor <- cropland_126_2080_agg %>%
 plot(cropland_126_2080_factor)
 ```
 
-<<<<<<< HEAD
 ### Add SDM and cropland
-=======
-### Add SDM and Cropland
->>>>>>> b7466127ccf1aa5a2e2bab4c9c9e31ac2f23cd2c
 
 #### Make both of the rasters have the same resolution
 ```{r}
@@ -692,6 +547,7 @@ plot(sdm_change_ag_126_2080, main = "SDM Change and Cropland in 2085
 ```{r}
 writeRaster(sdm_change_ag_126_2080, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/asel_bivariate_sdm_change_126_2080.tif"), overwrite = TRUE)
 ```
+
 ## Year: 2071-2100, Scenario: SSP5/RCP8.5, GCM: GFDL
 
 ```{r}
@@ -798,11 +654,7 @@ cropland_585_2080_factor <- cropland_585_2080_agg %>%
 plot(cropland_585_2080_factor)
 ```
 
-<<<<<<< HEAD
 ### Add SDM and cropland
-=======
-### Add SDM and Cropland
->>>>>>> b7466127ccf1aa5a2e2bab4c9c9e31ac2f23cd2c
 
 #### Make both of the rasters have the same resolution
 ```{r}
