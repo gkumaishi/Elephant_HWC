@@ -115,6 +115,8 @@ bivariate_ct <- bivariate_counts %>%
 bivariate_x2 <- chisq.test(bivariate_ct)
 
 bivariate_x2
+
+bivariate_tidy <- broom::tidy(bivariate_x2)
 ```
 
 
