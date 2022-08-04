@@ -182,17 +182,21 @@ writeRaster(baseline_bivariate_afrotropics_urban, paste0(HWC_data, "/Geospatial 
 ```
 
 
+
+
 # FUTURE PROJECTIONS
 
 ## Year: 2041-2070, Scenario: SSP1/RCP2.6, GCM: GFDL
 
+### Setup and read PROJECTED land use and SDM
+
+#### Load in packages
 ```{r}
 # Load in packages
 library(tidyverse)
 library(terra)
 library(raster)
 ```
-
 
 #### Read in the PROJECTED land use and SDM
 ```{r}
@@ -246,7 +250,7 @@ sdm_126_2050_reclass <- sdm_126_2050_reproj_as %>%
 plot(as.factor(sdm_126_2050_reclass))
 ```
 
-### LU
+### Land Use
 
 #### Crop land use to africa
 ```{r}
@@ -298,7 +302,12 @@ plot(as.factor(sdm_126_2050_resamp))
 #### Raster math - Cropland change vs SDM change (SSP1/RCP2.6, 2055)
 ```{r}
 sdm_change_ag_126_2050 <- as.factor(sdm_126_2050_resamp + cropland_126_2050_factor)
+```
 
+### Map and export final raster
+
+####Map with colors
+```{r}
 sdmRYGscale <- c("pink", "tomato", "maroon", "#FFFF99", "goldenrod1", "dark orange", "pale green", "green", "dark green")
 
 plot(sdm_change_ag_126_2050, main = "SDM Change and Cropland in 2055
@@ -312,10 +321,13 @@ writeRaster(sdm_change_ag_126_2050, paste0(HWC_data, "/Geospatial Data/bivariate
 ```
 
 
-### Year: 2041-2070
-### Scenario: SSP5/RCP8.5
-### GCM: GFDL
 
+
+## Year: 2041-2070, Scenario: SSP5/RCP8.5, GCM: GFDL
+
+### Setup and read PROJECTED land use and SDM
+
+#### Load in packages
 ```{r}
 # Load in packages
 library(tidyverse)
@@ -323,16 +335,15 @@ library(terra)
 library(raster)
 ```
 
-
 #### Read in the PROJECTED land use and SDM
 ```{r}
 sdm_585_2050 <- rast(paste0(HWC_data, "/Wallace SDM Rasters/LQ/2041_2070/585/change_maps/afel_change_2041_2070_585_gfdl.tif"))
 lu_585_2050 <- rast(paste0(HWC_data, "/Geospatial Data/Chen_LULC_data/SSP5_RCP85/global_SSP5_RCP85_2055.tif"))
 ```
 
+### SDM
 
 #### SDM raster does not have an extent, so we're going to assign it (found by importing to QGIS)
-
 ```{r}
 ext(sdm_585_2050) <- c(-25.3584728410000011,
               77.5998600799999849,
@@ -342,139 +353,130 @@ ext(sdm_585_2050) <- c(-25.3584728410000011,
 
 
 #### Plot to look at them
-
 FOR SDM:
 1 - decreasing suitability
 2 - no change, not suitable
 3 - no change, suitable
 4 - increasing suitability
-
 ```{r}
 plot(sdm_585_2050)
 plot(lu_585_2050)
 ```
-
-
-#### Re-project the land use layer to have the same CRS as the SDM layer
-
+#### Re-project the SDM to have the same CRS as the land use
 ```{r}
-lu_reproj_585_2050 <- lu_585_2050 %>% 
-  project(crs(sdm_585_2050)) %>%
-  crop(sdm_585_2050)
+sdm_585_2050_reproj_as <- sdm_585_2050 %>% 
+  project(crs(lu_585_2050), method = "near")
 
-plot(lu_reproj_585_2050)
+plot(sdm_585_2050_reproj_as)
 ```
 
-
 #### Reclassify values of the SDM Change map
-
 In original:
 1 - decreasing suitability
 2 - no change, not suitable
 3 - no change, suitable
 4 - increasing suitability
-
 Now:
 Same, except reclassify 2 (no change, not suitable) as NA
-
 ```{r}
-sdm_585_2050[sdm_585_2050 == 1] <- 10
-sdm_585_2050[sdm_585_2050 == 2] <- NA
-sdm_585_2050[sdm_585_2050 == 3] <- 30
-sdm_585_2050[sdm_585_2050 == 4] <- 40
+sdmChange3categories <- rbind(c(1,10), c(2,NA), c(3,30), c(4,40))
 
-plot(sdm_585_2050)
+sdm_585_2050_reclass <- sdm_585_2050_reproj_as %>%
+  classify(sdmChange3categories)
+
+plot(as.factor(sdm_585_2050_reclass))
+```
+
+### Land Use
+
+#### Crop land use to africa
+```{r}
+lu_585_2050_af <- crop(lu_585_2050, sdm_585_2050_reproj_as)
+plot(lu_585_2050_af)
 ```
 
 #### Reclassify values of the year 2055 for cropland
 We want cropland (category 5) to be 1, everything else to be 0
-
 ```{r}
-cropland_585_2050 <- crops_585_2050_resampled
+cropland_585_2050 <- lu_585_2050_af
 cropland_585_2050[cropland_585_2050 != 5] <- 0
 cropland_585_2050[cropland_585_2050 == 5] <- 1
 plot(cropland_585_2050)
 ```
 
-
 #### Aggregate cropland
 
 ```{r}
-factor <- ceiling(res(sdm)[1]/res(cropland_126_2050)[1])
+factor <- ceiling(res(sdm_585_2050_reclass)[1]/res(cropland_585_2050)[1])
 
-cropland_126_2050 <- terra::aggregate(x = cropland_126_2050, fact = factor, fun = mean, na.rm = TRUE)
+cropland_585_2050_agg <- terra::aggregate(x = cropland_585_2050, fact = factor, fun = mean, na.rm = TRUE)
 
-plot(cropland_126_2050)
+plot(cropland_585_2050_agg)
 ```
+#### Reclassify cropland into 3 categories
+
+```{r}
+cropland3categories <- rbind(c(0,0,0),
+                        c(0,0.5,1),
+                        c(0.5,1,2))
+
+cropland_585_2050_factor <- cropland_585_2050_agg %>% 
+  classify(cropland3categories, include.lowest = FALSE)
+
+plot(cropland_585_2050_factor)
+```
+
+### Add SDM and cropland
 
 #### Make both of the rasters have the same resolution
 
 ```{r}
-crops_126_2050_resampled <- resample(cropland_126_2050, sdm_126_2050, method = "bilinear")
-```
+sdm_585_2050_resamp <- resample(sdm_585_2050_reclass, cropland_585_2050_factor, method = "near")
 
-#### Make a map of cropland difference and reclassify cropland
-
-We want (future crops - present crops)
-
-0: Decrease in cropland (crops -> no crops)
-1: No change
-2: Increase in cropland (no crop -> crops)
-
-```{r}
-crops_change_585_2050 <- (crops_585_2050_resampled - baseline_afrotrop_crops_resampled)
-plot(crops_change_585_2050, main = "Cropland Change")
-
-# Reclassify cropland change map for easier raster math
-
-# Input percentage difference cutoff for "no change" category
-percentage_difference <- 0.01
-crops_change_585_2050[crops_change_585_2050 >= percentage_difference] <- 2
-crops_change_585_2050[crops_change_585_2050 >= -percentage_difference
-                      & crops_change_585_2050 < percentage_difference] <- 1
-crops_change_585_2050[crops_change_585_2050 < -percentage_difference] <- 0
-
-
-plot(crops_change_585_2050, main = paste0("2055 SSP5/RCP8.5 Classified Cropland 
-                                          Difference from Baseline (+/- ", 100*percentage_difference, " percentage margin)" ), type = "classes", levels = c("Decrease","No Change","Increase"))
+plot(as.factor(sdm_585_2050_resamp))
 ```
 
 #### Raster math - Cropland change vs SDM change (SSP5/RCP8.5, 2055)
-
 ```{r}
-bivariate_change_585_2050 <- as.factor(sdm_585_2050 + crops_change_585_2050)
+sdm_change_ag_585_2050 <- as.factor(sdm_585_2050_resamp + cropland_585_2050_factor)
+```
+### Map and export final raster
 
-plot(bivariate_change_585_2050, main = "Cropland change vs SDM change (SSP5/RCP8.5, 2055)", type = "classes", levels = c("-ag -suit", "~ag -suit", "+ag -suit", "-ag ~suit", "~ag ~suit", "+ag ~suit", "-ag +suit", "~ag +suit", "+ag +suit"), col = c("light gray","pink","red","light blue", "lavender", "magenta", "blue", "violet", "purple"))
+#### Map with colors
+```{r}
+sdmRYGscale <- c("pink", "tomato", "maroon", "#FFFF99", "goldenrod1", "dark orange", "pale green", "green", "dark green")
+
+plot(sdm_change_ag_585_2050, main = "SDM Change and Cropland in 2055
+     SSP1 RCP2.6", type = "classes", col = sdmRYGscale)
 ```
 
 #### Write the file to a .tif to export to QGIS
-
 ```{r}
-writeRaster(bivariate_change_585_2050, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/afel_bivariate_change_585_2050.tif"), overwrite = TRUE)
+writeRaster(sdm_change_ag_585_2050, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/afel_bivariate_change_126_2080.tif"), overwrite = TRUE)
 ```
 
 
-### Year: 2070-2100
-### Scenario: SSP1/RCP2.6
-### GCM: GFDL
 
+
+## Year: 2071-2100, Scenario: SSP1/RCP2.6, GCM: GFDL
+
+### Setup and read PROJECTED land use and SDM
+
+#### Load in packages
 ```{r}
-# Load in packages
 library(tidyverse)
 library(terra)
 library(raster)
 ```
-
-
-#### Read in the PROJECTED land use and SDM
+#### Read in land use and SDM
 ```{r}
 sdm_126_2080 <- rast(paste0(HWC_data, "/Wallace SDM Rasters/LQ/2071_2100/126/afel_historic_2071_2100_126_change_sdm.tif"))
 lu_126_2080 <- rast(paste0(HWC_data, "/Geospatial Data/Chen_LULC_data/SSP1_RCP26/global_SSP1_RCP26_2085.tif"))
 ```
 
+### SDM
 
 #### SDM raster does not have an extent, so we're going to assign it (found by importing to QGIS)
-
 ```{r}
 ext(sdm_126_2080) <- c(-25.3584728410000011,
               77.5998600799999849,
@@ -483,123 +485,113 @@ ext(sdm_126_2080) <- c(-25.3584728410000011,
 ```
 
 
-#### Plot to look at them
-
+#### Plot to look at them (DIFFERENT SCALE)
 FOR SDM:
-1 - decreasing suitability
-2 - no change, not suitable
-3 - no change, suitable
-4 - increasing suitability
-
+-1 ?
+0 ?
+1 ?
 ```{r}
 plot(sdm_126_2080)
 plot(lu_126_2080)
 ```
-
-
-#### Re-project the land use layer to have the same CRS as the SDM layer
-
+#### Re-project the SDM to have the same CRS as the land use
 ```{r}
-lu_reproj_126_2080 <- lu_126_2080 %>% 
-  project(crs(sdm_126_2080)) %>%
-  crop(sdm_126_2080)
+sdm_126_2080_reproj_as <- sdm_126_2080 %>% 
+  project(crs(lu_126_2080), method = "near")
 
-plot(lu_reproj_126_2080)
+plot(sdm_126_2080_reproj_as)
 ```
 
-
-
 #### Reclassify values of the SDM Change map
-
 In original:
 1 - decreasing suitability
 2 - no change, not suitable
 3 - no change, suitable
 4 - increasing suitability
-
 Now:
 Same, except reclassify 2 (no change, not suitable) as NA
-
 ```{r}
-sdm_126_2080[sdm_126_2080 == 1] <- 10
-sdm_126_2080[sdm_126_2080 == 2] <- NA
-sdm_126_2080[sdm_126_2080 == 3] <- 30
-sdm_126_2080[sdm_126_2080 == 4] <- 40
+sdmChange3categories <- rbind(c(-1,10), c(0,20),c(1,30))
 
-plot(sdm_126_2080)
+sdm_126_2080_reclass <- sdm_126_2080_reproj_as %>%
+  classify(sdmChange3categories)
+
+plot(as.factor(sdm_126_2080_reclass))
+```
+
+### Land Use
+
+#### Crop land use to africa
+```{r}
+lu_126_2080_af <- crop(lu_126_2080, sdm_126_2080_reproj_as)
+plot(lu_126_2080_af)
 ```
 
 #### Reclassify values of the year 2055 for cropland
 We want cropland (category 5) to be 1, everything else to be 0
-
 ```{r}
-cropland_126_2080 <- crops_126_2080_resampled
+cropland_126_2080 <- lu_126_2080_af
 cropland_126_2080[cropland_126_2080 != 5] <- 0
 cropland_126_2080[cropland_126_2080 == 5] <- 1
 plot(cropland_126_2080)
 ```
 
-
 #### Aggregate cropland
 
 ```{r}
-factor <- ceiling(res(sdm)[1]/res(cropland_126_2080)[1])
+factor <- ceiling(res(sdm_126_2080_reclass)[1]/res(cropland_126_2080)[1])
 
-cropland_126_2080 <- terra::aggregate(x = cropland_126_2080, fact = factor, fun = mean, na.rm = TRUE)
+cropland_126_2080_agg <- terra::aggregate(x = cropland_126_2080, fact = factor, fun = mean, na.rm = TRUE)
 
-plot(cropland_126_2080)
+plot(cropland_126_2080_agg)
 ```
+#### Reclassify cropland into 3 categories
+
+```{r}
+cropland3categories <- rbind(c(0,0,0),
+                        c(0,0.5,1),
+                        c(0.5,1,2))
+
+cropland_126_2080_factor <- cropland_126_2080_agg %>% 
+  classify(cropland3categories, include.lowest = FALSE)
+
+plot(cropland_126_2080_factor)
+```
+
+### Add SDM and cropland
 
 #### Make both of the rasters have the same resolution
 
 ```{r}
-crops_126_2080_resampled <- resample(cropland_126_2080, sdm_126_2080, method = "near")
+sdm_126_2080_resamp <- resample(sdm_126_2080_reclass, cropland_126_2080_factor, method = "near")
+
+plot(as.factor(sdm_126_2080_resamp))
 ```
 
-#### Make a map of cropland difference and reclassify cropland
-
-We want (future crops - present crops)
-
-0: Decrease in cropland (crops -> no crops)
-1: No change
-2: Increase in cropland (no crop -> crops)
-
+#### Raster math - Cropland change vs SDM change (SSP1/RCP2.6, 2055)
 ```{r}
-crops_change_126_2080 <- (crops_126_2080_resampled - baseline_afrotrop_crops_resampled)
-plot(crops_change_126_2080, main = "Cropland Change")
+sdm_change_ag_126_2080 <- as.factor(sdm_126_2080_resamp + cropland_126_2080_factor)
 
-# Reclassify cropland change map for easier raster math
-
-# Input percentage difference cutoff for "no change" category
-percentage_difference <- 0.01
-crops_change_126_2080[crops_change_126_2080 >= percentage_difference] <- 2
-crops_change_126_2080[crops_change_126_2080 >= -percentage_difference
-                      & crops_change_126_2080 < percentage_difference] <- 1
-crops_change_126_2080[crops_change_126_2080 < -percentage_difference] <- 0
-
-
-plot(crops_change_126_2080, main = paste0("2085 SSP5/RCP8.5 Classified Cropland 
-                                          Difference from Baseline (+/- ", 100*percentage_difference, " percentage margin)" ), type = "classes", levels = c("Decrease","No Change","Increase"))
 ```
 
-#### Raster math - Cropland change vs SDM change (SSP1/RCP2.6, 2085)
-
-```{r}
-bivariate_change_126_2080 <- as.factor(sdm_126_2080 + crops_change_126_2080)
-
-plot(bivariate_change_126_2080, main = "Cropland change vs SDM change (SSP1/RCP2.6, 2085)", type = "classes", levels = c("-ag -suit", "~ag -suit", "+ag -suit", "-ag ~suit", "~ag ~suit", "+ag ~suit", "-ag +suit", "~ag +suit", "+ag +suit"), col = c("light gray","pink","red","light blue", "lavender", "magenta", "blue", "violet", "purple"))
-```
+### Map and export final raster
+#### Map with colors
 
 #### Write the file to a .tif to export to QGIS
-
 ```{r}
-writeRaster(bivariate_change_126_2080, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/afel_bivariate_change_126_2080.tif"), overwrite = TRUE)
+writeRaster(sdm_change_ag_126_2080, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/afel_sdm_change_ag_126_2080.tif"), overwrite = TRUE)
 ```
 
-### Year: 2070-2100
-### Scenario: SSP5/RCP8.5
-### GCM: GFDL
 
+
+
+
+
+## Year: 2071-2100, Scenario: SSP5/RCP8.5, GCM: GFDL
+
+###Setup and read PROJECTED land use and SDM
+
+#### Load packages
 ```{r}
 # Load in packages
 library(tidyverse)
@@ -607,16 +599,15 @@ library(terra)
 library(raster)
 ```
 
-
 #### Read in the PROJECTED land use and SDM
 ```{r}
 sdm_585_2080 <- rast(paste0(HWC_data, "/Wallace SDM Rasters/LQ/2071_2100/585/afel_historic_2071_2100_585_change_sdm.tif"))
 lu_585_2080 <- rast(paste0(HWC_data, "/Geospatial Data/Chen_LULC_data/SSP5_RCP85/global_SSP5_RCP85_2085.tif"))
 ```
 
+### SDM
 
 #### SDM raster does not have an extent, so we're going to assign it (found by importing to QGIS)
-
 ```{r}
 ext(sdm_585_2080) <- c(-25.3584728410000011,
               77.5998600799999849,
@@ -625,119 +616,108 @@ ext(sdm_585_2080) <- c(-25.3584728410000011,
 ```
 
 
-#### Plot to look at them
-
+#### Plot to look at them (DIFFERENT SCALE)
 FOR SDM:
-1 - decreasing suitability
-2 - no change, not suitable
-3 - no change, suitable
-4 - increasing suitability
-
+-1 ?
+0 ?
+1 ?
 ```{r}
 plot(sdm_585_2080)
 plot(lu_585_2080)
 ```
-
-
-#### Re-project the land use layer to have the same CRS as the SDM layer
-
+#### Re-project the SDM to have the same CRS as the land use
 ```{r}
-lu_reproj_585_2080 <- lu_585_2080 %>% 
-  project(crs(sdm_585_2080)) %>%
-  crop(sdm_585_2080)
+sdm_585_2080_reproj_as <- sdm_585_2080 %>% 
+  project(crs(lu_585_2080), method = "near")
 
-plot(lu_reproj_585_2080)
+plot(sdm_585_2080_reproj_as)
 ```
 
-
 #### Reclassify values of the SDM Change map
-
 In original:
 1 - decreasing suitability
 2 - no change, not suitable
 3 - no change, suitable
 4 - increasing suitability
-
 Now:
 Same, except reclassify 2 (no change, not suitable) as NA
-
 ```{r}
-sdm_585_2080[sdm_585_2080 == 1] <- 10
-sdm_585_2080[sdm_585_2080 == 2] <- NA
-sdm_585_2080[sdm_585_2080 == 3] <- 30
-sdm_585_2080[sdm_585_2080 == 4] <- 40
+sdmChange3categories <- rbind(c(-1,10), c(0,20),c(1,30))
 
-plot(sdm_585_2080)
+sdm_585_2080_reclass <- sdm_585_2080_reproj_as %>%
+  classify(sdmChange3categories)
+
+plot(as.factor(sdm_585_2080_reclass))
+```
+
+### Land Use
+
+#### Crop land use to africa
+```{r}
+lu_585_2080_af <- crop(lu_585_2080, sdm_585_2080_reproj_as)
+plot(lu_585_2080_af)
 ```
 
 #### Reclassify values of the year 2055 for cropland
 We want cropland (category 5) to be 1, everything else to be 0
-
 ```{r}
-cropland_585_2080 <- crops_585_2080_resampled
+cropland_585_2080 <- lu_585_2080_af
 cropland_585_2080[cropland_585_2080 != 5] <- 0
 cropland_585_2080[cropland_585_2080 == 5] <- 1
 plot(cropland_585_2080)
 ```
 
-
 #### Aggregate cropland
 
 ```{r}
-factor <- ceiling(res(sdm)[1]/res(cropland_126_2080)[1])
+factor <- ceiling(res(sdm_585_2080_reclass)[1]/res(cropland_585_2080)[1])
 
-cropland_126_2080 <- terra::aggregate(x = cropland_126_2080, fact = factor, fun = mean, na.rm = TRUE)
+cropland_585_2080_agg <- terra::aggregate(x = cropland_585_2080, fact = factor, fun = mean, na.rm = TRUE)
 
-plot(cropland_126_2080)
+plot(cropland_585_2080_agg)
 ```
+#### Reclassify cropland into 3 categories
+
+```{r}
+cropland3categories <- rbind(c(0,0,0),
+                        c(0,0.5,1),
+                        c(0.5,1,2))
+
+cropland_585_2080_factor <- cropland_585_2080_agg %>% 
+  classify(cropland3categories, include.lowest = FALSE)
+
+plot(cropland_585_2080_factor)
+```
+
+### Add SDM and cropland
 
 #### Make both of the rasters have the same resolution
 
 ```{r}
-crops_126_2080_resampled <- resample(cropland_126_2080, sdm_126_2080, method = "bilinear")
+sdm_585_2080_resamp <- resample(sdm_585_2080_reclass, cropland_585_2080_factor, method = "near")
+
+plot(as.factor(sdm_585_2080_resamp))
 ```
 
-#### Make a map of cropland difference and reclassify cropland
-
-We want (future crops - present crops)
-
-0: Decrease in cropland (crops -> no crops)
-1: No change
-2: Increase in cropland (no crop -> crops)
-
+#### Raster math - Cropland change vs SDM change (SSP5/RCP8.5, 2055)
 ```{r}
-crops_change_585_2080 <- (crops_585_2080_resampled - baseline_afrotrop_crops_resampled)
-plot(crops_change_585_2080, main = "Cropland Change")
-
-# Reclassify cropland change map for easier raster math
-
-# Input percentage difference cutoff for "no change" category
-percentage_difference <- 0.01
-crops_change_585_2080[crops_change_585_2080 >= percentage_difference] <- 2
-crops_change_585_2080[crops_change_585_2080 >= -percentage_difference
-                      & crops_change_585_2080 < percentage_difference] <- 1
-crops_change_585_2080[crops_change_585_2080 < -percentage_difference] <- 0
-
-
-plot(crops_change_585_2080, main = paste0("2085 SSP5/RCP8.5 Classified Cropland 
-                                          Difference from Baseline (+/- ", 100*percentage_difference, " percentage margin)" ), type = "classes", levels = c("Decrease","No Change","Increase"))
+sdm_change_ag_585_2080 <- as.factor(sdm_585_2080_resamp + cropland_585_2080_factor)
 ```
 
+### Map and export final raster
 
-#### Raster math - Cropland change vs SDM change (SSP5/RCP8.5, 2085)
-
+#### Map with Colors
 ```{r}
-bivariate_change_585_2080 <- as.factor(sdm_585_2080 + crops_change_585_2080)
-plot(bivariate_change_585_2080, main = "Cropland change vs SDM change (SSP1/RCP2.6, 2085)", type = "classes", levels = c("-ag -suit", "~ag -suit", "+ag -suit", "-ag ~suit", "~ag ~suit", "+ag ~suit", "-ag +suit", "~ag +suit", "+ag +suit"), col = c("light gray","pink","red","light blue", "lavender", "magenta", "blue", "violet", "purple"))
+sdmRYGscale <- c("pink", "tomato", "maroon", "#FFFF99", "goldenrod1", "dark orange", "pale green", "green", "dark green")
+
+plot(sdm_change_ag_585_2080, main = "SDM Change and Cropland in 2055
+     SSP1 RCP2.6", type = "classes", col = sdmRYGscale)
 ```
 
 #### Write the file to a .tif to export to QGIS
-
 ```{r}
-writeRaster(bivariate_change_585_2080, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/afel_bivariate_change_585_2080.tif"), overwrite = TRUE)
+writeRaster(sdm_change_ag_585_2080, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/afel_bivariate_change_126_2080.tif"), overwrite = TRUE)
 ```
-
-
 
 
 
