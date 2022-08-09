@@ -1,0 +1,96 @@
+---
+title: "Chen_FRAGSTATS.Rmd"
+author: "Chris Kracha"
+date: "7/28/2022"
+output: html_document
+---
+
+```{r include=FALSE}
+
+# Load in packages
+library(tidyverse)
+library(terra)
+library(sp)
+library(raster)
+library(landscapemetrics)
+library(spatialEco)
+
+HWC_data <-"G:/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data"
+```
+
+# Afrotropics
+
+### Load in Data
+```{r}
+lu <- rast(paste0(HWC_data, "/Geospatial Data/Chen_LULC_data/global_LULC_2015.tif"))
+
+afrotropics <- vect(paste0(HWC_data,"/R_files/R_output_data/afrotropical_region")) %>%
+  project(lu)
+```
+
+### Mask land use to afrotropics
+```{r}
+lu_at <- lu %>%
+  crop(afrotropics) %>%
+  mask(afrotropics)
+```
+
+### Classify natural areas
+```{r}
+naturalClass <- rbind(c(2,1), c(3,1), c(4,0), c(5,0), c(6,0))
+
+forestClass <- rbind(c(2,1), c(3,0), c(4,0), c(5,0), c(6,0))
+
+natural_at <- lu_at %>%
+  classify(naturalClass, others = 0)
+
+plot(natural_at)
+```
+
+### Export binary 1km natural areas to ArcGIS
+```{r}
+writeRaster(as.factor(natural_at), "natural_areas_2015.tif", overwrite = TRUE)
+```
+
+### Aggregate land use
+```{r}
+natural_agg_at <- aggregate(natural_at, fact = 10, fun = "modal")
+```
+
+### Landscape Metrics
+```{r}
+moving_window <- matrix(1, nrow = 3, ncol = 3)
+
+# Takes awhile
+# window_edge <- window_lsm(natural_agg_at, moving_window, level = "landscape", what = "lsm_l_ed")
+```
+
+
+# Indomalaya
+
+### Load in data
+```{r}
+lu <- rast(paste0(HWC_data, "/Geospatial Data/Chen_LULC_data/global_LULC_2015.tif"))
+
+indomalaya <- vect(paste0(HWC_data, '/R_files/R_output_data/indomalay_region')) %>%
+  project(lu)
+```
+
+### Mask land use to indomalaya
+```{r}
+lu_im <- lu %>%
+  crop(indomalaya) %>%
+  mask(indomalaya)
+```
+
+### Classify natural areas
+```{r}
+naturalClass <- rbind(c(2,1), c(3,1), c(4,0), c(5,0), c(6,0), c(7,0))
+
+forestClass <- rbind(c(2,1), c(3,0), c(4,0), c(5,0), c(6,0), c(7,0))
+
+natural_im <- lu_im %>%
+  classify(naturalClass, others = 0)
+
+plot(natural_im)
+```
