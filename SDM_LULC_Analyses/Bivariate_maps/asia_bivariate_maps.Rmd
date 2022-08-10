@@ -78,11 +78,8 @@ plot(baseline_cropland)
 
 #### Aggregate cropland 
 aggregate by factor of 10 (1km -> 10km)
-factor <- ceiling(res(sdm)[1]/res(chen)[1])
 ```{r}
-factor <- ceiling(res(sdm_reproj_as)[1]/res(baseline_cropland)[1])
-
-baseline_cropland_agg <- terra::aggregate(baseline_cropland, fact = factor, fun = mean, na.rm = TRUE)
+baseline_cropland_agg <- terra::aggregate(baseline_cropland, fact = 10, fun = mean, na.rm = TRUE)
 
 plot(baseline_cropland_agg)
 ```
@@ -119,7 +116,7 @@ plot(as.factor(baseline_bivariate_indomalaya), main = "Baseline SDM and Cropland
 
 #### Write the file to a .tif to export to QGIS
 ```{r}
-writeRaster(baseline_bivariate_indomalaya, "G:/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Geospatial Data/bivariate_outputs/asel_bivariate_baseline.tif", overwrite = TRUE)
+writeRaster(baseline_bivariate_indomalaya, "G:/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Geospatial Data/bivariate_outputs/asel_sdm_change_ag_baseline.tif", overwrite = TRUE)
 ```
 
 
@@ -204,9 +201,7 @@ plot(cropland_126_2020)
 #### Aggregate cropland 
 factor <- ceiling(res(sdm)[1]/res(chen)[1])
 ```{r}
-factor <- ceiling(res(sdm_126_2020_reclass)[1]/res(cropland_126_2020)[1])
-
-cropland_126_2020_agg <- terra::aggregate(cropland_126_2020, fact = factor, fun = mean, na.rm = TRUE)
+cropland_126_2020_agg <- terra::aggregate(cropland_126_2020, fact = 10, fun = mean, na.rm = TRUE)
 
 plot(cropland_126_2020_agg)
 ```
@@ -334,10 +329,7 @@ plot(cropland_585_2020)
 factor <- ceiling(res(sdm)[1]/res(chen)[1])
 
 ```{r}
-factor <- ceiling(res(sdm_585_2020_reclass)[1]
-                  /res(cropland_585_2020)[1])
-
-cropland_585_2020_agg <- terra::aggregate(cropland_585_2020, fact = factor, fun = mean, na.rm = TRUE)
+cropland_585_2020_agg <- terra::aggregate(cropland_585_2020, fact = 10, fun = mean, na.rm = TRUE)
 
 plot(cropland_585_2020_agg)
 ```
@@ -377,7 +369,7 @@ plot(sdm_change_ag_585_2020, main = "SDM Change and Cropland in 2055
 #### Write the file to a .tif to export to QGIS
 
 ```{r}
-writeRaster(sdm_change_ag_585_2020, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/asel_bivariate_sdm_change_585_2020.tif"), overwrite = TRUE)
+writeRaster(sdm_change_ag_585_2020, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/asel_sdm_change_ag_585_2020.tif"), overwrite = TRUE)
 ```
 
 
@@ -460,11 +452,8 @@ plot(cropland_126_2050)
 ```
 
 #### Aggregate cropland 
-factor <- ceiling(res(sdm)[1]/res(chen)[1])
 ```{r}
-factor <- ceiling(res(sdm_126_2050_reclass)[1]/res(cropland_126_2050)[1])
-
-cropland_126_2050_agg <- terra::aggregate(cropland_126_2050, fact = factor, fun = mean, na.rm = TRUE)
+cropland_126_2050_agg <- terra::aggregate(cropland_126_2050, fact = 10, fun = mean, na.rm = TRUE)
 
 plot(cropland_126_2050_agg)
 ```
@@ -539,7 +528,7 @@ plot(bivariate_change_126_2050, main = "Cropland Change")
 #### Write the file to a .tif to export to QGIS
 
 ```{r}
-writeRaster(bivariate_change_126_2050, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/asel_bivariate_change_126_2050.tif"), overwrite = TRUE)
+writeRaster(bivariate_change_126_2050, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/asel_sdm_change_ag_126_2050.tif"), overwrite = TRUE)
 ```
 
 
@@ -632,10 +621,7 @@ plot(cropland_585_2050)
 factor <- ceiling(res(sdm)[1]/res(chen)[1])
 
 ```{r}
-factor <- ceiling(res(sdm_585_2050_reclass)[1]
-                  /res(cropland_585_2050)[1])
-
-cropland_585_2050_agg <- terra::aggregate(cropland_585_2050, fact = factor, fun = mean, na.rm = TRUE)
+cropland_585_2050_agg <- terra::aggregate(cropland_585_2050, fact = 10, fun = mean, na.rm = TRUE)
 
 plot(cropland_585_2050_agg)
 ```
@@ -675,7 +661,7 @@ plot(sdm_change_ag_585_2050, main = "SDM Change and Cropland in 2055
 #### Write the file to a .tif to export to QGIS
 
 ```{r}
-writeRaster(sdm_change_ag_585_2050, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/asel_bivariate_sdm_change_585_2050.tif"), overwrite = TRUE)
+writeRaster(sdm_change_ag_585_2050, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/asel_sdm_change_ag_585_2050.tif"), overwrite = TRUE)
 ```
 
 
@@ -761,13 +747,8 @@ plot(cropland_126_2080)
 ```
 
 #### Aggregate cropland 
-factor <- ceiling(res(sdm)[1]/res(chen)[1])
-
 ```{r}
-factor <- ceiling(res(sdm_126_2080_reclass)[1]
-                  /res(cropland_126_2080)[1])
-
-cropland_126_2080_agg <- terra::aggregate(cropland_126_2080, fact = factor, fun = mean, na.rm = TRUE)
+cropland_126_2080_agg <- terra::aggregate(cropland_126_2080, fact = 10, fun = mean, na.rm = TRUE)
 
 plot(cropland_126_2080_agg)
 ```
@@ -805,7 +786,7 @@ plot(sdm_change_ag_126_2080, main = "SDM Change and Cropland in 2085
 
 #### Write the file to a .tif to export to QGIS
 ```{r}
-writeRaster(sdm_change_ag_126_2080, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/asel_bivariate_sdm_change_126_2080.tif"), overwrite = TRUE)
+writeRaster(sdm_change_ag_126_2080, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/asel_sdm_change_ag_126_2080.tif"), overwrite = TRUE)
 ```
 
 ## Year: 2071-2100, Scenario: SSP5/RCP8.5, GCM: GFDL
@@ -890,13 +871,8 @@ plot(cropland_585_2080)
 ```
 
 #### Aggregate cropland 
-factor <- ceiling(res(sdm)[1]/res(chen)[1])
-
 ```{r}
-factor <- ceiling(res(sdm_585_2080_reclass)[1]
-                  /res(cropland_585_2080)[1])
-
-cropland_585_2080_agg <- terra::aggregate(cropland_585_2080, fact = factor, fun = mean, na.rm = TRUE)
+cropland_585_2080_agg <- terra::aggregate(cropland_585_2080, fact = 10, fun = mean, na.rm = TRUE)
 
 plot(cropland_585_2080_agg)
 ```
@@ -936,7 +912,7 @@ plot(sdm_change_ag_585_2080, main = "SDM Change and Cropland in 2085
 #### Write the file to a .tif to export to QGIS
 
 ```{r}
-writeRaster(sdm_change_ag_585_2080, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/asel_bivariate_sdm_change_585_2080.tif"), overwrite = TRUE)
+writeRaster(sdm_change_ag_585_2080, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/asel_sdm_change_ag_585_2080.tif"), overwrite = TRUE)
 ```
 
 
