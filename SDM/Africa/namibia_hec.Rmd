@@ -24,7 +24,7 @@ hwc_data <- "I:/My Drive/HWC_data"
 
 ```{r}
 #read in HEC data
-hec <- read_excel(here(hwc_data, "R_files/R_input_data/namibia_hec.xlsx")) %>% 
+hec <- read_excel(here(hwc_data, "R_files/R_input_data/namibia/namibia_hec.xlsx")) %>% 
   clean_names() %>% 
   rename(name = location)
 
