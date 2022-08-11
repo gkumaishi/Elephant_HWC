@@ -436,13 +436,13 @@ sdm_change_ag_585_2020 <- as.factor(sdm_585_2020_resamp + cropland_585_2020_fact
 ```{r}
 sdmRYGscale <- c("pink", "tomato", "maroon", "#FFFF99", "goldenrod1", "dark orange", "pale green", "green", "dark green")
 
-plot(sdm_change_ag_585_2020, main = "SDM Change and Cropland in 2025
-     SSP1 RCP2.6", type = "classes", col = sdmRYGscale)
+plot(sdm_change_ag_585_2020, main = "SDM Change and Cropland in 2025 
+     SSP5 RCP8.5", type = "classes", col = sdmRYGscale)
 ```
 
 #### Write the file to a .tif to export to QGIS
 ```{r}
-writeRaster(sdm_change_ag_585_2020, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/afel_sdm_change_ag_126_2020.tif"), overwrite = TRUE)
+writeRaster(sdm_change_ag_585_2020, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/afel_sdm_change_ag_585_2020.tif"), overwrite = TRUE)
 ```
 
 
@@ -462,7 +462,7 @@ library(raster)
 
 #### Read in the PROJECTED land use and SDM
 ```{r}
-sdm_126_2050 <- rast(paste0(HWC_data, "/Wallace SDM Rasters/LQ/2041_2070/126/change_maps/afel_change_2011_2040_126_gfdl.tif"))
+sdm_126_2050 <- rast(paste0(HWC_data, "/Wallace SDM Rasters/LQ/2041_2070/126/change_maps/afel_change_2041_2070_126_gfdl.tif"))
 lu_126_2050 <- rast(paste0(HWC_data, "/Geospatial Data/Chen_LULC_data/SSP1_RCP26/global_SSP1_RCP26_2025.tif"))
 ```
 
@@ -705,12 +705,12 @@ sdm_change_ag_585_2050 <- as.factor(sdm_585_2050_resamp + cropland_585_2050_fact
 sdmRYGscale <- c("pink", "tomato", "maroon", "#FFFF99", "goldenrod1", "dark orange", "pale green", "green", "dark green")
 
 plot(sdm_change_ag_585_2050, main = "SDM Change and Cropland in 2055
-     SSP1 RCP2.6", type = "classes", col = sdmRYGscale)
+     SSP5 RCP8.5", type = "classes", col = sdmRYGscale)
 ```
 
 #### Write the file to a .tif to export to QGIS
 ```{r}
-writeRaster(sdm_change_ag_585_2050, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/afel_sdm_change_ag_126_2080.tif"), overwrite = TRUE)
+writeRaster(sdm_change_ag_585_2050, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/afel_sdm_change_ag_585_2050.tif"), overwrite = TRUE)
 ```
 
 
