@@ -49,7 +49,7 @@ plot(natural_at)
 
 ### Export binary 1km natural areas to ArcGIS
 ```{r}
-writeRaster(as.factor(natural_at), "natural_areas_2015.tif", overwrite = TRUE)
+writeRaster(as.factor(natural_at), "natural_areas_2015_at.tif", overwrite = TRUE)
 ```
 
 ### Aggregate land use
@@ -61,8 +61,9 @@ natural_agg_at <- aggregate(natural_at, fact = 10, fun = "modal")
 ```{r}
 moving_window <- matrix(1, nrow = 3, ncol = 3)
 
-# Takes awhile
-# window_edge <- window_lsm(natural_agg_at, moving_window, level = "landscape", what = "lsm_l_ed")
+window_edge <- window_lsm(natural_agg_at, moving_window, level = "landscape", what = "lsm_l_ed")
+
+plot(window_edge)
 ```
 
 
@@ -74,6 +75,9 @@ lu <- rast(paste0(HWC_data, "/Geospatial Data/Chen_LULC_data/global_LULC_2015.ti
 
 indomalaya <- vect(paste0(HWC_data, '/R_files/R_output_data/indomalay_region')) %>%
   project(lu)
+
+assam <- vect(paste0(HWC_data, '/R_files/R_output_data/indomalay_region'))
+
 ```
 
 ### Mask land use to indomalaya
@@ -93,4 +97,29 @@ natural_im <- lu_im %>%
   classify(naturalClass, others = 0)
 
 plot(natural_im)
+```
+
+
+### Export binary 1km natural areas to ArcGIS
+```{r}
+writeRaster(as.factor(natural_im), "natural_areas_2015_im.tif", overwrite = TRUE)
+```
+
+### Crop to study area
+```{r}
+natural_im_assam <- crop(natural_im, assam)
+```
+
+### Aggregate land use
+```{r}
+natural_agg_im <- aggregate(natural_im, fact = 10, fun = "modal")
+```
+
+### Landscape Metrics
+```{r}
+moving_window <- matrix(1, nrow = 3, ncol = 3)
+
+window_edge <- window_lsm(natural_agg_at, moving_window, level = "landscape", what = "lsm_l_ed")
+
+plot(window_edge)
 ```
