@@ -78,11 +78,8 @@ plot(baseline_cropland)
 
 #### Aggregate cropland 
 aggregate by factor of 10 (1km -> 10km)
-factor <- ceiling(res(sdm)[1]/res(chen)[1])
 ```{r}
-factor <- ceiling(res(sdm_reproj_as)[1]/res(baseline_cropland)[1])
-
-baseline_cropland_agg <- terra::aggregate(baseline_cropland, fact = factor, fun = mean, na.rm = TRUE)
+baseline_cropland_agg <- terra::aggregate(baseline_cropland, fact = 10, fun = mean, na.rm = TRUE)
 
 plot(baseline_cropland_agg)
 ```
@@ -111,9 +108,11 @@ plot(base_sdm)
 ```{r}
 baseline_bivariate_indomalaya <- (base_sdm + base_cropland_factor)
 
-baselineScale <- c("#E6E6FA", "#BC7C8F", "#AE3A4E", "#89A1C8", "#806A8A", "#77324C", "#4885C1", "#435786", "#3F2949")
+blueOrangeScale <- c("#f3f3f3", "#f3e6b3", "#f3b300", "#b4d3e1", "#b3b3b3", "#b36600", "#509dc2", "#376387", "#000000")
 
-plot(as.factor(baseline_bivariate_indomalaya), main = "Baseline SDM and Cropland", type = "classes", col = baselineScale)
+blueRedScale <- c("#e8e8e8","#e4acac", "#c85a5a", "#b0d5df", "#ad9ea5", "#985356", "#64acbe", "#627f8c", "#574249")
+
+plot(as.factor(baseline_bivariate_indomalaya), main = "Baseline SDM and Cropland", type = "classes", col = blueOrangeScale)
 
 ```
 
@@ -122,7 +121,261 @@ plot(as.factor(baseline_bivariate_indomalaya), main = "Baseline SDM and Cropland
 writeRaster(baseline_bivariate_indomalaya, "G:/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Geospatial Data/bivariate_outputs/asel_bivariate_baseline.tif", overwrite = TRUE)
 ```
 
+
 # FUTURE PROJECTIONS
+
+## Year: 2011-2040, Scenario: SSP1/RCP2.6, GCM: GFDL
+```{r}
+# Load in packages
+library(tidyverse)
+library(terra)
+library(raster)
+```
+
+#### Read in the PROJECTED land use and SDM
+```{r}
+sdm_126_2020 <- rast(paste0(HWC_data, "/Wallace SDM Rasters/asia/2011_2040/change_maps/change_2011_2040_126_gfdl.tif"))
+lu_126_2020 <- rast(paste0(HWC_data, "/Geospatial Data/Chen_LULC_data/SSP1_RCP26/global_SSP1_RCP26_2025.tif"))
+```
+
+### SDM
+
+#### SDM raster does not have an extent, so we're going to assign it (found by importing to QGIS)
+
+```{r}
+ext(sdm_126_2020) <- c(-25.3584728410000011,
+              77.5998600799999849,
+              -40.4084724209999990,
+              26.3831939790000014)
+```
+
+
+#### Plot to look at them
+
+FOR SDM:
+1 - decreasing suitability
+2 - no change, not suitable
+3 - no change, suitable
+4 - increasing suitability
+
+```{r}
+plot(sdm_126_2020)
+plot(lu_126_2020)
+```
+
+####  Re-project SDM to have same CRS as the LU layer
+```{r}
+sdm_126_2020_reproj_as <- sdm_126_2020 %>% 
+  project(crs(lu_126_2020), method = "near")
+
+plot(sdm_126_2020_reproj_as)
+```
+
+#### Reclassify SDM change to tens place, and remove 2
+
+```{r}
+sdmChange3categories <- rbind(c(1,10), c(2,NA), c(3,30), c(4,40))
+
+sdm_126_2020_reclass <- sdm_126_2020_reproj_as %>%
+  classify(sdmChange3categories)
+
+plot(as.factor(sdm_126_2020_reclass))
+```
+
+### Land Use
+
+#### Crop land use to asia
+```{r}
+lu_126_2020_as <- lu_126_2020 %>% crop(sdm_126_2020_reclass)
+plot(lu_126_2020_as)
+```
+
+#### Reclassify values in 2025 for cropland
+We want cropland (category 5) to be 1, everything else to be 0
+
+```{r}
+cropland_126_2020 <- lu_126_2020_as
+cropland_126_2020[cropland_126_2020 != 5] <- 0
+cropland_126_2020[cropland_126_2020 == 5] <- 1
+plot(cropland_126_2020)
+```
+
+#### Aggregate cropland 
+factor <- ceiling(res(sdm)[1]/res(chen)[1])
+```{r}
+cropland_126_2020_agg <- terra::aggregate(cropland_126_2020, fact = 10, fun = mean, na.rm = TRUE)
+
+plot(cropland_126_2020_agg)
+```
+
+#### Reclassify cropland into 3 categories
+```{r}
+cropland3categories <- rbind(c(0,0,0),
+                        c(0,0.5,1),
+                        c(0.5,1,2))
+
+cropland_126_2020_factor <- cropland_126_2020_agg %>% 
+  classify(cropland3categories, include.lowest = FALSE)
+
+plot(cropland_126_2020_factor)
+```
+
+### Add SDM and Cropland
+
+#### Make both of the rasters have the same resolution
+```{r}
+sdm_126_2020_resamp <- resample(sdm_126_2020_reclass, cropland_126_2020_factor, method = "near")
+
+plot(sdm_126_2020_resamp)
+```
+
+#### Raster math - Cropland change vs SDM change (SSP1/RCP2.6, 2025)
+```{r}
+sdm_change_ag_126_2020 <- as.factor(sdm_126_2020_resamp + cropland_126_2020_factor)
+
+sdmRYGscale <- c("pink", "tomato", "maroon", "#FFFF99", "goldenrod1", "dark orange", "pale green", "green", "dark green")
+
+plot(sdm_change_ag_126_2020, main = "SDM Change and Cropland in 2025
+     SSP1 RCP2.6", type = "classes", col = sdmRYGscale)
+
+```
+
+#### Write the file to a .tif to export to QGIS
+```{r}
+writeRaster(sdm_change_ag_126_2020, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/asel_sdm_change_ag_126_2020.tif"), overwrite = TRUE)
+```
+
+
+
+## Year: 2011-2040, Scenario: SSP5/RCP8.5, GCM: GFDL
+
+```{r}
+# Load in packages
+library(tidyverse)
+library(terra)
+library(raster)
+```
+
+#### Read in the PROJECTED land use and SDM
+```{r}
+sdm_585_2020 <- rast(paste0(HWC_data, "/Wallace SDM Rasters/asia/2011_2040/change_maps/change_2011_2040_585_gfdl.tif"))
+lu_585_2020 <- rast(paste0(HWC_data, "/Geospatial Data/Chen_LULC_data/SSP5_RCP85/global_SSP5_RCP85_2025.tif"))
+```
+
+### SDM
+
+#### SDM raster does not have an extent, so we're going to assign it (found by importing to QGIS)
+
+```{r}
+ext(sdm_585_2020) <- c(65.8581934609999990,
+                       131.0665265334999958,
+                       -12.2168058669999979,
+                       35.8248606080000016)
+```
+
+
+#### Plot to look at them
+
+FOR SDM:
+1 - decreasing suitability
+2 - no change, not suitable
+3 - no change, suitable
+4 - increasing suitability
+
+```{r}
+plot(sdm_585_2020)
+plot(lu_585_2020)
+```
+
+
+#### Re-project SDM to have same CRS and extent as the LU layer
+
+```{r}
+sdm_585_2020_reproj_as <- sdm_585_2020 %>% 
+  project(crs(lu), method = "near")
+
+plot(sdm_585_2020_reproj_as)
+```
+
+#### Reclassify SDM change to tens place, and remove 2
+
+```{r}
+sdmChange3categories <- rbind(c(1,10), c(2,NA), c(3,30), c(4,40))
+
+sdm_585_2020_reclass <- sdm_585_2020_reproj_as %>%
+  classify(sdmChange3categories)
+
+plot(as.factor(sdm_585_2020_reclass))
+```
+
+### Land Use
+
+#### Crop land use to asia
+
+```{r}
+lu_126_2020_as <- lu_126_2020 %>% crop(sdm_585_2020_reclass)
+plot(lu_126_2020_as)
+```
+
+#### Reclassify values in 2025 for cropland
+We want cropland (category 5) to be 1, everything else to be 0
+
+```{r}
+cropland_585_2020 <- lu_126_2020_as
+cropland_585_2020[cropland_585_2020 != 5] <- 0
+cropland_585_2020[cropland_585_2020 == 5] <- 1
+plot(cropland_585_2020)
+```
+
+#### Aggregate cropland 
+factor <- ceiling(res(sdm)[1]/res(chen)[1])
+
+```{r}
+cropland_585_2020_agg <- terra::aggregate(cropland_585_2020, fact = 10, fun = mean, na.rm = TRUE)
+
+plot(cropland_585_2020_agg)
+```
+
+#### Reclassify cropland into 3 categories
+
+```{r}
+cropland3categories <- rbind(c(0,0,0),
+                        c(0,0.5,1),
+                        c(0.5,1,2))
+
+cropland_585_2020_factor <- cropland_585_2020_agg %>% 
+  classify(cropland3categories, include.lowest = FALSE)
+
+plot(cropland_585_2020_factor)
+```
+
+### Add SDM and cropland
+
+#### Make both of the rasters have the same resolution
+```{r}
+sdm_585_2020_resamp <- resample(sdm_585_2020_reclass, cropland_585_2020_factor, method = "near")
+plot(sdm_585_2020_resamp)
+```
+
+#### Raster math - Cropland change vs SDM change (SSP5/RCP8.5, 2025)
+```{r}
+sdm_change_ag_585_2020 <- as.factor(sdm_585_2020_resamp + cropland_585_2020_factor)
+
+sdmRYGscale <- c("pink", "tomato", "maroon", "#FFFF99", "goldenrod1", "dark orange", "pale green", "green", "dark green")
+
+plot(sdm_change_ag_585_2020, main = "SDM Change and Cropland in 2055
+     SSP5 RCP8.5", type = "classes", col = sdmRYGscale)
+
+```
+
+#### Write the file to a .tif to export to QGIS
+
+```{r}
+writeRaster(sdm_change_ag_585_2020, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/asel_sdm_change_ag_585_2020.tif"), overwrite = TRUE)
+```
+
+
+
 
 ## Year: 2041-2070, Scenario: SSP1/RCP2.6, GCM: GFDL
 ```{r}
@@ -190,7 +443,7 @@ lu_as <- lu %>% crop(sdm_126_2050_reclass)
 plot(lu_as)
 ```
 
-#### Reclassify values of the baseline year for cropland
+#### Reclassify values in 2055 for cropland
 We want cropland (category 5) to be 1, everything else to be 0
 
 ```{r}
@@ -201,11 +454,8 @@ plot(cropland_126_2050)
 ```
 
 #### Aggregate cropland 
-factor <- ceiling(res(sdm)[1]/res(chen)[1])
 ```{r}
-factor <- ceiling(res(sdm_126_2050_reclass)[1]/res(cropland_126_2050)[1])
-
-cropland_126_2050_agg <- terra::aggregate(cropland_126_2050, fact = factor, fun = mean, na.rm = TRUE)
+cropland_126_2050_agg <- terra::aggregate(cropland_126_2050, fact = 10, fun = mean, na.rm = TRUE)
 
 plot(cropland_126_2050_agg)
 ```
@@ -248,7 +498,7 @@ writeRaster(sdm_change_ag_126_2050, paste0(HWC_data, "/Geospatial Data/bivariate
 ```
 
 
-### Map of cropland change
+### Map of cropland change (UNUSED)
 future crops - present crops
 ```{r}
 base_cropland_resamp <- resample(baseline_cropland_agg, 
@@ -280,8 +530,9 @@ plot(bivariate_change_126_2050, main = "Cropland Change")
 #### Write the file to a .tif to export to QGIS
 
 ```{r}
-writeRaster(bivariate_change_126_2050, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/asel_bivariate_change_126_2050.tif"), overwrite = TRUE)
+writeRaster(bivariate_change_126_2050, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/asel_sdm_change_ag_126_2050.tif"), overwrite = TRUE)
 ```
+
 
 
 
@@ -358,7 +609,7 @@ lu_as <- lu %>% crop(sdm_585_2050_reclass)
 plot(lu_as)
 ```
 
-#### Reclassify values of the baseline year for cropland
+#### Reclassify values in 2055 for cropland
 We want cropland (category 5) to be 1, everything else to be 0
 
 ```{r}
@@ -372,10 +623,7 @@ plot(cropland_585_2050)
 factor <- ceiling(res(sdm)[1]/res(chen)[1])
 
 ```{r}
-factor <- ceiling(res(sdm_585_2050_reclass)[1]
-                  /res(cropland_585_2050)[1])
-
-cropland_585_2050_agg <- terra::aggregate(cropland_585_2050, fact = factor, fun = mean, na.rm = TRUE)
+cropland_585_2050_agg <- terra::aggregate(cropland_585_2050, fact = 10, fun = mean, na.rm = TRUE)
 
 plot(cropland_585_2050_agg)
 ```
@@ -415,7 +663,7 @@ plot(sdm_change_ag_585_2050, main = "SDM Change and Cropland in 2055
 #### Write the file to a .tif to export to QGIS
 
 ```{r}
-writeRaster(sdm_change_ag_585_2050, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/asel_bivariate_sdm_change_585_2050.tif"), overwrite = TRUE)
+writeRaster(sdm_change_ag_585_2050, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/asel_sdm_change_ag_585_2050.tif"), overwrite = TRUE)
 ```
 
 
@@ -490,7 +738,7 @@ lu_as <- lu %>% crop(sdm_126_2080_reclass)
 plot(lu_as)
 ```
 
-#### Reclassify values of the baseline year for cropland
+#### Reclassify values in 2085 for cropland
 We want cropland (category 5) to be 1, everything else to be 0
 
 ```{r}
@@ -501,13 +749,8 @@ plot(cropland_126_2080)
 ```
 
 #### Aggregate cropland 
-factor <- ceiling(res(sdm)[1]/res(chen)[1])
-
 ```{r}
-factor <- ceiling(res(sdm_126_2080_reclass)[1]
-                  /res(cropland_126_2080)[1])
-
-cropland_126_2080_agg <- terra::aggregate(cropland_126_2080, fact = factor, fun = mean, na.rm = TRUE)
+cropland_126_2080_agg <- terra::aggregate(cropland_126_2080, fact = 10, fun = mean, na.rm = TRUE)
 
 plot(cropland_126_2080_agg)
 ```
@@ -545,7 +788,7 @@ plot(sdm_change_ag_126_2080, main = "SDM Change and Cropland in 2085
 
 #### Write the file to a .tif to export to QGIS
 ```{r}
-writeRaster(sdm_change_ag_126_2080, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/asel_bivariate_sdm_change_126_2080.tif"), overwrite = TRUE)
+writeRaster(sdm_change_ag_126_2080, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/asel_sdm_change_ag_126_2080.tif"), overwrite = TRUE)
 ```
 
 ## Year: 2071-2100, Scenario: SSP5/RCP8.5, GCM: GFDL
@@ -619,7 +862,7 @@ lu_as <- lu %>% crop(sdm_585_2080_reclass)
 plot(lu_as)
 ```
 
-#### Reclassify values of the baseline year for cropland
+#### Reclassify values in 2085 for cropland
 We want cropland (category 5) to be 1, everything else to be 0
 
 ```{r}
@@ -630,13 +873,8 @@ plot(cropland_585_2080)
 ```
 
 #### Aggregate cropland 
-factor <- ceiling(res(sdm)[1]/res(chen)[1])
-
 ```{r}
-factor <- ceiling(res(sdm_585_2080_reclass)[1]
-                  /res(cropland_585_2080)[1])
-
-cropland_585_2080_agg <- terra::aggregate(cropland_585_2080, fact = factor, fun = mean, na.rm = TRUE)
+cropland_585_2080_agg <- terra::aggregate(cropland_585_2080, fact = 10, fun = mean, na.rm = TRUE)
 
 plot(cropland_585_2080_agg)
 ```
@@ -676,7 +914,7 @@ plot(sdm_change_ag_585_2080, main = "SDM Change and Cropland in 2085
 #### Write the file to a .tif to export to QGIS
 
 ```{r}
-writeRaster(sdm_change_ag_585_2080, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/asel_bivariate_sdm_change_585_2080.tif"), overwrite = TRUE)
+writeRaster(sdm_change_ag_585_2080, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/asel_sdm_change_ag_585_2080.tif"), overwrite = TRUE)
 ```
 
 
