@@ -181,6 +181,82 @@ gridded_x2
 gridded_tidy <- broom::tidy(gridded_x2)
 ```
 
+# Significance tests of continuous variables and gridded HEC
+
+## Extracting continuous SDM and aggregated cropland
+```{r}
+# Read in the baseline land use and SDM
+sdm <- rast(paste0(HWC_data, "/Wallace SDM Rasters/asia/1981_2010/indicus_historic.tif"))
+lu <- rast(paste0(HWC_data, "/Geospatial Data/Chen_LULC_data/global_LULC_2015.tif"))
+```
+
+#### SDM raster does not have an extent, so we're going to assign it (found by importing to QGIS)
+```{r}
+ext(sdm) <- c(65.8581934609999990,
+              131.0665265334999958,
+              -12.2168058669999979,
+              35.8248606080000016)
+```
+
+#### Re-project SDM to equal-area
+```{r}
+sdm_reproj_af <- sdm %>% 
+  project(crs(lu))
+
+plot(sdm_reproj_im)
+```
+
+#### Crop land use to asia
+```{r}
+lu_im <- crop(lu, sdm_reproj_af)
+```
+
+#### Reclassify baseline land use to cropland binary
+We want cropland (category 5) to be 1, everything else to be 0
+```{r}
+baseline_cropland <- lu_im
+baseline_cropland[baseline_cropland != 5] <- 0
+baseline_cropland[baseline_cropland == 5] <- 1
+plot(baseline_cropland)
+```
+
+#### Aggregate cropland binary
+```{r}
+baseline_cropland_agg <- terra::aggregate(x = baseline_cropland, fact = 10, fun = mean, na.rm = TRUE)
+
+plot(baseline_cropland_agg)
+```
+
+#### Make the SDM have the same resolution as the cropland
+```{r}
+baseline_sdm_resamp <- terra::resample(sdm_reproj_af, 
+                                       baseline_cropland_agg, 
+                                       method = "near")
+
+plot(baseline_sdm_resamp)
+```
+
+#### Stack the continuous SDM and aggregated cropland
+```{r}
+baseline_continuous <- c(baseline_sdm_resamp, baseline_cropland_agg)
+
+plot(baseline_continuous)
+```
+
+#### Re-project
+```{r}
+baseline_continuous_reproj <- project(baseline_continuous, crs(assam_HEC_vect))
+```
+
+#### Extract continuous
+```{r}
+assam_extract_continuous <- extract(baseline_continuous_reproj, assam_HEC_vect, method = "bilinear") %>%
+  right_join(., as.data.frame(assam_HEC_vect), by = "ID") %>%
+  filter(Respondant != "dd")
+```
+
+## Statistical test
+
 
 
 
