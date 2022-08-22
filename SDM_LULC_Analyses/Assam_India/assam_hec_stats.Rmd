@@ -12,6 +12,8 @@ library(tidyverse)
 library(here)
 library(janitor)
 library(broom)
+library(rgdal)
+library(exactextractr)
 library(terra)
 
 # Enter YOUR data path to HWC_data folder, including "HWC_data". 
@@ -19,19 +21,17 @@ library(terra)
 HWC_data <- "G:/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data" 
 ```
 
-## Load in existing data
+## POINT HEC CHI SQ
+
+### Load in existing data
 
 ```{r}
 historic_bivariate_asia_raw <- terra::rast(here(HWC_data, "/Geospatial Data/bivariate_outputs/asel_bivariate_baseline.tif"))
   
-historic_bivariate_asia_project <- terra::project(x = historic_bivariate_asia_raw,
-                                                  y = "epsg:4326",
-                                                  method = "near")
+historic_bivariate_asia_project <- terra::project(x = historic_bivariate_asia_raw, y = "epsg:4326", method = "near")
 ```
 
-# CHI SQUARE ON POINT HEC DATA
-
-## Get counts of bivariate category for HEC in Goalpara
+### Get counts of bivariate category for HEC in Goalpara
 
 ```{r}
 # Load tidy Goalpara HEC file
@@ -63,7 +63,7 @@ goalpara_hec_extract_count <- goalpara_hec_extract %>%
   arrange(-n) 
 ```
 
-## Get counts of bivariate category for random points in Goalpara
+### Get counts of bivariate category for random points in Goalpara
 
 ```{r}
 # Load random Goalpara points
@@ -85,7 +85,7 @@ goalpara_extract_random_count <- goalpara_extract_random %>%
   arrange(-n) 
 ```
 
-## Create table with both extracts by hand
+### Create table with both extracts by hand
 
 ```{r}
 bivariate_counts <- data.frame(points = c("HEC", "Random"),
@@ -100,14 +100,14 @@ bivariate_proportions <- bivariate_counts %>% #add proportions/percentages
   janitor::adorn_ns()
 ```
 
-## Convert to contingency table
+### Convert to contingency table
 
 ```{r}
 bivariate_ct <- bivariate_counts %>% 
   column_to_rownames(var = "points")
 ```
 
-## Run Chi Square test
+### Run Chi Square test
 
 ```{r}
 # Are the different point distributions and bivariate categories independent? Are proportions at each category so different that we can conclude there is a significant association of point distribution on the category?
@@ -119,7 +119,7 @@ bivariate_x2
 bivariate_tidy <- broom::tidy(bivariate_x2)
 ```
 
-# CHI SQUARE ON DIGITIZED HEC DATA 
+## DIGITIZED HEC CHI SQ 
 
 ```{r}
 # Load in csv with extractions
@@ -147,7 +147,7 @@ digitized_x2
 digitized_tidy <- broom::tidy(digitized_x2)
 ```
 
-# CHI SQUARE ON GRIDDED HEC DATA 
+## GRIDDED HEC CHI SQ 
 
 ```{r}
 # Load in Assam vector grid
@@ -181,13 +181,23 @@ gridded_x2
 gridded_tidy <- broom::tidy(gridded_x2)
 ```
 
-# Significance tests of continuous variables and gridded HEC
+## CONTINUOUS GRIDDED HEC MODELING
 
-## Extracting continuous SDM and aggregated cropland
+#### Load in HEC vector and reproject to land use
+```{r}
+lu <- rast(paste0(HWC_data, "/Geospatial Data/Chen_LULC_data/global_LULC_2015.tif"))
+
+assam_HEC_reproj <- vect(paste0(HWC_data, "/Geospatial Data/Assam_India/AWS-all_data/AWS-all_data.shp")) %>%
+  project(crs(lu))
+
+crs(assam_HEC_reproj)
+plot(assam_HEC_reproj)
+```
+
+### SDM
 ```{r}
 # Read in the baseline land use and SDM
 sdm <- rast(paste0(HWC_data, "/Wallace SDM Rasters/asia/1981_2010/indicus_historic.tif"))
-lu <- rast(paste0(HWC_data, "/Geospatial Data/Chen_LULC_data/global_LULC_2015.tif"))
 ```
 
 #### SDM raster does not have an extent, so we're going to assign it (found by importing to QGIS)
@@ -200,15 +210,15 @@ ext(sdm) <- c(65.8581934609999990,
 
 #### Re-project SDM to equal-area
 ```{r}
-sdm_reproj_af <- sdm %>% 
+sdm_reproj_im <- sdm %>% 
   project(crs(lu))
-
-plot(sdm_reproj_im)
 ```
+
+### Cropland
 
 #### Crop land use to asia
 ```{r}
-lu_im <- crop(lu, sdm_reproj_af)
+lu_im <- crop(lu, sdm_reproj_im)
 ```
 
 #### Reclassify baseline land use to cropland binary
@@ -220,42 +230,63 @@ baseline_cropland[baseline_cropland == 5] <- 1
 plot(baseline_cropland)
 ```
 
-#### Aggregate cropland binary
+#### Aggregate land use to fit HEC grid
 ```{r}
-baseline_cropland_agg <- terra::aggregate(x = baseline_cropland, fact = 10, fun = mean, na.rm = TRUE)
+factor <- c(ceiling(11470/1000), ceiling(9649/1000)) 
+# Found with ArcGIS Pro
 
-plot(baseline_cropland_agg)
+base_cropland_agg_HEC <- aggregate(baseline_cropland, fact = factor)
+
+names(base_cropland_agg_HEC) <- "crop_2015"
+
+plot(base_cropland_agg_HEC)
 ```
 
-#### Make the SDM have the same resolution as the cropland
-```{r}
-baseline_sdm_resamp <- terra::resample(sdm_reproj_af, 
-                                       baseline_cropland_agg, 
-                                       method = "near")
+### Water
 
-plot(baseline_sdm_resamp)
+#### Reclassify baseline land use to water binary
+We want water (category 1) to be 1, everything else to be 0
+```{r}
+baseline_water <- lu_im
+baseline_water[baseline_water != 1] <- 0
+baseline_water[baseline_water == 1] <- 1
+plot(baseline_water)
 ```
 
-#### Stack the continuous SDM and aggregated cropland
+#### Aggregate water to fit HEC grid
 ```{r}
-baseline_continuous <- c(baseline_sdm_resamp, baseline_cropland_agg)
+factor <- c(ceiling(11470/1000), ceiling(9649/1000)) 
+# Found with ArcGIS Pro
 
-plot(baseline_continuous)
+base_water_agg_HEC <- aggregate(baseline_water, fact = factor) 
+
+names(base_water_agg_HEC) <- "water_2015"
+
+plot(base_water_agg_HEC)
 ```
 
-#### Re-project
+### Extraction into table
+
+#### Extract continuous SDM
 ```{r}
-baseline_continuous_reproj <- project(baseline_continuous, crs(assam_HEC_vect))
+assam_extract_sdm <- extract(sdm_reproj_im, assam_HEC_reproj, method = "simple") %>%
+  right_join(., as.data.frame(assam_HEC_reproj), by = "ID") %>%
+  filter(Respondant != "dd") %>%
+  distinct(ID, .keep_all = TRUE)
 ```
 
-#### Extract continuous
+#### Combine and extract LU
 ```{r}
-assam_extract_continuous <- extract(baseline_continuous_reproj, assam_HEC_vect, method = "bilinear") %>%
-  right_join(., as.data.frame(assam_HEC_vect), by = "ID") %>%
-  filter(Respondant != "dd")
+base_lu_agg_HEC <- c(base_cropland_agg_HEC, base_water_agg_HEC)
+
+assam_extract_lu <- extract(base_lu_agg_HEC, assam_HEC_reproj, method = "simple") %>%
+  right_join(., assam_extract_sdm, by = "ID") %>%
+  rename(sdm_2015 = indicus_historic)
+
+assam_extract_lu
 ```
 
-## Statistical test
+### Statistical test
 
 
 
