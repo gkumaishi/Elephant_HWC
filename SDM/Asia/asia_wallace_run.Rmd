@@ -177,6 +177,14 @@ pred <- predictMaxnet(mod, envsBgMsk, type = 'cloglog', clamp = TRUE)
 ```
 
 ```{r}
+# generate raw prediction
+pred_raw <- evalPreds[["rm.0.5_fc.LQ"]]
+
+# save raw prediction as raster
+asian_elephant_historic_raw <- writeRaster(pred_raw, filename = file.path(here(HWC_data, "/Wallace SDM Rasters/asia/1981_2010/asian_elephant_historic_raw.tif")), overwrite = FALSE)
+```
+
+```{r}
 # get predicted values for occurrence grid cells
 occPredVals <- raster::extract(pred, occs.xy)
 # define minimum training presence threshold
