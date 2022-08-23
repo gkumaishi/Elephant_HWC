@@ -15,6 +15,7 @@ library(broom)
 library(rgdal)
 #library(exactextractr)
 library(terra)
+library(lubridate)
 
 # Enter YOUR data path to HWC_data folder, including "HWC_data". 
 # May require double forward slashes
@@ -62,7 +63,9 @@ hec <- as.data.frame(assam_HEC_reproj,
                      geom = NULL,
                      xy = FALSE,
                      na.rm = FALSE) %>% 
-  select(Conflict)
+  select(c(Conflict, DateSent))
+
+hec <- tibble::rowid_to_column(hec, "ID")
 ```
 
 
@@ -159,8 +162,12 @@ sdm_crop_join <- merge(sdm_extract, crop_extract, by = "ID")
 # Now merge sdm/crop table with water
 sdm_crop_water_join <- merge(sdm_crop_join, water_extract, by = "ID")
 
-# Now merge with conflict
-analysis_table <- merge(sdm_crop_water_join, hec, by = "ID")
+# Now merge with conflict, remove hec NA values (100), and convert date to year only
+analysis_table <- merge(hec, sdm_crop_water_join, by = "ID") %>% 
+  filter(Conflict != 100) %>% 
+  rename(hec = Conflict) %>% 
+  mutate(year = year(DateSent)) %>% 
+  select(-DateSent)
 ```
 
 # Run Random Effects Model
@@ -168,7 +175,7 @@ analysis_table <- merge(sdm_crop_water_join, hec, by = "ID")
 ```{r}
 library(plm)
 
-#random <- plm(HEC ~ sdm_max, data = analysis_table, model = "random")
+random <- plm(hec ~ sdm_max, data = analysis_table, model = "random")
 #summary(random)
 ```
 
