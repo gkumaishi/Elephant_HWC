@@ -178,11 +178,12 @@ analysis_table$hec <- as.numeric(as.character(analysis_table$hec))
 library(plm)
 
 # Try binomial logistic regression
-hec_blr <- glm(hec ~ sdm_max + year, family = "binomial", data = analysis_table)
+hec_blr <- glm(hec ~ sdm_max + crop_mean + water_mean + year, family = "binomial", data = analysis_table)
 summary(hec_blr)
 
-# Try random effects model
-hec_random <- plm(sdm_max ~ hec, data = analysis_table, model = "random")
+# Try random effects model (probit?)
+hec_probit <- glm(hec ~ sdm_max + crop_mean + (sdm_max*crop_mean) + year, family = binomial(link = "probit"), data = analysis_table)
+summary(hec_probit)
 ```
 
 
