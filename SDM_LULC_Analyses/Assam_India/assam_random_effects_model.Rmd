@@ -59,15 +59,14 @@ sdm_reproj_im <- sdm %>%
 
 ### Turn SpatVector into data frame
 ```{r}
-hec <- as.data.frame(assam_HEC_reproj,
+hec_df <- as.data.frame(assam_HEC_reproj,
                      geom = NULL,
                      xy = FALSE,
                      na.rm = FALSE) %>% 
   select(c(Conflict, DateSent))
 
-hec <- tibble::rowid_to_column(hec, "ID")
+hec_df <- tibble::rowid_to_column(hec_df, "ID")
 ```
-
 
 # SDM Extraction
 
@@ -163,11 +162,14 @@ sdm_crop_join <- merge(sdm_extract, crop_extract, by = "ID")
 sdm_crop_water_join <- merge(sdm_crop_join, water_extract, by = "ID")
 
 # Now merge with conflict, remove hec NA values (100), and convert date to year only
-analysis_table <- merge(hec, sdm_crop_water_join, by = "ID") %>% 
+analysis_table <- merge(hec_df, sdm_crop_water_join, by = "ID") %>% 
   filter(Conflict != 100) %>% 
   rename(hec = Conflict) %>% 
   mutate(year = year(DateSent)) %>% 
   select(-DateSent)
+
+# hec column is stored as character, must be numeric or factor to run analysis
+analysis_table$hec <- as.numeric(as.character(analysis_table$hec))
 ```
 
 # Run Random Effects Model
@@ -175,8 +177,12 @@ analysis_table <- merge(hec, sdm_crop_water_join, by = "ID") %>%
 ```{r}
 library(plm)
 
-random <- plm(hec ~ sdm_max, data = analysis_table, model = "random")
-#summary(random)
+# Try binomial logistic regression
+hec_blr <- glm(hec ~ sdm_max + year, family = "binomial", data = analysis_table)
+summary(hec_blr)
+
+# Try random effects model
+hec_random <- plm(sdm_max ~ hec, data = analysis_table, model = "random")
 ```
 
 
