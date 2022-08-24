@@ -13,7 +13,6 @@ library(here)
 library(janitor)
 library(broom)
 library(rgdal)
-#library(exactextractr)
 library(terra)
 library(lubridate)
 
@@ -63,7 +62,7 @@ hec_df <- as.data.frame(assam_HEC_reproj,
                      geom = NULL,
                      xy = FALSE,
                      na.rm = FALSE) %>% 
-  select(c(Conflict, DateSent))
+  select(c(Conflict, DateSent, Col_Row))
 
 hec_df <- tibble::rowid_to_column(hec_df, "ID")
 ```
@@ -85,7 +84,7 @@ sdm_extract <- extract(sdm_reproj_im, assam_HEC_reproj,
 ### Crop land use to asia
 ```{r}
 lu_im <- crop(lu, sdm_reproj_im)
-plot(lu_im)
+#plot(lu_im)
 ```
 
 ### Reclassify baseline land use to cropland binary
@@ -94,12 +93,12 @@ We want cropland (category 5) to be 1, everything else to be 0
 baseline_cropland <- lu_im
 baseline_cropland[baseline_cropland != 5] <- 0
 baseline_cropland[baseline_cropland == 5] <- 1
-plot(baseline_cropland)
+#plot(baseline_cropland)
 ```
 
 ### Aggregate land use to fit HEC grid
 ```{r}
-# factor <- c(ceiling(11470/1000), ceiling(9649/1000)) 
+# factor <- c(ceiling(11470/1000), ceiling(9649/1000))
 # # Found with ArcGIS Pro
 # 
 # base_cropland_agg_HEC <- aggregate(baseline_cropland, fact = factor)
@@ -111,8 +110,8 @@ plot(baseline_cropland)
 
 ### Extract proportion of cell covered in cropland
 ```{r}
-crop_extract <- extract(baseline_cropland, assam_HEC_reproj, # I didn't use the aggregated file as it was no longer binary, probably want to double check this
-                        fun = mean, # not sure about this, how do we get proportions in R?
+crop_extract <- extract(baseline_cropland, assam_HEC_reproj, 
+                        fun = mean,
                         method = "simple",
                         cells = TRUE, 
                         na.rm = FALSE) %>% 
@@ -127,7 +126,7 @@ We want water (category 1) to be 1, everything else to be 0
 baseline_water <- lu_im
 baseline_water[baseline_water != 1] <- 0
 baseline_water[baseline_water == 1] <- 1
-plot(baseline_water)
+#plot(baseline_water)
 ```
 
 ### Aggregate water to fit HEC grid
@@ -140,16 +139,57 @@ plot(baseline_water)
 # names(base_water_agg_HEC) <- "water_2015"
 # 
 # plot(base_water_agg_HEC)
+
+# You can also do it this way, but at the extract step you wouldn't use fun = mean
 ```
 
 ### Extract proportion of cell covered in water
 ```{r}
-water_extract <- extract(baseline_water, assam_HEC_reproj, # I didn't use the aggregated file as it was no longer binary, probably want to double check this
-                        fun = mean, # not sure about this, how do we get proportions in R?
+water_extract <- extract(baseline_water, assam_HEC_reproj, 
+                        fun = mean, 
                         method = "simple",
                         cells = TRUE, 
                         na.rm = FALSE) %>% 
   rename(water_mean = global_LULC_2015)
+```
+
+# Distance to Forest
+
+### Find centroids of cells in SpatVector
+```{r}
+assam_centroids <- centroids(assam_HEC_reproj)
+```
+
+### Create polygon of binary forest cover (?)
+```{r}
+baseline_forest <- lu_im 
+baseline_forest[baseline_forest != 2] <- NA # Filter out all values of zero
+baseline_forest[baseline_forest == 2] <- 1 
+
+forest_crop <- crop(baseline_forest, assam_HEC_reproj)
+```
+
+### Euclidean distance on vector using correct coordinate system (to give you a raster)
+```{r}
+forest_dist <- terra::distance(forest_crop)
+plot(forest_dist)
+```
+
+### Find geographic distance (distance raster) to polygon edge
+```{r}
+forest_extract <- extract(forest_dist, assam_HEC_reproj, 
+                        fun = max, 
+                        method = "simple",
+                        cells = TRUE, 
+                        na.rm = FALSE) %>% 
+  rename(forest_dist_m = global_LULC_2015)
+```
+
+# Number of People per cell
+
+### Load population data
+```{r}
+
 ```
 
 # Join tables/merge dataframes containing SDM, crop, and water data
@@ -159,17 +199,21 @@ water_extract <- extract(baseline_water, assam_HEC_reproj, # I didn't use the ag
 sdm_crop_join <- merge(sdm_extract, crop_extract, by = "ID")
 
 # Now merge sdm/crop table with water
-sdm_crop_water_join <- merge(sdm_crop_join, water_extract, by = "ID")
+water_join <- merge(sdm_crop_join, water_extract, by = "ID")
+
+## Merge that table with forest
+
+forest_join <- merge(water_join, forest_extract, by = "ID") 
 
 # Now merge with conflict, remove hec NA values (100), and convert date to year only
-analysis_table <- merge(hec_df, sdm_crop_water_join, by = "ID") %>% 
+analysis_table <- merge(hec_df, forest_join, by = "ID") %>% 
   filter(Conflict != 100) %>% 
   rename(hec = Conflict) %>% 
   mutate(year = year(DateSent)) %>% 
   select(-DateSent)
 
 # hec column is stored as character, must be numeric or factor to run analysis
-analysis_table$hec <- as.numeric(as.character(analysis_table$hec))
+analysis_table$hec <- as.factor(as.character(analysis_table$hec))
 ```
 
 # Run Random Effects Model
@@ -182,7 +226,7 @@ hec_blr <- glm(hec ~ sdm_max + crop_mean + water_mean + year, family = "binomial
 summary(hec_blr)
 
 # Try random effects model (probit?)
-hec_probit <- glm(hec ~ sdm_max + crop_mean + (sdm_max*crop_mean) + year, family = binomial(link = "probit"), data = analysis_table)
+hec_probit <- glm(hec ~ sdm_max + crop_mean + (sdm_max*crop_mean), family = binomial(link = "probit"), data = analysis_table)
 summary(hec_probit)
 ```
 
