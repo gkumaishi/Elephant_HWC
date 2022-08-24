@@ -155,11 +155,6 @@ water_extract <- extract(baseline_water, assam_HEC_reproj,
 
 # Distance to Forest
 
-### Find centroids of cells in SpatVector
-```{r}
-assam_centroids <- centroids(assam_HEC_reproj)
-```
-
 ### Create polygon of binary forest cover (?)
 ```{r}
 baseline_forest <- lu_im 
@@ -169,7 +164,7 @@ baseline_forest[baseline_forest == 2] <- 1
 forest_crop <- crop(baseline_forest, assam_HEC_reproj)
 ```
 
-### Euclidean distance on vector using correct coordinate system (to give you a raster)
+### terra::distance on vector (to give you a SpatRaster)
 ```{r}
 forest_dist <- terra::distance(forest_crop)
 plot(forest_dist)
@@ -189,7 +184,19 @@ forest_extract <- extract(forest_dist, assam_HEC_reproj,
 
 ### Load population data
 ```{r}
+population_raw <- rast(paste0(HWC_data, "/Geospatial Data/Pop_dens/gpw_v4_population_density_adjusted_to_2015_unwpp_country_totals_rev11_2015_2pt5_min.tif"))
 
+population_reproj <- population_raw %>% 
+  project(crs(lu))
+```
+
+### Extract population in each cell
+```{r}
+population_extract <- extract(population_reproj, assam_HEC_reproj,
+                              fun = sum, 
+                              method = "simple",
+                              cells = TRUE,
+                              na.rm = FALSE)
 ```
 
 # Join tables/merge dataframes containing SDM, crop, and water data
