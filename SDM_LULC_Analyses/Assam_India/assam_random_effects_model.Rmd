@@ -224,7 +224,8 @@ analysis_table <- merge(hec_df, pop_join, by = "ID") %>%
   filter(Conflict != 100) %>% 
   rename(hec = Conflict) %>% 
   mutate(year = year(DateSent)) %>% 
-  select(-DateSent)
+  select(-DateSent) %>%
+  mutate(forest_dist_km = forest_dist_m/1000)
 
 # hec column is stored as character, must be numeric or factor to run analysis
 analysis_table$hec <- as.factor(as.character(analysis_table$hec))
@@ -256,10 +257,10 @@ ggplot(analysis_table, aes(x = sdm_max, fill = hec)) +
   scale_fill_manual(labels = c("No", "Yes"), 
                     values = c("#a3a3a3", "#ff1212"))
 
-ggplot(analysis_table, aes(x = forest_dist_m, fill = hec)) +
+ggplot(analysis_table, aes(x = forest_dist_km, fill = hec)) +
   geom_histogram() +
   labs(title = "Assam Cells Forest Distance", 
-       x = "Max Distance to Forest (m)",
+       x = "Max Distance to Forest (km)",
        fill = "HEC Presence") +
   scale_fill_manual(labels = c("No", "Yes"), 
                     values = c("#a3a3a3", "#ff1212"))
@@ -276,7 +277,7 @@ ggplot(analysis_table, aes(x = as.factor(year), fill = hec)) +
 # Run Random Effects Model
 ```{r}
 library(lme4)
-reg1 <- glmer(hec ~ sdm_max + crop_mean + forest_dist_km + (sdm_max * crop_mean) + (1 | year), 
+reg1 <- glmer(hec ~ sdm_max + crop_mean + water_mean + forest_dist_km + (1 | year), 
               data = analysis_table, 
               family = binomial(link = "probit"))
 
