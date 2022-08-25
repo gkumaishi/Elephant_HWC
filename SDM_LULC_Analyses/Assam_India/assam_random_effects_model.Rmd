@@ -18,7 +18,7 @@ library(lubridate)
 
 # Enter YOUR data path to HWC_data folder, including "HWC_data". 
 # May require double forward slashes
-HWC_data <- "G:/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data" 
+HWC_data <- "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data" 
 ```
 
 # Load Data and Reproject to WGS84 Equal Area
@@ -179,14 +179,16 @@ forest_extract <- extract(forest_dist, assam_HEC_reproj,
                         method = "simple",
                         cells = TRUE, 
                         na.rm = FALSE) %>% 
-  rename(forest_dist_m = global_LULC_2015)
+  rename(forest_dist_m = global_LULC_2015) %>% 
+  mutate(forest_dist_km = (forest_dist_m/1000)) %>% 
+  select(-forest_dist_m)
 ```
 
 # Number of People per cell
 
 ### Load population data
 ```{r}
-population_raw <- rast(paste0(HWC_data, "/Geospatial Data/Pop_dens/gpw_v4_population_density_adjusted_to_2015_unwpp_country_totals_rev11_2015_2pt5_min.tif"))
+population_raw <- rast(paste0(HWC_data, "/Geospatial Data/Pop_dens/ppp_2010_1km_Aggregated.tif"))
 
 population_reproj <- population_raw %>% 
   project(crs(lu))
@@ -199,7 +201,7 @@ population_extract <- extract(population_reproj, assam_HEC_reproj,
                               method = "simple",
                               cells = TRUE,
                               na.rm = FALSE) %>% 
-  rename(population_n = gpw_v4_population_density_adjusted_to_2015_unwpp_country_totals_rev11_2015_2pt5_min)
+  rename(population_n = ppp_2010_1km_Aggregated)
 ```
 
 # Join tables/merge dataframes containing SDM, crop, and water data
@@ -245,11 +247,11 @@ ggplot(analysis_table, aes(x = water_mean)) +
 
 ```{r}
 library(lme4)
-reg1 <- glmer(hec ~ sdm_max + crop_mean + (sdm_max * crop_mean) + (1 | year), 
+reg1 <- glmer(hec ~ sdm_max + crop_mean + forest_dist_km + (sdm_max * crop_mean) + (1 | year), 
               data = analysis_table, 
               family = binomial(link = "probit"))
 
-reg1
+summary(reg1)
 ```
 
 
