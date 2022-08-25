@@ -31,7 +31,7 @@ assam_HEC_reproj <- vect(paste0(HWC_data, "/Geospatial Data/Assam_India/AWS-all_
   project(crs(lu))
 
 crs(assam_HEC_reproj)
-plot(assam_HEC_reproj)
+#plot(assam_HEC_reproj)
 ```
 
 ## Load in Historic SDM and reproject to land use/equal area
@@ -61,10 +61,10 @@ sdm_reproj_im <- sdm %>%
 hec_df <- as.data.frame(assam_HEC_reproj,
                      geom = NULL,
                      xy = FALSE,
-                     na.rm = FALSE) %>% 
+                     na.rm = FALSE) %>% # KEEP NAs until last possible join so that columns don't mismatch
   select(c(Conflict, DateSent, Col_Row))
 
-hec_df <- tibble::rowid_to_column(hec_df, "ID")
+hec_df <- tibble::rowid_to_column(hec_df, "ID") # Add ID column
 ```
 
 # SDM Extraction
@@ -72,7 +72,7 @@ hec_df <- tibble::rowid_to_column(hec_df, "ID")
 ### Extract maximum SDM value at each cell
 ```{r}
 sdm_extract <- extract(sdm_reproj_im, assam_HEC_reproj, 
-                       fun = max, 
+                       fun = max, # find maximum value
                        method = "simple", 
                        cells = TRUE, 
                        na.rm = FALSE) %>% 
@@ -106,12 +106,14 @@ baseline_cropland[baseline_cropland == 5] <- 1
 # names(base_cropland_agg_HEC) <- "crop_2015"
 # 
 # plot(base_cropland_agg_HEC)
+
+# You can also do it this way, but at the extract step you wouldn't use fun = mean
 ```
 
 ### Extract proportion of cell covered in cropland
 ```{r}
 crop_extract <- extract(baseline_cropland, assam_HEC_reproj, 
-                        fun = mean,
+                        fun = mean, # Mean of binary values is equal to proportion
                         method = "simple",
                         cells = TRUE, 
                         na.rm = FALSE) %>% 
@@ -146,7 +148,7 @@ baseline_water[baseline_water == 1] <- 1
 ### Extract proportion of cell covered in water
 ```{r}
 water_extract <- extract(baseline_water, assam_HEC_reproj, 
-                        fun = mean, 
+                        fun = mean, # Mean of binary values is equal to proportion
                         method = "simple",
                         cells = TRUE, 
                         na.rm = FALSE) %>% 
@@ -173,7 +175,7 @@ forest_dist <- terra::distance(forest_crop)
 ### Find geographic distance (distance raster) to polygon edge
 ```{r}
 forest_extract <- extract(forest_dist, assam_HEC_reproj, 
-                        fun = max, 
+                        fun = max, ###### Do we want maximum here??? ######
                         method = "simple",
                         cells = TRUE, 
                         na.rm = FALSE) %>% 
