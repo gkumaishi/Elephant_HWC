@@ -230,21 +230,50 @@ analysis_table <- merge(hec_df, pop_join, by = "ID") %>%
 analysis_table$hec <- as.factor(as.character(analysis_table$hec))
 ```
 
-# Examining variable distribution
-
+# Variable distribution histograms
 ```{r}
-ggplot(analysis_table, aes(x = crop_mean)) +
-  geom_histogram()
+ggplot(analysis_table, aes(x = crop_mean, fill = hec)) +
+  geom_histogram() +
+  labs(title = "Assam Cells Cropland", 
+       x = "% Cropland",
+       fill = "HEC Presence") +
+  scale_fill_manual(labels = c("No", "Yes"), 
+                    values = c("#a3a3a3", "#ff1212")) 
 
-ggplot(analysis_table, aes(x = sdm_max)) +
-  geom_histogram()
+ggplot(analysis_table, aes(x = water_mean, fill = hec)) +
+  geom_histogram() +
+  labs(title = "Assam Cells Water", 
+       x = "% Water",
+       fill = "HEC Presence") +
+  scale_fill_manual(labels = c("No", "Yes"), 
+                    values = c("#a3a3a3", "#ff1212")) 
 
-ggplot(analysis_table, aes(x = water_mean)) +
-  geom_histogram()
+ggplot(analysis_table, aes(x = sdm_max, fill = hec)) +
+  geom_histogram() +
+  labs(title = "Assam Cells SDM", 
+       x = "Maximum SDM",
+       fill = "HEC Presence") +
+  scale_fill_manual(labels = c("No", "Yes"), 
+                    values = c("#a3a3a3", "#ff1212"))
+
+ggplot(analysis_table, aes(x = forest_dist_m, fill = hec)) +
+  geom_histogram() +
+  labs(title = "Assam Cells Forest Distance", 
+       x = "Max Distance to Forest (m)",
+       fill = "HEC Presence") +
+  scale_fill_manual(labels = c("No", "Yes"), 
+                    values = c("#a3a3a3", "#ff1212"))
+
+ggplot(analysis_table, aes(x = as.factor(year), fill = hec)) +
+  geom_bar(stat = "count") +
+  labs(title = "Assam Cells Year", 
+       x = "Year",
+       fill = "HEC Presence") +
+  scale_fill_manual(labels = c("No", "Yes"), 
+                    values = c("#a3a3a3", "#ff1212"))
 ```
 
 # Run Random Effects Model
-
 ```{r}
 library(lme4)
 reg1 <- glmer(hec ~ sdm_max + crop_mean + forest_dist_km + (sdm_max * crop_mean) + (1 | year), 
