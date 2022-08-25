@@ -847,6 +847,131 @@ writeRaster(sdm_change_ag_126_2080, paste0(HWC_data, "/Geospatial Data/bivariate
 
 
 
+## Year: 2071-2100, Scenario: SSP1/RCP2.6, GCM: GFDL Static
+
+### Setup and read PROJECTED land use and SDM
+
+#### Load in packages
+```{r}
+library(tidyverse)
+library(terra)
+library(raster)
+```
+
+#### Read in land use and SDM
+```{r}
+sdm_126_2080 <- rast(paste0(HWC_data, "/Wallace SDM Rasters/LQ/2071_2100/126/afel_gfdl_2071_2100_126_10p_sdm_correctbio3.tif"))
+lu_126_2080 <- rast(paste0(HWC_data, "/Geospatial Data/Chen_LULC_data/SSP1_RCP26/global_SSP1_RCP26_2085.tif"))
+```
+
+### SDM
+
+#### SDM raster does not have an extent, so we're going to assign it (found by importing to QGIS)
+```{r}
+ext(sdm_126_2080) <- c(-25.3584728410000011,
+              77.5998600799999849,
+              -40.4084724209999990,
+              26.3831939790000014)
+```
+
+
+#### Plot to look at them
+```{r}
+plot(sdm_126_2080)
+plot(lu_126_2080)
+```
+
+#### Re-project the SDM to have the same CRS as the land use
+```{r}
+sdm_126_2080_reproj_af <- sdm_126_2080 %>% 
+  project(crs(lu_126_2080), method = "near")
+
+plot(sdm_126_2080_reproj_af)
+```
+
+#### Reclassify values of the SDM Change map
+```{r}
+sdm_126_2080_reclass <- sdm_126_2080_reproj_af
+sdm_126_2080_reclass[sdm_126_2080_reclass >= 0 & sdm_126_2080_reclass < 0.33] <- 10
+sdm_126_2080_reclass[sdm_126_2080_reclass >= 0.33 & sdm_126_2080_reclass < 0.66] <- 20
+sdm_126_2080_reclass[sdm_126_2080_reclass >=0.66 & sdm_126_2080_reclass <= 1] <- 30
+
+plot(sdm_126_2080_reclass)
+```
+
+### Land Use
+
+#### Crop land use to africa
+```{r}
+lu_126_2080_af <- crop(lu_126_2080, sdm_126_2080_reproj_as)
+plot(lu_126_2080_af)
+```
+
+#### Reclassify values of the year 2055 for cropland
+We want cropland (category 5) to be 1, everything else to be 0
+```{r}
+cropland_126_2080 <- lu_126_2080_af
+cropland_126_2080[cropland_126_2080 != 5] <- 0
+cropland_126_2080[cropland_126_2080 == 5] <- 1
+plot(cropland_126_2080)
+```
+
+#### Aggregate cropland
+
+```{r}
+cropland_126_2080_agg <- terra::aggregate(x = cropland_126_2080, fact = 10, fun = mean, na.rm = TRUE)
+
+plot(cropland_126_2080_agg)
+```
+
+#### Reclassify cropland into 3 categories
+```{r}
+cropland3categories <- rbind(c(0,0,0),
+                        c(0,0.5,1),
+                        c(0.5,1,2))
+
+cropland_126_2080_factor <- cropland_126_2080_agg %>% 
+  classify(cropland3categories, include.lowest = FALSE)
+
+plot(cropland_126_2080_factor)
+```
+
+### Add SDM and cropland
+
+#### Make both of the rasters have the same resolution
+
+```{r}
+sdm_126_2080_resamp <- resample(sdm_126_2080_reclass, cropland_126_2080_factor, method = "near")
+
+plot(as.factor(sdm_126_2080_resamp))
+```
+
+#### Raster math - Cropland change vs SDM change (SSP1/RCP2.6, 2085)
+```{r}
+sdm_change_ag_126_2080 <- as.factor(sdm_126_2080_resamp + cropland_126_2080_factor)
+
+```
+
+### Map and export final raster
+
+#### Map with colors
+```{r}
+sdmRYGscale <- c("pink", "tomato", "maroon", "#FFFF99", "goldenrod1", "dark orange", "pale green", "green", "dark green")
+
+plot(sdm_change_ag_126_2080, main = "SDM and Cropland in 2055
+     SSP1 RCP2.6", type = "classes", col = sdmRYGscale)
+```
+
+
+#### Write the file to a .tif to export to QGIS
+```{r}
+writeRaster(sdm_change_ag_126_2080, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/afel_bivariate_126_2080.tif"), overwrite = TRUE)
+```
+
+
+
+
+
 ## Year: 2071-2100, Scenario: SSP5/RCP8.5, GCM: GFDL
 
 ###Setup and read PROJECTED land use and SDM
@@ -971,6 +1096,130 @@ plot(sdm_change_ag_585_2080, main = "SDM Change and Cropland in 2085
 #### Write the file to a .tif to export to QGIS
 ```{r}
 writeRaster(sdm_change_ag_585_2080, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/afel_sdm_change_ag_585_2080.tif"), overwrite = TRUE)
+```
+
+
+
+
+
+
+## Year: 2071-2100, Scenario: SSP5/RCP8.5, GCM: GFDL Static
+
+### Setup and read PROJECTED land use and SDM
+
+#### Load packages
+```{r}
+# Load in packages
+library(tidyverse)
+library(terra)
+library(raster)
+```
+
+#### Read in the PROJECTED land use and SDM
+```{r}
+sdm_585_2080 <- rast(paste0(HWC_data, "/Wallace SDM Rasters/LQ/2071_2100/585/afel_gfdl_2071_2100_585_10p_sdm_correctbio3.tif"))
+lu_585_2080 <- rast(paste0(HWC_data, "/Geospatial Data/Chen_LULC_data/SSP5_RCP85/global_SSP5_RCP85_2085.tif"))
+```
+
+### SDM
+
+#### SDM raster does not have an extent, so we're going to assign it (found by importing to QGIS)
+```{r}
+ext(sdm_585_2080) <- c(-25.3584728410000011,
+              77.5998600799999849,
+              -40.4084724209999990,
+              26.3831939790000014)
+```
+
+
+#### Plot to look at them
+```{r}
+plot(sdm_585_2080)
+plot(lu_585_2080)
+```
+
+#### Re-project the SDM to have the same CRS as the land use
+```{r}
+sdm_585_2080_reproj_as <- sdm_585_2080 %>% 
+  project(crs(lu_585_2080), method = "near")
+
+plot(sdm_585_2080_reproj_as)
+```
+
+#### Reclassify values of the SDM Change map
+```{r}
+sdm_585_2080_reclass <- sdm_585_2080_reproj_af
+sdm_585_2080_reclass[sdm_585_2080_reclass >= 0 & sdm_585_2080_reclass < 0.33] <- 10
+sdm_585_2080_reclass[sdm_585_2080_reclass >= 0.33 & sdm_585_2080_reclass < 0.66] <- 20
+sdm_585_2080_reclass[sdm_585_2080_reclass >=0.66 & sdm_585_2080_reclass <= 1] <- 30
+
+plot(sdm_585_2080_reclass)
+```
+
+### Land Use
+
+#### Crop land use to africa
+```{r}
+lu_585_2080_af <- crop(lu_585_2080, sdm_585_2080_reproj_as)
+plot(lu_585_2080_af)
+```
+
+#### Reclassify values of the year 2085 for cropland
+We want cropland (category 5) to be 1, everything else to be 0
+```{r}
+cropland_585_2080 <- lu_585_2080_af
+cropland_585_2080[cropland_585_2080 != 5] <- 0
+cropland_585_2080[cropland_585_2080 == 5] <- 1
+plot(cropland_585_2080)
+```
+
+#### Aggregate cropland
+
+```{r}
+cropland_585_2080_agg <- terra::aggregate(x = cropland_585_2080, fact = 10, fun = mean, na.rm = TRUE)
+
+plot(cropland_585_2080_agg)
+```
+#### Reclassify cropland into 3 categories
+```{r}
+cropland3categories <- rbind(c(0,0,0),
+                        c(0,0.5,1),
+                        c(0.5,1,2))
+
+cropland_585_2080_factor <- cropland_585_2080_agg %>% 
+  classify(cropland3categories, include.lowest = FALSE)
+
+plot(cropland_585_2080_factor)
+```
+
+### Add SDM and cropland
+
+#### Make both of the rasters have the same resolution
+
+```{r}
+sdm_585_2080_resamp <- resample(sdm_585_2080_reclass, cropland_585_2080_factor, method = "near")
+
+plot(as.factor(sdm_585_2080_resamp))
+```
+
+#### Raster math - Cropland change vs SDM change (SSP5/RCP8.5, 2055)
+```{r}
+sdm_change_ag_585_2080 <- as.factor(sdm_585_2080_resamp + cropland_585_2080_factor)
+```
+
+### Map and export final raster
+
+#### Map with Colors
+```{r}
+sdmRYGscale <- c("pink", "tomato", "maroon", "#FFFF99", "goldenrod1", "dark orange", "pale green", "green", "dark green")
+
+plot(sdm_change_ag_585_2080, main = "SDM and Cropland in 2085
+     SSP5 RCP8.5", type = "classes", col = sdmRYGscale)
+```
+
+#### Write the file to a .tif to export to QGIS
+```{r}
+writeRaster(sdm_change_ag_585_2080, paste0(HWC_data, "/Geospatial Data/bivariate_outputs/afel_bivariate_585_2080.tif.tif"), overwrite = TRUE)
 ```
 
 
