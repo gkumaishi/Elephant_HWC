@@ -18,7 +18,7 @@ library(lubridate)
 
 # Enter YOUR data path to HWC_data folder, including "HWC_data". 
 # May require double forward slashes
-HWC_data <- "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data" 
+HWC_data <- "G:/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data" 
 ```
 
 # Load Data and Reproject to WGS84 Equal Area
@@ -226,6 +226,19 @@ analysis_table <- merge(hec_df, pop_join, by = "ID") %>%
 
 # hec column is stored as character, must be numeric or factor to run analysis
 analysis_table$hec <- as.factor(as.character(analysis_table$hec))
+```
+
+# Examining variable distribution
+
+```{r}
+ggplot(analysis_table, aes(x = crop_mean)) +
+  geom_histogram()
+
+ggplot(analysis_table, aes(x = sdm_max)) +
+  geom_histogram()
+
+ggplot(analysis_table, aes(x = water_mean)) +
+  geom_histogram()
 ```
 
 # Run Random Effects Model
