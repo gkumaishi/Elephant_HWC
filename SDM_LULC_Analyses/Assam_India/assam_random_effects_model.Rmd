@@ -167,7 +167,7 @@ forest_crop <- crop(baseline_forest, assam_HEC_reproj)
 ### terra::distance on vector (to give you a SpatRaster)
 ```{r}
 forest_dist <- terra::distance(forest_crop)
-plot(forest_dist)
+#plot(forest_dist)
 ```
 
 ### Find geographic distance (distance raster) to polygon edge
@@ -196,7 +196,8 @@ population_extract <- extract(population_reproj, assam_HEC_reproj,
                               fun = sum, 
                               method = "simple",
                               cells = TRUE,
-                              na.rm = FALSE)
+                              na.rm = FALSE) %>% 
+  rename(population_n = gpw_v4_population_density_adjusted_to_2015_unwpp_country_totals_rev11_2015_2pt5_min)
 ```
 
 # Join tables/merge dataframes containing SDM, crop, and water data
@@ -208,12 +209,14 @@ sdm_crop_join <- merge(sdm_extract, crop_extract, by = "ID")
 # Now merge sdm/crop table with water
 water_join <- merge(sdm_crop_join, water_extract, by = "ID")
 
-## Merge that table with forest
-
+# Merge that table with forest
 forest_join <- merge(water_join, forest_extract, by = "ID") 
 
+# Merge that table with population
+pop_join <- merge(forest_join, population_extract, by = "ID")
+
 # Now merge with conflict, remove hec NA values (100), and convert date to year only
-analysis_table <- merge(hec_df, forest_join, by = "ID") %>% 
+analysis_table <- merge(hec_df, pop_join, by = "ID") %>% 
   filter(Conflict != 100) %>% 
   rename(hec = Conflict) %>% 
   mutate(year = year(DateSent)) %>% 
@@ -226,15 +229,12 @@ analysis_table$hec <- as.factor(as.character(analysis_table$hec))
 # Run Random Effects Model
 
 ```{r}
-library(plm)
+library(lme4)
+reg1 <- glmer(hec ~ sdm_max + crop_mean + (sdm_max * crop_mean) + (1 | year), 
+              data = analysis_table, 
+              family = binomial(link = "probit"))
 
-# Try binomial logistic regression
-hec_blr <- glm(hec ~ sdm_max + crop_mean + water_mean + year, family = "binomial", data = analysis_table)
-summary(hec_blr)
-
-# Try random effects model (probit?)
-hec_probit <- glm(hec ~ sdm_max + crop_mean + (sdm_max*crop_mean), family = binomial(link = "probit"), data = analysis_table)
-summary(hec_probit)
+reg1
 ```
 
 
