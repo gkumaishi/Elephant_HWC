@@ -232,6 +232,104 @@ writeRaster(change_2041_2070_585_mri, filename = file.path(paste0(HWC_data,"/Wal
 writeRaster(change_2041_2070_585_ukesm, filename = file.path(paste0(HWC_data,"/Wallace SDM Rasters/asia/2041_2070/change_maps/change_2041_2070_585_ukesm.tif")), overwrite = FALSE)
 ```
 
+### 2041-2070 ###
+### SSP 3 RCP 7.0 ### 
+
+# Read in projected SDMS (10th percentile training presence)
+```{r}
+# GFDL
+proj_2041_2070_370_gfdl <- raster(paste0(HWC_data,"/Wallace SDM Rasters/asia/2041_2070/370/gfdl_2041_2070_370_10p_sdm.tif"))
+  
+# IPSL
+proj_2041_2070_370_ipsl <- raster(paste0(HWC_data,"/Wallace SDM Rasters/asia/2041_2070/370/ipsl_2041_2070_370_10p_sdm.tif"))
+  
+# MPI
+proj_2041_2070_370_mpi <- raster(paste0(HWC_data,"/Wallace SDM Rasters/asia/2041_2070/370/mpi_2041_2070_370_10p_sdm.tif"))
+  
+# MRI
+proj_2041_2070_370_mri <- raster(paste0(HWC_data,"/Wallace SDM Rasters/asia/2041_2070/370/mri_2041_2070_370_10p_sdm.tif"))
+  
+# UKESM
+proj_2041_2070_370_ukesm <- raster(paste0(HWC_data,"/Wallace SDM Rasters/asia/2041_2070/370/ukesm_2041_2070_370_10p_sdm.tif"))
+```
+
+# Reclasify projected rasters
+```{r}
+# GFDL
+proj_2041_2070_370_gfdl[proj_2041_2070_370_gfdl == 0] <- 2
+proj_2041_2070_370_gfdl[proj_2041_2070_370_gfdl == 1] <- 4
+
+# IPSL
+proj_2041_2070_370_ipsl[proj_2041_2070_370_ipsl == 0] <- 2
+proj_2041_2070_370_ipsl[proj_2041_2070_370_ipsl == 1] <- 4
+
+# MPI
+proj_2041_2070_370_mpi[proj_2041_2070_370_mpi == 0] <- 2
+proj_2041_2070_370_mpi[proj_2041_2070_370_mpi == 1] <- 4
+
+# MRI
+proj_2041_2070_370_mri[proj_2041_2070_370_mri == 0] <- 2
+proj_2041_2070_370_mri[proj_2041_2070_370_mri == 1] <- 4
+
+# UKESM
+proj_2041_2070_370_ukesm[proj_2041_2070_370_ukesm == 0] <- 2
+proj_2041_2070_370_ukesm[proj_2041_2070_370_ukesm == 1] <- 4
+```
+
+# Subtract historic from projected rasters
+```{r}
+# GFDL
+change_2041_2070_370_gfdl <- proj_2041_2070_370_gfdl - historic
+
+# IPSL
+change_2041_2070_370_ipsl <- proj_2041_2070_370_ipsl - historic
+
+# MPI
+change_2041_2070_370_mpi <- proj_2041_2070_370_mpi - historic
+
+# MRI
+change_2041_2070_370_mri <- proj_2041_2070_370_mri - historic
+
+# UKESM
+change_2041_2070_370_ukesm <- proj_2041_2070_370_ukesm - historic
+```
+
+# View change maps
+```{r}
+# GFDL
+plot(change_2041_2070_370_gfdl)
+
+# IPSL
+plot(change_2041_2070_370_ipsl)
+
+# MPI
+plot(change_2041_2070_370_mpi)
+
+# MRI
+plot(change_2041_2070_370_mri)
+
+# UKESM
+plot(change_2041_2070_370_ukesm)
+```
+
+# Save change maps to Google Drive
+```{r}
+# GFDL 
+writeRaster(change_2041_2070_370_gfdl, filename = file.path(paste0(HWC_data,"/Wallace SDM Rasters/asia/2041_2070/change_maps/change_2041_2070_370_gfdl.tif")), overwrite = FALSE)
+
+# IPSL
+writeRaster(change_2041_2070_370_ipsl, filename = file.path(paste0(HWC_data,"/Wallace SDM Rasters/asia/2041_2070/change_maps/change_2041_2070_370_ipsl.tif")), overwrite = FALSE) 
+
+# MPI
+writeRaster(change_2041_2070_370_mpi, filename = file.path(paste0(HWC_data,"/Wallace SDM Rasters/asia/2041_2070/change_maps/change_2041_2070_370_mpi.tif")), overwrite = FALSE)
+
+# MRI
+writeRaster(change_2041_2070_370_mri, filename = file.path(paste0(HWC_data,"/Wallace SDM Rasters/asia/2041_2070/change_maps/change_2041_2070_370_mri.tif")), overwrite = FALSE)
+
+# UKESM
+writeRaster(change_2041_2070_370_ukesm, filename = file.path(paste0(HWC_data,"/Wallace SDM Rasters/asia/2041_2070/change_maps/change_2041_2070_370_ukesm.tif")), overwrite = FALSE)
+```
+
 ### 2071-2100 ###
 ### SSP 1 RCP 2.6 ### 
 
@@ -448,6 +546,104 @@ writeRaster(change_2071_2100_585_mri, filename = file.path(paste0(HWC_data,"/Wal
 
 # UKESM
 writeRaster(change_2071_2100_585_ukesm, filename = file.path(paste0(HWC_data,"/Wallace SDM Rasters/asia/2071_2100/change_maps/change_2071_2100_585_ukesm.tif")), overwrite = FALSE)
+```
+
+### 2071-2100 ###
+### SSP 3 RCP 7.0 ### 
+
+# Read in projected SDMS (10th percentile training presence)
+```{r}
+# GFDL
+proj_2071_2100_370_gfdl <- raster(paste0(HWC_data,"/Wallace SDM Rasters/asia/2071_2100/370/gfdl_2071_2100_370_10p_sdm.tif"))
+  
+# IPSL
+proj_2071_2100_370_ipsl <- raster(paste0(HWC_data,"/Wallace SDM Rasters/asia/2071_2100/370/ipsl_2071_2100_370_10p_sdm.tif"))
+  
+# MPI
+proj_2071_2100_370_mpi <- raster(paste0(HWC_data,"/Wallace SDM Rasters/asia/2071_2100/370/mpi_2071_2100_370_10p_sdm.tif"))
+  
+# MRI
+proj_2071_2100_370_mri <- raster(paste0(HWC_data,"/Wallace SDM Rasters/asia/2071_2100/370/mri_2071_2100_370_10p_sdm.tif"))
+  
+# UKESM
+proj_2071_2100_370_ukesm <- raster(paste0(HWC_data,"/Wallace SDM Rasters/asia/2071_2100/370/ukesm_2071_2100_370_10p_sdm.tif"))
+```
+
+# Reclasify projected rasters
+```{r}
+# GFDL
+proj_2071_2100_370_gfdl[proj_2071_2100_370_gfdl == 0] <- 2
+proj_2071_2100_370_gfdl[proj_2071_2100_370_gfdl == 1] <- 4
+
+# IPSL
+proj_2071_2100_370_ipsl[proj_2071_2100_370_ipsl == 0] <- 2
+proj_2071_2100_370_ipsl[proj_2071_2100_370_ipsl == 1] <- 4
+
+# MPI
+proj_2071_2100_370_mpi[proj_2071_2100_370_mpi == 0] <- 2
+proj_2071_2100_370_mpi[proj_2071_2100_370_mpi == 1] <- 4
+
+# MRI
+proj_2071_2100_370_mri[proj_2071_2100_370_mri == 0] <- 2
+proj_2071_2100_370_mri[proj_2071_2100_370_mri == 1] <- 4
+
+# UKESM
+proj_2071_2100_370_ukesm[proj_2071_2100_370_ukesm == 0] <- 2
+proj_2071_2100_370_ukesm[proj_2071_2100_370_ukesm == 1] <- 4
+```
+
+# Subtract historic from projected rasters
+```{r}
+# GFDL
+change_2071_2100_370_gfdl <- proj_2071_2100_370_gfdl - historic
+
+# IPSL
+change_2071_2100_370_ipsl <- proj_2071_2100_370_ipsl - historic
+
+# MPI
+change_2071_2100_370_mpi <- proj_2071_2100_370_mpi - historic
+
+# MRI
+change_2071_2100_370_mri <- proj_2071_2100_370_mri - historic
+
+# UKESM
+change_2071_2100_370_ukesm <- proj_2071_2100_370_ukesm - historic
+```
+
+# View change maps
+```{r}
+# GFDL
+plot(change_2071_2100_370_gfdl)
+
+# IPSL
+plot(change_2071_2100_370_ipsl)
+
+# MPI
+plot(change_2071_2100_370_mpi)
+
+# MRI
+plot(change_2071_2100_370_mri)
+
+# UKESM
+plot(change_2071_2100_370_ukesm)
+```
+
+# Save change maps to Google Drive
+```{r}
+# GFDL 
+writeRaster(change_2071_2100_370_gfdl, filename = file.path(paste0(HWC_data,"/Wallace SDM Rasters/asia/2071_2100/change_maps/change_2071_2100_370_gfdl.tif")), overwrite = FALSE)
+
+# IPSL
+writeRaster(change_2071_2100_370_ipsl, filename = file.path(paste0(HWC_data,"/Wallace SDM Rasters/asia/2071_2100/change_maps/change_2071_2100_370_ipsl.tif")), overwrite = FALSE) 
+
+# MPI
+writeRaster(change_2071_2100_370_mpi, filename = file.path(paste0(HWC_data,"/Wallace SDM Rasters/asia/2071_2100/change_maps/change_2071_2100_370_mpi.tif")), overwrite = FALSE)
+
+# MRI
+writeRaster(change_2071_2100_370_mri, filename = file.path(paste0(HWC_data,"/Wallace SDM Rasters/asia/2071_2100/change_maps/change_2071_2100_370_mri.tif")), overwrite = FALSE)
+
+# UKESM
+writeRaster(change_2071_2100_370_ukesm, filename = file.path(paste0(HWC_data,"/Wallace SDM Rasters/asia/2071_2100/change_maps/change_2071_2100_370_ukesm.tif")), overwrite = FALSE)
 ```
 
 ### 2011-2040 ###
@@ -667,17 +863,103 @@ writeRaster(change_2011_2040_585_mri, filename = file.path(paste0(HWC_data,"/Wal
 writeRaster(change_2011_2040_585_ukesm, filename = file.path(paste0(HWC_data,"/Wallace SDM Rasters/asia/2011_2040/change_maps/change_2011_2040_585_ukesm.tif")), overwrite = FALSE)
 ```
 
+### 2011-2040 ###
+### SSP 3 RCP 7.0 ### 
 
+# Read in projected SDMS (10th percentile training presence)
+```{r}
+# GFDL
+proj_2011_2040_370_gfdl <- raster(paste0(HWC_data,"/Wallace SDM Rasters/asia/2011_2040/370/gfdl_2011_2040_370_10p_sdm.tif"))
+  
+# IPSL
+proj_2011_2040_370_ipsl <- raster(paste0(HWC_data,"/Wallace SDM Rasters/asia/2011_2040/370/ipsl_2011_2040_370_10p_sdm.tif"))
+  
+# MPI
+proj_2011_2040_370_mpi <- raster(paste0(HWC_data,"/Wallace SDM Rasters/asia/2011_2040/370/mpi_2011_2040_370_10p_sdm.tif"))
+  
+# MRI
+proj_2011_2040_370_mri <- raster(paste0(HWC_data,"/Wallace SDM Rasters/asia/2011_2040/370/mri_2011_2040_370_10p_sdm.tif"))
+  
+# UKESM
+proj_2011_2040_370_ukesm <- raster(paste0(HWC_data,"/Wallace SDM Rasters/asia/2011_2040/370/ukesm_2011_2040_370_10p_sdm.tif"))
+```
 
+# Reclasify projected rasters
+```{r}
+# GFDL
+proj_2011_2040_370_gfdl[proj_2011_2040_370_gfdl == 0] <- 2
+proj_2011_2040_370_gfdl[proj_2011_2040_370_gfdl == 1] <- 4
 
+# IPSL
+proj_2011_2040_370_ipsl[proj_2011_2040_370_ipsl == 0] <- 2
+proj_2011_2040_370_ipsl[proj_2011_2040_370_ipsl == 1] <- 4
 
+# MPI
+proj_2011_2040_370_mpi[proj_2011_2040_370_mpi == 0] <- 2
+proj_2011_2040_370_mpi[proj_2011_2040_370_mpi == 1] <- 4
 
+# MRI
+proj_2011_2040_370_mri[proj_2011_2040_370_mri == 0] <- 2
+proj_2011_2040_370_mri[proj_2011_2040_370_mri == 1] <- 4
 
+# UKESM
+proj_2011_2040_370_ukesm[proj_2011_2040_370_ukesm == 0] <- 2
+proj_2011_2040_370_ukesm[proj_2011_2040_370_ukesm == 1] <- 4
+```
 
+# Subtract historic from projected rasters
+```{r}
+# GFDL
+change_2011_2040_370_gfdl <- proj_2011_2040_370_gfdl - historic
 
+# IPSL
+change_2011_2040_370_ipsl <- proj_2011_2040_370_ipsl - historic
 
+# MPI
+change_2011_2040_370_mpi <- proj_2011_2040_370_mpi - historic
 
+# MRI
+change_2011_2040_370_mri <- proj_2011_2040_370_mri - historic
 
+# UKESM
+change_2011_2040_370_ukesm <- proj_2011_2040_370_ukesm - historic
+```
+
+# View change maps
+```{r}
+# GFDL
+plot(change_2011_2040_370_gfdl)
+
+# IPSL
+plot(change_2011_2040_370_ipsl)
+
+# MPI
+plot(change_2011_2040_370_mpi)
+
+# MRI
+plot(change_2011_2040_370_mri)
+
+# UKESM
+plot(change_2011_2040_370_ukesm)
+```
+
+# Save change maps to Google Drive
+```{r}
+# GFDL 
+writeRaster(change_2011_2040_370_gfdl, filename = file.path(paste0(HWC_data,"/Wallace SDM Rasters/asia/2011_2040/change_maps/change_2011_2040_370_gfdl.tif")), overwrite = FALSE)
+
+# IPSL
+writeRaster(change_2011_2040_370_ipsl, filename = file.path(paste0(HWC_data,"/Wallace SDM Rasters/asia/2011_2040/change_maps/change_2011_2040_370_ipsl.tif")), overwrite = FALSE) 
+
+# MPI
+writeRaster(change_2011_2040_370_mpi, filename = file.path(paste0(HWC_data,"/Wallace SDM Rasters/asia/2011_2040/change_maps/change_2011_2040_370_mpi.tif")), overwrite = FALSE)
+
+# MRI
+writeRaster(change_2011_2040_370_mri, filename = file.path(paste0(HWC_data,"/Wallace SDM Rasters/asia/2011_2040/change_maps/change_2011_2040_370_mri.tif")), overwrite = FALSE)
+
+# UKESM
+writeRaster(change_2011_2040_370_ukesm, filename = file.path(paste0(HWC_data,"/Wallace SDM Rasters/asia/2011_2040/change_maps/change_2011_2040_370_ukesm.tif")), overwrite = FALSE)
+```
 
 
 
