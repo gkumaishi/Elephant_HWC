@@ -157,7 +157,7 @@ water_extract <- extract(baseline_water, assam_HEC_reproj,
 
 # Distance to Forest
 
-### Create polygon of binary forest cover (?)
+### Create polygon of binary forest cover
 ```{r}
 baseline_forest <- lu_im 
 baseline_forest[baseline_forest != 2] <- NA # Filter out all values of zero
@@ -170,6 +170,11 @@ forest_crop <- crop(baseline_forest, assam_HEC_reproj)
 ```{r}
 forest_dist <- terra::distance(forest_crop)
 #plot(forest_dist)
+```
+
+### Save distance raster
+```{r}
+writeRaster(forest_dist, filename = file.path(HWC_data,"/Geospatial Data/Forest_dist/", "forest_dist.tif"), overwrite = FALSE)
 ```
 
 ### Find geographic distance (distance raster) to polygon edge
