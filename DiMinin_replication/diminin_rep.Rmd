@@ -10,18 +10,20 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(here)
 library(terra)
+library(sf)
+library(tmap)
 ```
 
 #Input data
 ```{r}
 #savanna elephant range maps
-sav <- vect(here("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Geospatial Data/range_data/iucn_range_sav_elephant/data_0.shp"))
+sav <- read_sf(here("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Geospatial Data/range_data/iucn_range_sav_elephant/data_0.shp"))
 
 #forest elephant range maps
-forest <- vect(here("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Geospatial Data/range_data/iucn_range_forest_elephant/data_0.shp"))
+forest <- read_sf(here("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Geospatial Data/range_data/iucn_range_forest_elephant/data_0.shp"))
 
 #combined range map
-all_elephant_range <- union(sav, forest)
+all_elephant_range <- st_union(sav, forest)
 
 #world protected areas; divided into 3 sets of polygons and points which need to be merged together to create one polygon layer and one points layer
 
