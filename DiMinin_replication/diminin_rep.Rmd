@@ -1,0 +1,18 @@
+---
+title: "Replication of Di Minin 2021 Analysis"
+author: "Mia Guarnieri"
+date: '2022-10-11'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Input data
+```{r}
+#savanna elephant range maps
+
+
+```
+
