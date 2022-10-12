@@ -47,15 +47,18 @@ tm_shape(all_elephant_range)+
 
 #polygons
 
-wpa_1_pol <- read_sf(here("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Geospatial Data/protected_areas/WDPA_Africa_Oct2022_shp/WDPA_WDOECM_Oct2022_Public_AF_shp_0/WDPA_WDOECM_Oct2022_Public_AF_shp-polygons.shp"))
+wpa_1_pol <- read_sf(here("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Geospatial Data/protected_areas/WDPA_Africa_Oct2022_shp/WDPA_WDOECM_Oct2022_Public_AF_shp_0/WDPA_WDOECM_Oct2022_Public_AF_shp-polygons.shp")) %>% 
+  st_make_valid()
 
-wpa_2_pol <- read_sf(here("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Geospatial Data/protected_areas/WDPA_Africa_Oct2022_shp/WDPA_WDOECM_Oct2022_Public_AF_shp_1/WDPA_WDOECM_Oct2022_Public_AF_shp-polygons.shp"))
+wpa_2_pol <- read_sf(here("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Geospatial Data/protected_areas/WDPA_Africa_Oct2022_shp/WDPA_WDOECM_Oct2022_Public_AF_shp_1/WDPA_WDOECM_Oct2022_Public_AF_shp-polygons.shp")) %>% 
+  st_make_valid()
 
-wpa_3_pol <- read_sf(here("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Geospatial Data/protected_areas/WDPA_Africa_Oct2022_shp/WDPA_WDOECM_Oct2022_Public_AF_shp_2/WDPA_WDOECM_Oct2022_Public_AF_shp-polygons.shp"))
+wpa_3_pol <- read_sf(here("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Geospatial Data/protected_areas/WDPA_Africa_Oct2022_shp/WDPA_WDOECM_Oct2022_Public_AF_shp_2/WDPA_WDOECM_Oct2022_Public_AF_shp-polygons.shp")) %>% 
+  st_make_valid()
 
 #combined polygons
 
-wpa <- st_join(wpa_1_pol, wpa_2_pol, wpa_3_pol)
+wpa_12 <- st_union(wpa_1_pol, wpa_2_pol)
 
 ```
 
