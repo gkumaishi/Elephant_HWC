@@ -15,7 +15,12 @@ library(tmap)
 ```
 
 #Input data
+
+##Range data
+
 ```{r}
+#turn off spherical geometry to make the union work
+
 sf_use_s2(FALSE)
 
 #savanna elephant range maps
@@ -31,18 +36,26 @@ all_elephant_range <- st_union(sav, forest)
 
 #plot
 tm_shape(all_elephant_range)+
-  tm_polygons()+
+  tm_polygons(col = "turquoise4")+
   tmap_mode("view")
+```
 
+##World protected areas
+
+```{r}
 #world protected areas; divided into 3 sets of polygons and points which need to be merged together to create one polygon layer and one points layer
 
 #polygons
 
-wpa_1_pol <- vect(here("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Geospatial Data/protected_areas/WDPA_Africa_Oct2022_shp/WDPA_WDOECM_Oct2022_Public_AF_shp_0/WDPA_WDOECM_Oct2022_Public_AF_shp-polygons.shp"))
+wpa_1_pol <- read_sf(here("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Geospatial Data/protected_areas/WDPA_Africa_Oct2022_shp/WDPA_WDOECM_Oct2022_Public_AF_shp_0/WDPA_WDOECM_Oct2022_Public_AF_shp-polygons.shp"))
 
-wpa_2_pol <- vect(here("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Geospatial Data/protected_areas/WDPA_Africa_Oct2022_shp/WDPA_WDOECM_Oct2022_Public_AF_shp_1/WDPA_WDOECM_Oct2022_Public_AF_shp-polygons.shp"))
+wpa_2_pol <- read_sf(here("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Geospatial Data/protected_areas/WDPA_Africa_Oct2022_shp/WDPA_WDOECM_Oct2022_Public_AF_shp_1/WDPA_WDOECM_Oct2022_Public_AF_shp-polygons.shp"))
 
-wdpa_3_pol <- vect(here("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Geospatial Data/protected_areas/WDPA_Africa_Oct2022_shp/WDPA_WDOECM_Oct2022_Public_AF_shp_2/WDPA_WDOECM_Oct2022_Public_AF_shp-polygons.shp"))
+wpa_3_pol <- read_sf(here("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Geospatial Data/protected_areas/WDPA_Africa_Oct2022_shp/WDPA_WDOECM_Oct2022_Public_AF_shp_2/WDPA_WDOECM_Oct2022_Public_AF_shp-polygons.shp"))
+
+#combined polygons
+
+wpa <- st_join(wpa_1_pol, wpa_2_pol, wpa_3_pol)
 
 ```
 
