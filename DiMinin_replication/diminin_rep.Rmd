@@ -16,14 +16,23 @@ library(tmap)
 
 #Input data
 ```{r}
+sf_use_s2(FALSE)
+
 #savanna elephant range maps
-sav <- read_sf(here("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Geospatial Data/range_data/iucn_range_sav_elephant/data_0.shp"))
+sav <- read_sf(here("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Geospatial Data/range_data/iucn_range_sav_elephant/data_0.shp")) %>% 
+  st_make_valid()
 
 #forest elephant range maps
-forest <- read_sf(here("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Geospatial Data/range_data/iucn_range_forest_elephant/data_0.shp"))
+forest <- read_sf(here("/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data/Geospatial Data/range_data/iucn_range_forest_elephant/data_0.shp")) %>% 
+  st_make_valid()
 
 #combined range map
 all_elephant_range <- st_union(sav, forest)
+
+#plot
+tm_shape(all_elephant_range)+
+  tm_polygons()+
+  tmap_mode("view")
 
 #world protected areas; divided into 3 sets of polygons and points which need to be merged together to create one polygon layer and one points layer
 
