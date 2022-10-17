@@ -14,7 +14,7 @@ library(terra)
 library(raster)
 
 # Enter google filestream path including "HWC_data"
-HWC_data <- "G:/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data"
+HWC_data <- "..."
 ```
 
 
@@ -1282,7 +1282,7 @@ writeRaster(af_bivar_585_2080, paste0(HWC_data, "/Geospatial Data/bivariate_outp
 ```
 
 
-# CHANGE FROM PRESENT
+# CHANGE FROM BASELINE
 
 ## Year: 2011-2040, Scenario: SSP1/RCP2.6, GCM: GFDL Change
 

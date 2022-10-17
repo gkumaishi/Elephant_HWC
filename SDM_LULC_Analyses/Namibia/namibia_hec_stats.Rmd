@@ -1,0 +1,314 @@
+---
+title: "namibia_hec_stats"
+author: "Chris Kracha"
+date: '2022-09-24'
+output: html_document
+---
+
+```{r setup}
+library(here)
+library(janitor)
+library(broom)
+library(rgdal)
+library(exactextractr)
+library(terra)
+library(tidyverse)
+library(sf)
+
+# Enter YOUR data path to HWC_data folder, including "HWC_data"
+HWC_data <- "G:/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data" 
+```
+
+## Load in data
+```{r}
+namibia_hec <- read_csv(paste0(HWC_data, "/R_files/R_input_data/namibia/namibia_hec.csv")) %>%
+  clean_names() %>%
+  dplyr::select(-amount_paid)
+
+lu <- rast(paste0(HWC_data, "/Geospatial Data/Chen_LULC_data/global_LULC_2015.tif"))
+
+conservancies <- vect(paste0(HWC_data, "/R_files/R_input_data/shapefilesforconservancies/communal_conservancies.shp")) %>%
+  terra::project(crs(lu))
+
+sdm <- rast(paste0(HWC_data, "/Wallace SDM Rasters/LQ/1981_2010/afel_historic_sdm.tif"))
+
+# Reproject SDM to equal area
+sdm_reproj <- sdm %>%
+  terra::project(crs(lu)) %>%
+  crop(conservancies)
+```
+
+## Create initial HEC data frame
+```{r}
+cons_df <- as.data.frame(conservancies,
+                     geom = NULL,
+                     xy = FALSE,
+                     # KEEP NAs until last possible join 
+                     # so that columns don't mismatch
+                     na.rm = FALSE) %>%
+  dplyr::select(1:8)
+```
+
+
+## Extract SDM to table
+```{r}
+sdm_extract <- terra::extract(sdm_reproj, conservancies, 
+                       fun = max, # find maximum value
+                       method = "simple", 
+                       cells = TRUE, 
+                       na.rm = FALSE) %>% 
+  rename(sdm_max = afel_historic_sdm)
+```
+
+## Land use to table
+
+### Crop land use to africa
+```{r}
+lu_at <- crop(lu, conservancies)
+#plot(lu_im)
+```
+
+### Reclassify baseline land use to cropland binary
+We want cropland (category 5) to be 1, everything else to be 0
+```{r}
+baseline_cropland <- lu_at
+baseline_cropland[baseline_cropland != 5] <- 0
+baseline_cropland[baseline_cropland == 5] <- 1
+#plot(baseline_cropland)
+```
+
+### Extract proportion of cell covered in cropland to table
+```{r}
+crop_extract <- terra::extract(baseline_cropland, conservancies, 
+                        # Mean of binary values = proportion
+                        fun = mean,
+                        method = "simple",
+                        cells = TRUE, 
+                        na.rm = FALSE) %>% 
+  rename(crop_mean = global_LULC_2015)
+```
+
+## Forest binary to table
+
+### Reclassify baseline land use to forest binary
+```{r}
+baseline_forest <- lu_at 
+baseline_forest[baseline_forest != 2] <- 0
+baseline_forest[baseline_forest == 2] <- 1
+
+```
+
+### Extract proportion of cell covered in forest to table
+```{r}
+forest_extract <- terra::extract(baseline_forest, conservancies, 
+                        # Mean of binary values = proportion
+                        fun = mean,
+                        method = "simple",
+                        cells = TRUE, 
+                        na.rm = FALSE) %>% 
+  rename(forest_mean = global_LULC_2015)
+```
+
+## Water binary to table
+
+### Reclassify baseline land use to water binary
+We want water (category 1) to be 1, everything else to be 0
+```{r}
+baseline_water <- lu_at
+baseline_water[baseline_water != 1] <- 0
+baseline_water[baseline_water == 1] <- 1
+#plot(baseline_water)
+```
+
+### Extract proportion of cell covered in water
+```{r}
+water_extract <- terra::extract(baseline_water, conservancies, 
+                        # Mean of binary values = proportion
+                        fun = mean,
+                        method = "simple",
+                        cells = TRUE, 
+                        na.rm = FALSE) %>% 
+  rename(water_mean = global_LULC_2015)
+```
+
+## Population to table
+
+### Load population data
+```{r}
+population_raw <- rast(paste0(HWC_data, "/Geospatial Data/Pop_dens/ppp_2010_1km_Aggregated.tif"))
+
+population_reproj <- population_raw %>% 
+  crop(sdm) %>%
+  terra::project(crs(lu), method = "near")
+
+plot(population_reproj)
+```
+
+### Extract population in each cell
+```{r}
+population_extract <- extract(population_reproj,
+                              conservancies,
+                              fun = sum, 
+                              method = "simple",
+                              cells = TRUE,
+                              na.rm = FALSE) %>% 
+  rename(population_n = ppp_2010_1km_Aggregated) %>%
+  mutate(population_nK = population_n/1000)
+# population_nK units are 1000s of people
+```
+
+## Join tables
+```{r}
+# First merge SDM and crop
+variables_join <- sdm_extract %>%
+  merge(crop_extract, by = "ID") %>%
+
+# Now merge sdm/crop table with water
+  merge(water_extract, by = "ID") %>%
+
+# Merge that table with forest %
+  merge(forest_extract, by = "ID") %>%
+
+# Merge that table with population
+  merge(population_extract, by = "ID")
+
+# Now merge with conflict, remove hec NA values (100), and convert date to year only
+
+analysis_table <- right_join(cons_df, variables_join, by = c("OBJECTID_1" = "ID")) %>%
+  right_join(namibia_hec, by = c("NAME" = "location")) %>%
+  na.omit() %>%
+  mutate(incidents_normalized = number_of_incidents/AREA_KM2,
+         hectares_normalized = number_of_hectares_destroyed/AREA_KM2)
+```
+
+## Visualize variables' relationship to HEC  incidents
+```{r}
+analysis_table %>%
+  ggplot(aes(x = sdm_max, y = number_of_incidents)) + 
+    geom_point(alpha=.5) +
+    stat_smooth(method="lm", 
+                se = FALSE)
+
+analysis_table %>%
+  ggplot(aes(x = crop_mean, y = number_of_incidents)) + 
+    geom_point(alpha=.5) +
+    stat_smooth(method="lm", 
+                se = FALSE)
+
+analysis_table %>%
+  ggplot(aes(x = water_mean, y = number_of_incidents)) + 
+    geom_point(alpha=.5) +
+    stat_smooth(method="lm", 
+                se = FALSE)
+
+analysis_table %>%
+  ggplot(aes(x = forest_mean, y = number_of_incidents)) + 
+    geom_point(alpha=.5) +
+    stat_smooth(method="lm", 
+                se = FALSE)
+
+analysis_table %>%
+  ggplot(aes(x = population_nK, y = number_of_incidents)) + 
+    geom_point(alpha=.5) +
+    stat_smooth(method="lm", 
+                se = FALSE)
+```
+## Visualize variables' relationship to HEC incidents (normalized to area)
+```{r}
+analysis_table %>%
+  ggplot(aes(x = sdm_max, y = incidents_normalized)) + 
+    geom_point(alpha=.5) +
+    stat_smooth(method="lm", 
+                se = FALSE)
+
+analysis_table %>%
+  ggplot(aes(x = crop_mean, y = incidents_normalized)) + 
+    geom_point(alpha=.5) +
+    stat_smooth(method="lm", 
+                se = FALSE)
+
+analysis_table %>%
+  ggplot(aes(x = water_mean, y = incidents_normalized)) + 
+    geom_point(alpha=.5) +
+    stat_smooth(method="lm", 
+                se = FALSE)
+
+analysis_table %>%
+  ggplot(aes(x = forest_mean, y = incidents_normalized)) + 
+    geom_point(alpha=.5) +
+    stat_smooth(method="lm", 
+                se = FALSE)
+
+analysis_table %>%
+  ggplot(aes(x = population_nK, y = incidents_normalized)) + 
+    geom_point(alpha=.5) +
+    stat_smooth(method="lm", 
+                se = FALSE)
+```
+
+## Visualize variables' relationship to crop damage
+```{r}
+analysis_table %>%
+  ggplot(aes(x = sdm_max, y = number_of_hectares_destroyed)) + 
+    geom_point(alpha=.5) +
+    stat_smooth(method="lm", 
+                se = FALSE)
+
+analysis_table %>%
+  ggplot(aes(x = crop_mean, y = number_of_hectares_destroyed)) + 
+    geom_point(alpha=.5) +
+    stat_smooth(method="lm", 
+                se = FALSE)
+
+analysis_table %>%
+  ggplot(aes(x = water_mean, y = number_of_hectares_destroyed)) + 
+    geom_point(alpha=.5) +
+    stat_smooth(method="lm", 
+                se = FALSE)
+
+analysis_table %>%
+  ggplot(aes(x = forest_mean, y = number_of_hectares_destroyed)) + 
+    geom_point(alpha=.5) +
+    stat_smooth(method="lm", 
+                se = FALSE)
+
+analysis_table %>%
+  ggplot(aes(x = population_nK, y = number_of_hectares_destroyed)) + 
+    geom_point(alpha=.5) +
+    stat_smooth(method="lm", 
+                se = FALSE)
+```
+
+## Visualize variables' relationship to crop damage (normalized by area)
+```{r}
+analysis_table %>%
+  ggplot(aes(x = sdm_max, y = hectares_normalized)) + 
+    geom_point(alpha=.5) +
+    stat_smooth(method="lm", 
+                se = FALSE)
+
+analysis_table %>%
+  ggplot(aes(x = crop_mean, y = hectares_normalized)) + 
+    geom_point(alpha=.5) +
+    stat_smooth(method="lm", 
+                se = FALSE)
+
+analysis_table %>%
+  ggplot(aes(x = water_mean, y = hectares_normalized)) + 
+    geom_point(alpha=.5) +
+    stat_smooth(method="lm", 
+                se = FALSE)
+
+analysis_table %>%
+  ggplot(aes(x = forest_mean, y = hectares_normalized)) + 
+    geom_point(alpha=.5) +
+    stat_smooth(method="lm", 
+                se = FALSE)
+
+analysis_table %>%
+  ggplot(aes(x = population_nK, y = hectares_normalized)) + 
+    geom_point(alpha=.5) +
+    stat_smooth(method="lm", 
+                se = FALSE)
+```
+
