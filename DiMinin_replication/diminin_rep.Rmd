@@ -29,6 +29,11 @@ sf_use_s2(FALSE)
 sav <- read_sf(here(HWC_data, "/Geospatial Data/range_data/iucn_range_sav_elephant/data_0.shp")) %>% 
   filter(LEGEND %in% c("Extant (resident)", "Extant & Reintroduced (resident)"))
 
+#savanna elephant range, geometry only (no other data)
+
+sav_geom <- sav %>% 
+  select(geometry)
+
 #forest elephant range (filtered to only keep extant ranges)
 forest <- read_sf(here(HWC_data, "/Geospatial Data/range_data/iucn_range_forest_elephant/data_0.shp")) %>% 
   filter(LEGEND %in% c("Extant (resident)", "Extant & Reintroduced (resident)"))
@@ -42,8 +47,8 @@ tm_shape(all_elephant_range) +
   tmap_mode("view")
 
 #plot savanna elephant range
-tm_shape(sav) +
-  tm_polygons(col = "LEGEND") +
+tm_shape(sav_geom) +
+  tm_polygons() +
   tmap_mode("view")
 ```
 
@@ -72,11 +77,22 @@ wpa_all_polygons <- rbind(wpa_1_pol, wpa_2_pol, wpa_3_pol) %>%
 
 #Merge polygons into a single layer
 
-wpa_allpol_dissolved <- st_union(wpa_all_polygons, by_feature = FALSE)
+wpa_allpol_dissolved <- st_union(wpa_all_polygons, by_feature = FALSE) %>% 
+  st_cast(to = "POLYGON")
+
+#Wpa polygons, geometry only - no other attributes
+
+wpa_allpol_geom <- wpa_all_polygons %>% 
+  select(geometry)
+
+#Merging overlapping polygons
+
+parts <- st_cast(st_union(wpa_allpol_geom),"POLYGON")
+wpa_allpolgeom_dissolved <- st_intersects(wpa_allpol_geom, parts)
 
 #Plot merged polygon layer
 
-tm_shape(wpa_allpol_dissolved) +
+tm_shape(wpa_allpolgeom_dissolved) +
   tm_polygons() +
   tmap_mode("view")
 
@@ -113,17 +129,29 @@ From Di Minin et al: The elephant range maps and the protected area layer were i
 ```{r}
 #protected areas that contain part of elephant range
 
-wpa_intersect <- st_intersection(wpa_allpol_dissolved, sav)
+wpa_intersect <- st_join(wpa_allpol_geom, sav_geom, join = st_intersects, left = FALSE)
+
+#Verification plot: sav range and intersection
+tm_shape(wpa_intersect) +
+  tm_polygons() +
+tm_shape(sav_geom) +
+  tm_polygons(col = "blue") +
+  tmap_mode("view")
 
 #protected areas that are adjacent to elephant range
 
-wpa_adj <- st_join(wpa_allpol_dissolved, sav, .predicate = st_touches)
+wpa_adj <- st_join(wpa_allpol_geom, sav_geom, join = st_touches, left = FALSE)
 
+#this join is returning no data, suggesting that there are no polygons that satisfy the st_touches function (i.e., no adjacent polygons)
+
+#creating an extended range map - no data, just polygons
+
+ext_range <- rbind(sav_geom, wpa_adj, wpa_intersect)
 
 #Verification plot: sav range and intersection
-tm_shape(sav) +
-  tm_polygons() +
 tm_shape(wpa_intersect) +
+  tm_polygons() +
+tm_shape(sav_geom) +
   tm_polygons(col = "blue") +
   tmap_mode("view")
 ```
