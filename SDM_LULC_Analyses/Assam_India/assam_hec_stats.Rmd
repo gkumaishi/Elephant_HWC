@@ -1,6 +1,6 @@
 ---
-title: "Assam Chi Square Test"
-author: "Grace Kumaishi"
+title: "Assam HEC Stats"
+author: "Grace Kumaishi, Chris Kracha"
 date: "8/4/2022"
 output: html_document
 ---
@@ -35,7 +35,7 @@ historic_bivariate_asia_project <- terra::project(x = historic_bivariate_asia_ra
 
 ```{r}
 # Load tidy Goalpara HEC file
-goalpara_hec_tidy <- read.csv(here(HWC_data, "/Geospatial Data/Assam_India/Goalpara_HEC_tidy.csv"))
+goalpara_hec_tidy <- read.csv(paste0(HWC_data, "/Geospatial Data/Assam_India/Goalpara_HEC_tidy.csv"))
 
 # Make into SpatVector
 goalpara_hec_tidy_vect <- terra::vect(goalpara_hec_tidy, geom = c("longitude", "latitude"), crs = "epsg:4326")
@@ -131,7 +131,7 @@ assam_summarize_digitized <- assam_extract_digitized %>%
   summarise(count = n()) %>% 
   pivot_wider(names_from = Bivar_value, values_from = count)
 
-assam_na_digitized <- head(assam_summarize, -1)
+assam_na_digitized <- head(assam_summarize_digitized, -1)
 
 assam_ct_digitized <- assam_na_digitized %>% 
   column_to_rownames(var = "Conflict")
@@ -165,7 +165,7 @@ assam_summarize <- assam_extract %>%
   pivot_wider(names_from = indicus_historic, values_from = count)
 
 assam_remove_na <- head(assam_summarize, -1) %>%
-  select(1:6)
+  dplyr::select(1:6)
 
 assam_ct <- assam_remove_na %>% 
   column_to_rownames(var = "Conflict")
@@ -188,7 +188,7 @@ gridded_tidy <- broom::tidy(gridded_x2)
 lu <- rast(paste0(HWC_data, "/Geospatial Data/Chen_LULC_data/global_LULC_2015.tif"))
 
 assam_HEC_reproj <- vect(paste0(HWC_data, "/Geospatial Data/Assam_India/AWS-all_data/AWS-all_data.shp")) %>%
-  project(crs(lu))
+  terra::project(crs(lu))
 
 crs(assam_HEC_reproj)
 plot(assam_HEC_reproj)
@@ -211,7 +211,7 @@ ext(sdm) <- c(65.8581934609999990,
 #### Re-project SDM to equal-area
 ```{r}
 sdm_reproj_im <- sdm %>% 
-  project(crs(lu))
+  terra::project(crs(lu))
 ```
 
 ### Cropland
@@ -286,7 +286,7 @@ assam_extract_lu <- extract(base_lu_agg_HEC, assam_HEC_reproj, method = "simple"
 assam_extract_lu
 ```
 
-### Statistical test
+
 
 
 
