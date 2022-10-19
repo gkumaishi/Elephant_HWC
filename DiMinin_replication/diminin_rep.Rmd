@@ -40,7 +40,9 @@ forest <- read_sf(here(HWC_data, "/Geospatial Data/range_data/iucn_range_forest_
 
 #combined range map for savanna and forest elephants
 all_elephant_range <- rbind(sav, forest)
+```
 
+```{r}
 #plot combined range
 tm_shape(all_elephant_range) +
   tm_polygons(col = "LEGEND") +
@@ -51,6 +53,7 @@ tm_shape(sav_geom) +
   tm_polygons() +
   tmap_mode("view")
 ```
+
 
 ##World protected areas data
 
@@ -144,15 +147,33 @@ wpa_adj <- st_join(wpa_allpol_geom, sav_geom, join = st_touches, left = FALSE)
 
 #this join is returning no data, suggesting that there are no polygons that satisfy the st_touches function (i.e., no adjacent polygons)
 
-#creating an extended range map - no data, just polygons
+#Creating an extended range map - no data, just polygons
 
 ext_range <- rbind(sav_geom, wpa_adj, wpa_intersect)
 
-#Verification plot: sav range and intersection
-tm_shape(wpa_intersect) +
+#Verification plots: sav range and extended range map
+tm_shape(ext_range) +
   tm_polygons() +
 tm_shape(sav_geom) +
   tm_polygons(col = "blue") +
   tmap_mode("view")
+
+tm_shape(ext_range) +
+  tm_polygons() +
+tm_shape(wpa_intersect) +
+  tm_polygons(col = "blue")
+
+tm_shape(ext_range) +
+  tm_polygons()
+
+#Dissolving polygons into one layer
+
+ext_range_dissolved <- st_union(ext_range)
+
+tm_shape(ext_range_dissolved) +
+  tm_polygons()
 ```
+
+
+
 
