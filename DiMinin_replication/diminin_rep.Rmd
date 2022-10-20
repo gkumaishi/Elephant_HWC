@@ -73,27 +73,27 @@ wpa_2_pol <- read_sf(here(HWC_data, "/Geospatial Data/protected_areas/WDPA_Afric
 
 wpa_3_pol <- read_sf(here(HWC_data, "/Geospatial Data/protected_areas/WDPA_Africa_Oct2022_shp/WDPA_WDOECM_Oct2022_Public_AF_shp_2/WDPA_WDOECM_Oct2022_Public_AF_shp-polygons.shp")) 
 
-#Combine polygon layers and filter for IUCN categories Ia (Strict Nature Reserve), Ib (Wilderness Area), II (National Park), III (Natural Monument or Feature), and IV (Habitat/Species Management Area)
+#combine polygon layers and filter for IUCN categories Ia (Strict Nature Reserve), Ib (Wilderness Area), II (National Park), III (Natural Monument or Feature), and IV (Habitat/Species Management Area)
 
 wpa_all_polygons <- rbind(wpa_1_pol, wpa_2_pol, wpa_3_pol) %>% 
   filter(IUCN_CAT %in% c("Ia", "Ib", "II", "III", "IV"))
 
-#Merge polygons into a single layer
+#merge polygons into a single layer
 
 wpa_allpol_dissolved <- st_union(wpa_all_polygons, by_feature = FALSE) %>% 
   st_cast(to = "POLYGON")
 
-#Wpa polygons, geometry only - no other attributes
+#wpa polygons, geometry only - no other attributes
 
 wpa_allpol_geom <- wpa_all_polygons %>% 
   select(geometry)
 
-#Merging overlapping polygons
+#merging overlapping polygons
 
 parts <- st_cast(st_union(wpa_allpol_geom),"POLYGON")
 wpa_allpolgeom_dissolved <- st_intersects(wpa_allpol_geom, parts)
 
-#Plot merged polygon layer
+#plot merged polygon layer
 
 tm_shape(wpa_allpolgeom_dissolved) +
   tm_polygons() +
@@ -117,7 +117,7 @@ tm_shape(wpa_all_points) +
   tm_dots() +
   tmap_mode("view")
 
-#Plot polygon and point layers together
+#plot polygon and point layers together
 tm_shape(wpa_allpol_dissolved) +
   tm_polygons() +
 tm_shape(wpa_all_points) +
@@ -134,7 +134,7 @@ From Di Minin et al: The elephant range maps and the protected area layer were i
 
 wpa_intersect <- st_join(wpa_allpol_geom, sav_geom, join = st_intersects, left = FALSE)
 
-#Verification plot: sav range and intersection
+#verification plot: sav range and intersection
 tm_shape(wpa_intersect) +
   tm_polygons() +
 tm_shape(sav_geom) +
@@ -147,11 +147,11 @@ wpa_adj <- st_join(wpa_allpol_geom, sav_geom, join = st_touches, left = FALSE)
 
 #this join is returning no data, suggesting that there are no polygons that satisfy the st_touches function (i.e., no adjacent polygons)
 
-#Creating an extended range map - no data, just polygons
+#creating an extended range map - no data, just polygons
 
 ext_range <- rbind(sav_geom, wpa_adj, wpa_intersect)
 
-#Verification plots: sav range and extended range map
+#verification plots: sav range and extended range map
 tm_shape(ext_range) +
   tm_polygons() +
 tm_shape(sav_geom) +
@@ -166,7 +166,7 @@ tm_shape(wpa_intersect) +
 tm_shape(ext_range) +
   tm_polygons()
 
-#Dissolving polygons into one layer
+#dissolving polygons into one layer
 
 ext_range_dissolved <- st_union(ext_range)
 
@@ -175,5 +175,50 @@ tm_shape(ext_range_dissolved) +
 ```
 
 
+#Pressure Layers
 
+Di Minin et al. only retained areas where human, cattle, and crop densities were in the first decile  (the decile with the highest human population, crop, and cattle densities). We will only be using human population and cropland measurements, as we aren't looking at lion conflict (cattle predation).
 
+##Land cover data
+
+```{r}
+#load in the land use/ land cover data
+
+lulc <- rast(here(HWC_data, "/Geospatial Data/Chen_LULC_data/global_LULC_2015.tif"))
+
+#africa extent map
+
+africa <- vect(here(HWC_data, "/Geospatial Data/basemaps/Africa_Boundaries/afr_g2014_2013_0.shp")) %>% 
+  rasterize()
+
+#crop lulc to africa extent
+
+lulc_africa <- crop(lulc, africa)
+
+#plot to confirm
+
+tm_shape(lulc_africa) +
+  tm_raster(col = levels(lulc_africa)) +
+  tmap_mode("view")
+
+```
+
+##Human density data
+
+```{r}
+
+```
+
+##Ranked pressures layer
+
+2 - High risk: high human + crop density
+1 - Med risk: high human OR crop density
+0 - Low risk: NO high human and NO high crop density
+
+#Conflict layer
+
+Extended range map is buffered by 10 km and intersected with classified pressures layer
+
+##Asessing validity
+
+"Used Latin hypercube sampling, which is a form of sampling used to reduce the number of runs necessary for a Monte Carlo simulation to achieve a reasonably accurate random distribution67, to randomly vary 100 times the distance values between the extended range and human pressure maps. Specifically, we divided the low, moderate, high, and severe conflict lines into 100 m segments, calculated the minimum distance for each segment to human pressure within a 10, 20, and 30 km buffer distance from the edge of the extended range map layer, and then randomly varied that distance 100 times across ±10% of the value. We then averaged the resulting 100 randomly created distance values for each segment and identified which segments fell outside of the analyzed buffer distances of 10, 20, and 30 km. We tested for 20 and 30 km buffer distances, as we wanted to assess the variability of the fencing distance to different buffer sizes."
