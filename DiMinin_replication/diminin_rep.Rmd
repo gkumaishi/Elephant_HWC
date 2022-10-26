@@ -238,6 +238,10 @@ lulc_africa <- mask(lulc, africa)
 #test plot
 
 plot(lulc_africa)
+
+tm_shape(lulc_africa, raster.warp = FALSE) +
+  tm_raster() +
+  tmap_mode("view")
 ```
 
 ```{r}
@@ -299,15 +303,16 @@ writeRaster(top10_crop, filename = here(HWC_data, "/Geospatial Data/Diminin_Repl
 ```{r}
 #visualization
 
-crop_dens <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/lulc_formatted/lulc_top10/top10_crop.tif"))
+#turn off spherical geometry to simplify joins, etc.
+sf_use_s2(FALSE)
 
 extended_range <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/extended_range/extended_range_sav.shp"))
 
-tm_shape(extended_range) +
-  tm_polygons() +
+crop_dens <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/lulc_formatted/lulc_top10/top10_crop.tif"))
+
 tm_shape(crop_dens) +
-  tm_raster()+
-tmap_mode("view")
+  tm_raster() +
+  tmap_mode("plot")
 ```
 
 
