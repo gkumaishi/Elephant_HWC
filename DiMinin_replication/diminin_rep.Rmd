@@ -14,12 +14,16 @@ library(sf)
 library(tmap)
 library(geos)
 
+#File path to the HWC_data folder
+
 HWC_data <- "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data"
 ```
 
 #Input data
 
 ##Range data
+
+Species range data for savanna and forest elephants, downloaded from IUCN redlist.
 
 ```{r}
 #turn off spherical geometry to simplify joins, etc.
@@ -54,12 +58,15 @@ tm_shape(sav_geom) +
   tmap_mode("view")
 ```
 
+##World protected areas (WPAs) data
 
-##World protected areas data
+WPA data obtained from The World Database on Protected Areas (<http://www.protectedplanet.net>).
 
-Di Minin et al. (2021) only included in their analysis IUCN categories Ia (Strict Nature Reserve), Ib (Wilderness Area), II (National Park), III (Natural Monument or Feature), and IV (Habitat/Species Management Area). Additionally, to prevent overestimation of the area coverage of protected areas caused by overlapping designations, Di Minin et al. merged polygons into a single layer. We will do the same here.
+World protected area aata is divided into 3 sets of polygons and 3 sets of points which need to be merged together to create one polygon layer and one points layer for use. We will be using only the polygons layer for analysis.
 
-World protected area aata is divided into 3 sets of polygons and 3 sets of points which need to be merged together to create one polygon layer and one points layer for use.
+Di Minin et al. (2021) only included in their analysis IUCN categories Ia (Strict Nature Reserve), Ib (Wilderness Area), II (National Park), III (Natural Monument or Feature), and IV (Habitat/Species Management Area). Additionally, to prevent overestimation of the area coverage of protected areas caused by overlapping designations, Di Minin et al. merged polygons into a single layer. 
+
+We will join and filter the polygon and point data in R, and then 
 
 ```{r}
 #turn off spherical geometry to simplify joins, etc.
@@ -88,18 +95,16 @@ wpa_allpol_dissolved <- st_union(wpa_all_polygons, by_feature = FALSE) %>%
 wpa_allpol_geom <- wpa_all_polygons %>% 
   select(geometry)
 
-#merging overlapping polygons
-
-parts <- st_cast(st_union(wpa_allpol_geom),"POLYGON")
-wpa_allpolgeom_dissolved <- st_intersects(wpa_allpol_geom, parts)
-
 #plot merged polygon layer
 
-tm_shape(wpa_allpolgeom_dissolved) +
+tm_shape(wpa_allpol_dissolved) +
   tm_polygons() +
   tmap_mode("view")
 
-#point data layers
+```
+
+```{r point data}
+#point data layers - not used in analysis, provided just for thoroughness
 
 wpa_1_point <- read_sf(here(HWC_data, "/Geospatial Data/protected_areas/WDPA_Africa_Oct2022_shp/WDPA_WDOECM_Oct2022_Public_AF_shp_0/WDPA_WDOECM_Oct2022_Public_AF_shp-points.shp"))
 
@@ -125,9 +130,10 @@ tm_shape(wpa_all_points) +
   tmap_mode("view")
 ```
 
+
 #Creating extended range maps
 
-From Di Minin et al: The elephant range maps and the protected area layer were intersected to select all protected areas that contain parts of lion and elephant range and/or were adjacent to the species-range maps. The identified protected areas were then merged with the species-range maps to create a new extended range layer 
+From Di Minin et al: The elephant range maps and the protected area layer were intersected to select all protected areas that contain parts of lion and elephant range and/or were adjacent to the species-range maps. The identified protected areas were then merged with the species-range maps to create a new extended range layer
 
 ```{r}
 #protected areas that contain part of elephant range
@@ -135,11 +141,12 @@ From Di Minin et al: The elephant range maps and the protected area layer were i
 wpa_intersect <- st_join(wpa_allpol_geom, sav_geom, join = st_intersects, left = FALSE)
 
 #verification plot: sav range and intersection
-tm_shape(wpa_intersect) +
-  tm_polygons() +
+
 tm_shape(sav_geom) +
-  tm_polygons(col = "blue") +
-  tmap_mode("view")
+  tm_polygons() +
+tm_shape(wpa_intersect) +
+  tm_polygons( col = "blue") +
+tmap_mode("view")
 
 #protected areas that are adjacent to elephant range
 
@@ -149,7 +156,32 @@ wpa_adj <- st_join(wpa_allpol_geom, sav_geom, join = st_touches, left = FALSE)
 
 #creating an extended range map - no data, just polygons
 
-ext_range <- rbind(sav_geom, wpa_adj, wpa_intersect)
+ext_range <- rbind(sav_geom, wpa_intersect, wpa_adj)
+
+#dissolving polygons into one layer
+ext_range_dissolved <- st_union(ext_range)
+```
+
+```{r}
+#save the raster
+
+st_write(ext_range, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/extended_range/extended_range_sav.shp"))
+
+#read it back in and check it
+
+ext_range_sav <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/extended_range/extended_range_sav.shp"))
+
+tm_shape(ext_range) +
+  tm_polygons(col = "blue") +
+tm_shape(ext_range_sav) +
+  tm_polygons() +
+  tmap_mode("view")
+
+```
+
+
+```{r}
+#test plots
 
 #verification plots: sav range and extended range map
 tm_shape(ext_range) +
@@ -161,47 +193,123 @@ tm_shape(sav_geom) +
 tm_shape(ext_range) +
   tm_polygons() +
 tm_shape(wpa_intersect) +
-  tm_polygons(col = "blue")
+  tm_polygons(col = "blue") +
+  tmap_mode("view")
 
 tm_shape(ext_range) +
-  tm_polygons()
-
-#dissolving polygons into one layer
-
-ext_range_dissolved <- st_union(ext_range)
-
-tm_shape(ext_range_dissolved) +
-  tm_polygons()
+  tm_polygons() +
+  tmap_mode("view")
 ```
 
 
 #Pressure Layers
 
-Di Minin et al. only retained areas where human, cattle, and crop densities were in the first decile  (the decile with the highest human population, crop, and cattle densities). We will only be using human population and cropland measurements, as we aren't looking at lion conflict (cattle predation).
+Di Minin et al. only retained areas where human, cattle, and crop densities were in the first decile (the decile with the highest human population, crop, and cattle densities). We will only be using human population and cropland measurements, as we aren't looking at lion conflict (cattle predation).
 
 ##Land cover data
 
+Land classification：
+1	Water
+2	Forest
+3	Grassland
+4	Barren
+5	Cropland - this is the one we will select for
+6	Urban
+7	Permanent snow and ice
+
 ```{r}
+#turn off spherical geometry to simplify joins, etc.
+sf_use_s2(FALSE)
+
 #load in the land use/ land cover data
 
 lulc <- rast(here(HWC_data, "/Geospatial Data/Chen_LULC_data/global_LULC_2015.tif"))
 
-#africa extent map
+#read in a shapefile for Africa and rasterize it
 
-africa <- vect(here(HWC_data, "/Geospatial Data/basemaps/Africa_Boundaries/afr_g2014_2013_0.shp")) %>% 
-  rasterize()
+africa <- vect(here(HWC_data, "/Geospatial Data/basemaps/africa_continent/africa_continent.shp"))
 
-#crop lulc to africa extent
+africa_rast <- rasterize(africa, lulc)
 
-lulc_africa <- crop(lulc, africa)
+#mask lulc to africa extent
 
-#plot to confirm
+lulc_africa <- mask(lulc, africa)
 
-tm_shape(lulc_africa) +
-  tm_raster(col = levels(lulc_africa)) +
+#test plot
+
+plot(lulc_africa)
+```
+
+```{r}
+#save the file to the drive
+
+writeRaster(lulc_africa, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/cropped_lulc/lulc_africa.tif"), filetype = "GTiff")
+```
+
+
+```{r}
+#filter just for cropland by reclassifying (cropland is 1, everything else is 0)
+
+africa_cropland <- lulc_africa
+
+africa_cropland[africa_cropland != 5] <- 0
+
+africa_cropland[africa_cropland == 5] <- 1
+
+#test plot
+
+plot(africa_cropland)
+
+tm_shape(africa_cropland, raster.warp = FALSE) +
+  tm_raster() +
   tmap_mode("view")
 
+#aggregate cropland
+
+africa_cropland_agg <- terra::aggregate(africa_cropland, fact = 10, fun = mean, na.rm = TRUE)
+
+plot(africa_cropland_agg)
+
+#reclassify aggregated agriculture into 3 categories
+
+# keep only the top decile (as in Di Minin et al.)
+
+top10_crop <- africa_cropland_agg
+
+top10_crop[top10_crop < 0.9] <- NA
+
+top10_crop[top10_crop >= 0.9] <- 1
+
+plot(top10_crop)
+
 ```
+
+
+```{r}
+#save raster for aggregated cropland
+
+writeRaster(africa_cropland_agg, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/lulc_formatted/lulc_aggregated/africa_cropland_agg.tif"), filetype = "GTiff")
+
+#save raster for cropland top decile
+
+writeRaster(top10_crop, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/lulc_formatted/lulc_top10/top10_crop.tif"), filetype = "GTiff")
+
+```
+
+```{r}
+#visualization
+
+crop_dens <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/lulc_formatted/lulc_top10/top10_crop.tif"))
+
+extended_range <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/extended_range/extended_range_sav.shp"))
+
+tm_shape(extended_range) +
+  tm_polygons() +
+tm_shape(crop_dens) +
+  tm_raster()+
+tmap_mode("view")
+```
+
 
 ##Human density data
 
@@ -211,13 +319,15 @@ tm_shape(lulc_africa) +
 
 ##Ranked pressures layer
 
-2 - High risk: high human + crop density
-1 - Med risk: high human OR crop density
-0 - Low risk: NO high human and NO high crop density
+2 - High risk: high human + crop density 1 - Med risk: high human OR crop density 0 - Low risk: NO high human and NO high crop density
 
 #Conflict layer
 
 Extended range map is buffered by 10 km and intersected with classified pressures layer
+
+```{r}
+
+```
 
 ##Asessing validity
 
