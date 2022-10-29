@@ -47,6 +47,18 @@ all_elephant_range <- rbind(sav, forest)
 ```
 
 ```{r}
+#save combined range data
+
+st_write(all_elephant_range, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/range_sav_forest/all_elephant_range.shp"))
+
+#read it back in and check it
+
+all_range <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/range_sav_forest/all_elephant_range.shp"))
+
+```
+
+
+```{r}
 #plot combined range
 tm_shape(all_elephant_range) +
   tm_polygons(col = "LEGEND") +
@@ -66,7 +78,6 @@ World protected area aata is divided into 3 sets of polygons and 3 sets of point
 
 Di Minin et al. (2021) only included in their analysis IUCN categories Ia (Strict Nature Reserve), Ib (Wilderness Area), II (National Park), III (Natural Monument or Feature), and IV (Habitat/Species Management Area). Additionally, to prevent overestimation of the area coverage of protected areas caused by overlapping designations, Di Minin et al. merged polygons into a single layer. 
 
-We will join and filter the polygon and point data in R, and then 
 
 ```{r}
 #turn off spherical geometry to simplify joins, etc.
@@ -103,6 +114,21 @@ tm_shape(wpa_allpol_dissolved) +
 
 ```
 
+```{r}
+#save the wpa shapefiles
+
+st_write(wpa_all_polygons, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/wpas_merged_filtered/wpa_allpol_filtered.shp"))
+
+st_write(wpa_allpol_dissolved, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/wpas_filtered_dissolved/wpa_allpol_filtered_diss.shp"))
+
+#read them back in and check them
+
+wpa_allpol <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/wpas_merged_filtered/wpa_allpol_filtered.shp"))
+
+wpa_dissolved <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/wpas_filtered_dissolved/wpa_allpol_filtered_diss.shp"))
+
+```
+
 ```{r point data}
 #point data layers - not used in analysis, provided just for thoroughness
 
@@ -136,6 +162,9 @@ tm_shape(wpa_all_points) +
 From Di Minin et al: The elephant range maps and the protected area layer were intersected to select all protected areas that contain parts of lion and elephant range and/or were adjacent to the species-range maps. The identified protected areas were then merged with the species-range maps to create a new extended range layer
 
 ```{r}
+
+##Savanna elephant only in this chunk
+
 #protected areas that contain part of elephant range
 
 wpa_intersect <- st_join(wpa_allpol_geom, sav_geom, join = st_intersects, left = FALSE)
@@ -158,12 +187,12 @@ wpa_adj <- st_join(wpa_allpol_geom, sav_geom, join = st_touches, left = FALSE)
 
 ext_range <- rbind(sav_geom, wpa_intersect, wpa_adj)
 
-#dissolving polygons into one layer
+#dissolving polygons into one layer - didn't save this one as it may not be correct
 ext_range_dissolved <- st_union(ext_range)
 ```
 
 ```{r}
-#save the raster
+#save the shapefile
 
 st_write(ext_range, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/extended_range/extended_range_sav.shp"))
 
@@ -198,6 +227,73 @@ tm_shape(wpa_intersect) +
 
 tm_shape(ext_range) +
   tm_polygons() +
+  tmap_mode("view")
+```
+
+```{r}
+##Savanna and forest elephant ranges in this chunk
+
+#read in wpa data and filter for geometry
+wpa_allpol <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/wpas_merged_filtered/wpa_allpol_filtered.shp"))
+
+#wpa polygons, geometry only - no other attributes
+
+wpa_allpol_geom <- wpa_allpol %>% 
+  select(geometry)
+
+#read in range data
+
+el_range <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/range_sav_forest/all_elephant_range.shp"))
+
+#filter just for geometry
+
+range_geom <- el_range %>% 
+  select(geometry)
+
+#protected areas that contain part of elephant range
+
+wpa_int <- st_join(wpa_allpol_geom, range_geom, join = st_intersects, left = FALSE)
+
+#verification plot: sav range and intersection
+
+tm_shape(range_geom) +
+  tm_polygons() +
+tm_shape(wpa_int) +
+  tm_polygons( col = "blue") +
+tmap_mode("view")
+
+#protected areas that are adjacent to elephant range
+
+wpa_adjacent <- st_join(wpa_allpol_geom, range_geom, join = st_touches, left = FALSE)
+
+#this join is returning no data, suggesting that there are no polygons that satisfy the st_touches function (i.e., no adjacent polygons)
+
+#creating an extended range map - no data, just polygons
+
+ext_range_all <- rbind(range_geom, wpa_int, wpa_adjacent)
+
+#dissolving polygons into one layer - didn't save this one as it may not be correct
+ext_range_all_dissolved <- st_union(ext_range_all)
+
+```
+
+```{r}
+#test plots
+
+tm_shape(ext_range_all) +
+  tm_polygons() +
+tm_shape(range_geom) +
+  tm_polygons(col = "blue") +
+  tmap_mode("view")
+
+tm_shape(ext_range_all) +
+  tm_polygons() +
+tm_shape(wpa_int) +
+  tm_polygons(col = "blue") +
+  tmap_mode("view")
+
+tm_shape(ext_range_all) +
+  tm_polygons(col = "cyan4") +
   tmap_mode("view")
 ```
 
@@ -308,11 +404,10 @@ sf_use_s2(FALSE)
 
 extended_range <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/extended_range/extended_range_sav.shp"))
 
-crop_dens <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/lulc_formatted/lulc_top10/top10_crop.tif"))
+crop_dens <- (rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/lulc_formatted/lulc_top10/top10_crop.tif")))
 
-tm_shape(crop_dens) +
-  tm_raster() +
-  tmap_mode("plot")
+plot(crop_dens)
+
 ```
 
 
