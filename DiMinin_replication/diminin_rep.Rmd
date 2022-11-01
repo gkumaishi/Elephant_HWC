@@ -13,6 +13,9 @@ library(terra)
 library(sf)
 library(tmap)
 library(geos)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(tidyterra)
 
 #File path to the HWC_data folder
 
@@ -408,6 +411,19 @@ crop_dens <- (rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/lul
 
 plot(crop_dens)
 
+#create a basemap
+
+basemap_africa <- ne_countries(
+  continent = "Africa",
+  scale = "medium", 
+  returnclass = "sf") %>% 
+  st_transform(crs = crs(crop_dens))  # make sure crs is same as raster
+
+basemap_africa_vect <- basemap_africa %>% 
+  vect()
+
+plot(basemap_africa_vect, col = "grey90")
+plot(crop_dens, add = TRUE)
 ```
 
 
@@ -419,7 +435,14 @@ plot(crop_dens)
 
 ##Ranked pressures layer
 
-2 - High risk: high human + crop density 1 - Med risk: high human OR crop density 0 - Low risk: NO high human and NO high crop density
+2 - High risk: high human + crop density 
+1 - Med risk: high human OR crop density 
+0 - Low risk: NO high human and NO high crop density
+
+```{r}
+
+```
+
 
 #Conflict layer
 
