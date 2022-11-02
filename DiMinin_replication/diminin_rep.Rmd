@@ -430,6 +430,42 @@ plot(crop_dens, add = TRUE)
 ##Human density data
 
 ```{r}
+popdens <- rast(here(HWC_data, "/Geospatial Data/Pop_dens/fpop_data/FPOP_SSP1/FPOP_SSP1_2020.tif"))
+
+#turn off spherical geometry to simplify joins, etc.
+sf_use_s2(FALSE)
+
+#read in a shapefile for Africa and rasterize it
+
+africa <- vect(here(HWC_data, "/Geospatial Data/basemaps/africa_continent/africa_continent.shp"))
+
+africa_rast <- rasterize(africa, popdens)
+
+#mask lulc to africa extent
+
+popdens_africa <- mask(popdens, africa)
+
+#test plot
+
+plot(popdens_africa)
+
+#aggregate pop density
+
+africa_popdens_agg <- terra::aggregate(popdens_africa, fact = 10, fun = mean, na.rm = TRUE)
+
+plot(africa_popdens_agg)
+
+#reclassify aggregated agriculture into 3 categories
+
+# keep only the top decile (as in Di Minin et al.)
+
+top10_crop <- africa_cropland_agg
+
+top10_crop[top10_crop < 0.9] <- NA
+
+top10_crop[top10_crop >= 0.9] <- 1
+
+plot(top10_crop)
 
 ```
 
