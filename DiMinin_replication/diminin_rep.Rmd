@@ -409,8 +409,6 @@ extended_range <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_D
 
 crop_dens <- (rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/lulc_formatted/lulc_top10/top10_crop.tif")))
 
-plot(crop_dens)
-
 #create a basemap
 
 basemap_africa <- ne_countries(
@@ -422,6 +420,8 @@ basemap_africa <- ne_countries(
 basemap_africa_vect <- basemap_africa %>% 
   vect()
 
+#map crop density
+
 plot(basemap_africa_vect, col = "grey90")
 plot(crop_dens, add = TRUE)
 ```
@@ -429,8 +429,13 @@ plot(crop_dens, add = TRUE)
 
 ##Human density data
 
+Fpop data
+
 ```{r}
-popdens <- rast(here(HWC_data, "/Geospatial Data/Pop_dens/fpop_data/FPOP_SSP1/FPOP_SSP1_2020.tif"))
+lulc <- rast(here(HWC_data, "/Geospatial Data/Chen_LULC_data/global_LULC_2015.tif"))
+
+popdens <- rast(here(HWC_data, "/Geospatial Data/Pop_dens/fpop_data/FPOP_SSP1/FPOP_SSP1_2020.tif")) %>% 
+  project(lulc)
 
 #turn off spherical geometry to simplify joins, etc.
 sf_use_s2(FALSE)
@@ -451,7 +456,7 @@ plot(popdens_africa)
 
 #aggregate pop density
 
-africa_popdens_agg <- terra::aggregate(popdens_africa, fact = 10, fun = mean, na.rm = TRUE)
+africa_popdens_agg <- terra::aggregate(popdens_africa, fact = 10, fun = sum, na.rm = TRUE)
 
 plot(africa_popdens_agg)
 
@@ -459,13 +464,114 @@ plot(africa_popdens_agg)
 
 # keep only the top decile (as in Di Minin et al.)
 
-top10_crop <- africa_cropland_agg
+decs <- global(africa_popdens_agg, quantile, probs = seq(0, 1, 0.1), na.rm = TRUE)
+  
+topdec <- decs$X90.
 
-top10_crop[top10_crop < 0.9] <- NA
+top10_pop <- africa_popdens_agg
 
-top10_crop[top10_crop >= 0.9] <- 1
+top10_pop[top10_pop < topdec] <- NA
 
-plot(top10_crop)
+top10_pop[top10_pop >= topdec] <- 1
+
+#create a basemap
+
+basemap_africa <- ne_countries(
+  continent = "Africa",
+  scale = "medium", 
+  returnclass = "sf") %>% 
+  st_transform(crs = crs(top10_pop))  # make sure crs is same as raster
+
+basemap_africa_vect <- basemap_africa %>% 
+  vect()
+
+#map pop density
+
+plot(basemap_africa_vect, col = "grey98")
+plot(top10_pop, add = TRUE)
+```
+
+```{r}
+#save raster for aggregated pop density
+
+writeRaster(africa_popdens_agg, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/pop_density/africa_popdens_agg.tif"), filetype = "GTiff", overwrite = TRUE)
+
+#save raster for pop density top decile
+
+writeRaster(top10_pop, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/pop_density/top10_pop.tif"), filetype = "GTiff", overwrite = TRUE)
+
+```
+
+GPW v 4
+
+```{r}
+lulc <- rast(here(HWC_data, "/Geospatial Data/Chen_LULC_data/global_LULC_2015.tif"))
+
+popdensgpw <- rast(here(HWC_data, "/Geospatial Data/Pop_dens/gpw_v4_population_density_adjusted_to_2015_unwpp_country_totals_rev11_2015_2pt5_min.tif")) %>% 
+  project(lulc)
+
+#turn off spherical geometry to simplify joins, etc.
+sf_use_s2(FALSE)
+
+#read in a shapefile for Africa and rasterize it
+
+africa <- vect(here(HWC_data, "/Geospatial Data/basemaps/africa_continent/africa_continent.shp"))
+
+africa_rast <- rasterize(africa, popdensgpw)
+
+#mask lulc to africa extent
+
+gpw_africa <- mask(popdensgpw, africa)
+
+#test plot
+
+plot(gpw_africa)
+
+#aggregate pop density
+
+africa_gpw_agg <- terra::aggregate(gpw_africa, fact = 10, fun = sum, na.rm = TRUE)
+
+plot(africa_gpw_agg)
+
+#reclassify aggregated agriculture into 3 categories
+
+# keep only the top decile (as in Di Minin et al.)
+
+decsgpw <- global(africa_gpw_agg, quantile, probs = seq(0, 1, 0.1), na.rm = TRUE)
+  
+topdecgpw <- decsgpw$X90.
+
+top10_pop_gpw <- africa_gpw_agg
+
+top10_pop_gpw[top10_pop_gpw < topdecgpw] <- NA
+
+top10_pop_gpw[top10_pop_gpw >= topdecgpw] <- 1
+
+#create a basemap
+
+basemap_africa <- ne_countries(
+  continent = "Africa",
+  scale = "medium", 
+  returnclass = "sf") %>% 
+  st_transform(crs = crs(top10_pop_gpw))  # make sure crs is same as raster
+
+basemap_africa_vect <- basemap_africa %>% 
+  vect()
+
+#map pop density
+
+plot(basemap_africa_vect, col = "grey98")
+plot(top10_pop_gpw, add = TRUE)
+```
+
+```{r}
+#save raster for aggregated pop density
+
+writeRaster(africa_gpw_agg, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/pop_density/africa_gpw_agg.tif"), filetype = "GTiff", overwrite = TRUE)
+
+#save raster for pop density top decile
+
+writeRaster(top10_pop_gpw, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/pop_density/top10_pop_gpw.tif"), filetype = "GTiff", overwrite = TRUE)
 
 ```
 
@@ -476,6 +582,48 @@ plot(top10_crop)
 0 - Low risk: NO high human and NO high crop density
 
 ```{r}
+#read in the data, set NA values to 0
+
+human_dens <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/pop_density/top10_pop.tif"))
+
+human_dens[is.na(human_dens)] <- 0 
+
+crop_dens <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/lulc_formatted/lulc_top10/top10_crop.tif"))
+
+crop_dens[is.na(crop_dens)] <- 0 
+
+#read in a shapefile for Africa and rasterize it
+
+africa <- vect(here(HWC_data, "/Geospatial Data/basemaps/africa_continent/africa_continent.shp"))
+
+africa_rast <-rast(africa) %>% 
+  project(crop_dens)
+
+#raster math to create ranked conflict layer
+
+ranked_conflict <- human_dens + crop_dens
+
+#re-mask to Africa
+
+ranked_conflict_masked <- mask(ranked_conflict, africa_rast)
+
+#create a basemap
+
+basemap_africa <- ne_countries(
+  continent = "Africa",
+  scale = "medium", 
+  returnclass = "sf") %>% 
+  st_transform(crs = crs(ranked_conflict))  # make sure crs is same as raster
+
+basemap_africa_vect <- basemap_africa %>% 
+  vect()
+
+#map ranked conflict
+
+#create color matrix
+
+plot(basemap_africa_vect, col = "grey98")
+plot(ranked_conflict, add = TRUE)
 
 ```
 
@@ -490,4 +638,4 @@ Extended range map is buffered by 10 km and intersected with classified pressure
 
 ##Asessing validity
 
-"Used Latin hypercube sampling, which is a form of sampling used to reduce the number of runs necessary for a Monte Carlo simulation to achieve a reasonably accurate random distribution67, to randomly vary 100 times the distance values between the extended range and human pressure maps. Specifically, we divided the low, moderate, high, and severe conflict lines into 100 m segments, calculated the minimum distance for each segment to human pressure within a 10, 20, and 30 km buffer distance from the edge of the extended range map layer, and then randomly varied that distance 100 times across ±10% of the value. We then averaged the resulting 100 randomly created distance values for each segment and identified which segments fell outside of the analyzed buffer distances of 10, 20, and 30 km. We tested for 20 and 30 km buffer distances, as we wanted to assess the variability of the fencing distance to different buffer sizes."
+"Used Latin hypercube sampling, which is a form of sampling used to reduce the number of runs necessary for a Monte Carlo simulation to achieve a reasonably accurate random distribution67, to randomly vary 100 times the distance values between the extended range and human pressure maps. Specifically, we divided the low, moderate, high, and severe conflict lines into 100-m segments, calculated the minimum distance for each segment to human pressure within a 10, 20, and 30-km buffer distance from the edge of the extended range map layer, and then randomly varied that distance 100 times across ±10% of the value. We then averaged the resulting 100 randomly created distance values for each segment and identified which segments fell outside of the analyzed buffer distances of 10, 20, and 30-km. We tested for 20 and 30-km buffer distances, as we wanted to assess the variability of the fencing distance to different buffer sizes."
