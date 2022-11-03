@@ -620,8 +620,6 @@ basemap_africa_vect <- basemap_africa %>%
 
 #map ranked conflict
 
-#create color matrix
-
 plot(basemap_africa_vect, col = "grey98")
 plot(ranked_conflict, add = TRUE)
 
