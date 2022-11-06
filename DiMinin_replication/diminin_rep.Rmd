@@ -432,47 +432,83 @@ plot(crop_dens, add = TRUE)
 Fpop data
 
 ```{r}
+#read in necessary data layers
+
+#read in lulc for reprojection
 lulc <- rast(here(HWC_data, "/Geospatial Data/Chen_LULC_data/global_LULC_2015.tif"))
-
-popdens <- rast(here(HWC_data, "/Geospatial Data/Pop_dens/fpop_data/FPOP_SSP1/FPOP_SSP1_2020.tif")) %>% 
-  project(lulc)
-
+  
 #turn off spherical geometry to simplify joins, etc.
 sf_use_s2(FALSE)
-
-#read in a shapefile for Africa and rasterize it
-
-africa <- vect(here(HWC_data, "/Geospatial Data/basemaps/africa_continent/africa_continent.shp"))
-
-africa_rast <- rasterize(africa, popdens)
-
-#mask lulc to africa extent
-
-popdens_africa <- mask(popdens, africa)
-
-#test plot
-
-plot(popdens_africa)
-
-#aggregate pop density
-
-africa_popdens_agg <- terra::aggregate(popdens_africa, fact = 10, fun = sum, na.rm = TRUE)
-
-plot(africa_popdens_agg)
-
-#reclassify aggregated agriculture into 3 categories
-
-# keep only the top decile (as in Di Minin et al.)
-
-decs <- global(africa_popdens_agg, quantile, probs = seq(0, 1, 0.1), na.rm = TRUE)
   
-topdec <- decs$X90.
+#read in a shapefile for Africa and rasterize it (to mask extent of population data)
+  
+africa <- vect(here(HWC_data, "/Geospatial Data/basemaps/africa_continent/africa_continent.shp")) %>% 
+  project(lulc)
+  
+africa_rast <- rasterize(africa, lulc)
 
-top10_pop <- africa_popdens_agg
+#create a function
 
-top10_pop[top10_pop < topdec] <- NA
+pop_wrangling <- function(x){
+  
+  #reproject the designated population raster
+  popdens <- project(x, lulc)
+  
+  #mask pop density to africa extent
+  popdens_africa <- mask(popdens, africa_rast)
+  
+  #aggregate pop density
+  
+  africa_popdens_agg <- terra::aggregate(popdens_africa, fact = 10, fun = sum, na.rm = TRUE)
+  
+  #keep only the top decile (as in Di Minin et al.)
+  
+  #calculate deciles
+  decs <- global(africa_popdens_agg, quantile, probs = seq(0, 1, 0.1), na.rm = TRUE)
+  
+  #save cutoff value for highest decile
+  
+  topdec <- decs$X90.
+  
+  #reclassify so that the upper decile is 1 and all other values are NA
+  
+  top10_pop <- africa_popdens_agg
+  
+  top10_pop[top10_pop < topdec] <- NA
+  
+  top10_pop[top10_pop >= topdec] <- 1
+  
+  return(top10_pop)
+}
 
-top10_pop[top10_pop >= topdec] <- 1
+#SSP1
+SSP1 <- rast(here(HWC_data, "/Geospatial Data/Pop_dens/fpop_data/FPOP_SSP1/FPOP_SSP1_2020.tif"))
+  
+SSP1_wrangled <- pop_wrangling(SSP1)
+
+#SSP2
+SSP2 <- rast(here(HWC_data, "/Geospatial Data/Pop_dens/fpop_data/FPOP_SSP2/FPOP_SSP2_2020.tif"))
+
+SSP2_wrangled <- pop_wrangling(SSP2)
+
+#SSP3
+SSP3 <- rast(here(HWC_data, "/Geospatial Data/Pop_dens/fpop_data/FPOP_SSP3/FPOP_SSP3_2020.tif"))
+
+SSP3_wrangled <- pop_wrangling(SSP3)
+
+#SSP4
+SSP4 <- rast(here(HWC_data, "/Geospatial Data/Pop_dens/fpop_data/FPOP_SSP4/FPOP_SSP4_2020.tif"))
+
+SSP4_wrangled <- pop_wrangling(SSP4)
+
+#SSP5
+SSP5 <- rast(here(HWC_data, "/Geospatial Data/Pop_dens/fpop_data/FPOP_SSP5/FPOP_SSP5_2020.tif"))
+
+SSP5_wrangled <- pop_wrangling(SSP5)
+```
+
+```{r}
+#test plots for human population density layers
 
 #create a basemap
 
@@ -480,16 +516,35 @@ basemap_africa <- ne_countries(
   continent = "Africa",
   scale = "medium", 
   returnclass = "sf") %>% 
-  st_transform(crs = crs(top10_pop))  # make sure crs is same as raster
+  st_transform(crs = crs(SSP1_wrangled))  # make sure crs is same as raster
 
 basemap_africa_vect <- basemap_africa %>% 
   vect()
 
-#map pop density
+#map pop density rasters
 
+#SSP1
 plot(basemap_africa_vect, col = "grey98")
-plot(top10_pop, add = TRUE)
+plot(SSP1_wrangled, add = TRUE, col = "green")
+
+#SSP2
+plot(basemap_africa_vect, col = "grey98")
+plot(SSP2_wrangled, add = TRUE, col = "darkseagreen4")
+
+#SSP3
+plot(basemap_africa_vect, col = "grey98")
+plot(SSP3_wrangled, add = TRUE, col = "goldenrod1")
+
+#SSP4
+plot(basemap_africa_vect, col = "grey98")
+plot(SSP4_wrangled, add = TRUE, col = "orange1")
+
+#SSP5
+plot(basemap_africa_vect, col = "grey98")
+plot(SSP5_wrangled, add = TRUE, col = "orangered")
 ```
+
+
 
 ```{r}
 #save raster for aggregated pop density
@@ -502,7 +557,7 @@ writeRaster(top10_pop, filename = here(HWC_data, "/Geospatial Data/Diminin_Repli
 
 ```
 
-GPW v 4
+GPW v 4 - we decided ultimately not to use this one
 
 ```{r}
 lulc <- rast(here(HWC_data, "/Geospatial Data/Chen_LULC_data/global_LULC_2015.tif"))
@@ -594,10 +649,10 @@ crop_dens[is.na(crop_dens)] <- 0
 
 #read in a shapefile for Africa and rasterize it
 
-africa <- vect(here(HWC_data, "/Geospatial Data/basemaps/africa_continent/africa_continent.shp"))
-
-africa_rast <-rast(africa) %>% 
+africa <- vect(here(HWC_data, "/Geospatial Data/basemaps/africa_continent/africa_continent.shp")) %>% 
   project(crop_dens)
+
+africa_rast <-rasterize(africa, crop_dens)
 
 #raster math to create ranked conflict layer
 
@@ -621,7 +676,7 @@ basemap_africa_vect <- basemap_africa %>%
 #map ranked conflict
 
 plot(basemap_africa_vect, col = "grey98")
-plot(ranked_conflict, add = TRUE)
+plot(ranked_conflict_masked, add = TRUE)
 
 ```
 
