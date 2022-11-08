@@ -523,9 +523,12 @@ basemap_africa_vect <- basemap_africa %>%
 
 #map pop density rasters
 
+#combine all plots into one graphic
+par(mfrow=c(2,3))
+
 #SSP1
 plot(basemap_africa_vect, col = "grey98")
-plot(SSP1_wrangled, add = TRUE, col = "green")
+plot(SSP1_wrangled, add = TRUE, col = "darkgreen")
 
 #SSP2
 plot(basemap_africa_vect, col = "grey98")
@@ -686,7 +689,10 @@ plot(ranked_conflict_masked, add = TRUE)
 Extended range map is buffered by 10 km and intersected with classified pressures layer
 
 ```{r}
+#read in the extended range map
 
+
+#buffer the extended range map
 ```
 
 ##Asessing validity
