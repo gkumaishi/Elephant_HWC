@@ -548,7 +548,6 @@ plot(SSP5_wrangled, add = TRUE, col = "orangered")
 ```
 
 
-
 ```{r}
 #save raster for aggregated pop density
 
@@ -684,16 +683,87 @@ plot(ranked_conflict_masked, add = TRUE)
 ```
 
 
+```{r}
+#save the ranked conflict layer
+
+writeRaster(ranked_conflict_masked, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/ranked_pressure_layers/current_day_rp.tif"), filetype = "GTiff", overwrite = TRUE)
+
+```
+
+
 #Conflict layer
 
 Extended range map is buffered by 10 km and intersected with classified pressures layer
 
 ```{r}
-#read in the extended range map
+#read in lulc data for reprojection
 
+lulc <- rast(here(HWC_data, "/Geospatial Data/Chen_LULC_data/global_LULC_2015.tif"))
 
-#buffer the extended range map
+crs <- crs(lulc)
+
+#read in the extended range map and reproject to the correct crs
+
+ext_range <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/extended_range/extended_range_sav.shp")) %>% 
+  st_transform(crs = crs)
+
+#buffer the extended range map by 10 km
+
+ext_range_buffered <- st_buffer(ext_range, 10000)
+
+#intersect the pressure layer with extended range map
+
+#convert range map to a spatvector and then a spatraster
+
+range_buff_rast <- vect(ext_range_buffered) %>% 
+  rasterize(lulc)
+
+#cut out internal polygons of protected areas so that only the buffer remains
+
+ext_range_rast <- vect(ext_range) %>% 
+  rasterize(lulc)
+
+buffers_only <- mask(range_buff_rast, ext_range_rast, inverse = TRUE)
+
+#read in the ranked pressures map
+
+ranked_press <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/ranked_pressure_layers/current_day_rp.tif")) %>% 
+  project(lulc, method = "near")
+
+conflict_int <- mask(ranked_press, buffers_only)
+
+#create a basemap
+
+basemap_africa <- ne_countries(
+  continent = "Africa",
+  scale = "medium", 
+  returnclass = "sf") %>% 
+  st_transform(crs = crs(ranked_conflict))  # make sure crs is same as raster
+
+basemap_africa_vect <- basemap_africa %>% 
+  vect()
+
+#set color matrix
+
+colors <- rbind(c(0, ))
+
+#plot conflict intersection
+plot(basemap_africa_vect, col = "grey60")
+plot(conflict_int, add = TRUE)
+
 ```
+
+```{r}
+#test plots
+
+#buffered extended range map
+tm_shape(ext_range_buffered) +
+  tm_polygons() +
+  tm_shape(ext_range) +
+  tm_polygons(col = "blue") +
+  tmap_mode("view")
+```
+
 
 ##Asessing validity
 
