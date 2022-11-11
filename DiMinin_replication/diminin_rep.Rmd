@@ -691,8 +691,9 @@ writeRaster(ranked_conflict_masked, filename = here(HWC_data, "/Geospatial Data/
 ```
 
 
-#Conflict layer
+#Conflict boundaries
 
+##Raster version
 Extended range map is buffered by 10 km and intersected with classified pressures layer
 
 ```{r}
@@ -738,18 +739,20 @@ basemap_africa <- ne_countries(
   continent = "Africa",
   scale = "medium", 
   returnclass = "sf") %>% 
-  st_transform(crs = crs(ranked_conflict))  # make sure crs is same as raster
+  st_transform(crs = crs(ranked_press))  # make sure crs is same as raster
 
 basemap_africa_vect <- basemap_africa %>% 
   vect()
 
 #set color matrix
 
-colors <- rbind(c(0, ))
+colors <- rbind(c(0, "darkgreen"),
+                c(1, "goldenrod"),
+                c(2, "orangered"))
 
 #plot conflict intersection
-plot(basemap_africa_vect, col = "grey60")
-plot(conflict_int, add = TRUE)
+plot(basemap_africa_vect, col = "grey98")
+plot(conflict_int, add = TRUE, col = colors)
 
 ```
 
@@ -762,6 +765,55 @@ tm_shape(ext_range_buffered) +
   tm_shape(ext_range) +
   tm_polygons(col = "blue") +
   tmap_mode("view")
+```
+
+```{r}
+#save the layer into drive
+
+writeRaster(conflict_int, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/current_day_cb_raster.tif"), filetype = "GTiff", overwrite = TRUE)
+
+```
+
+##Vector version
+
+```{r}
+#read in the conflict boundaries and test plot
+
+current_cb <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/current_day_cb_raster.tif"))
+
+#create a basemap
+
+basemap_africa <- ne_countries(
+  continent = "Africa",
+  scale = "medium", 
+  returnclass = "sf") %>% 
+  st_transform(crs = crs(current_cb))  # make sure crs is same as raster
+
+basemap_africa_vect <- basemap_africa %>% 
+  vect()
+
+#set color matrix
+
+colors <- rbind(c(0, "darkgreen"),
+                c(1, "goldenrod"),
+                c(2, "orangered"))
+
+#plot conflict boundaries
+plot(basemap_africa_vect, col = "grey98")
+plot(current_cb, add = TRUE, col = colors)
+
+#vectorize
+
+current_cb_vect <- terra::as.polygons(current_cb, trunc=TRUE, dissolve=TRUE, values=TRUE,
+    na.rm=TRUE, na.all=FALSE, extent=FALSE)
+
+current_cb_line <- st_as_sf(current_cb_vect) %>% 
+  st_cast("MULTILINESTRING")
+
+#plot conflict boundaries
+plot(basemap_africa_vect, col = "grey98")
+plot(current_cb_vect, add = TRUE)
+
 ```
 
 
