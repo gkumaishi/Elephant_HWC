@@ -804,9 +804,11 @@ plot(current_cb, add = TRUE, col = colors)
 
 #vectorize
 
+#first make it a spatvector
 current_cb_vect <- terra::as.polygons(current_cb, trunc=TRUE, dissolve=TRUE, values=TRUE,
     na.rm=TRUE, na.all=FALSE, extent=FALSE)
 
+#then turn that into a polyline
 current_cb_line <- st_as_sf(current_cb_vect) %>% 
   st_cast("MULTILINESTRING")
 

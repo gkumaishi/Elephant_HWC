@@ -1,0 +1,194 @@
+---
+title: "Projection Wrangling Script"
+author: "Mia Guarnieri"
+date: "2022-11-11"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(here)
+library(terra)
+library(sf)
+library(tmap)
+library(geos)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(tidyterra)
+
+#File path to the HWC_data folder
+
+HWC_data <- "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data"
+```
+
+#Set up pop variables
+
+All SSPs
+Years: 2030, 2050, 2070
+
+```{r eval = FALSE}
+year <- 2050
+
+ssp <- 1
+
+```
+
+#Load in pop data
+
+```{r}
+
+popfolder <- paste0("FPOP_SSP", ssp)
+
+popfile <- paste0("FPOP_SSP", ssp, "_" , year, ".tif")
+
+pop <- rast(here(HWC_data, "/Geospatial Data/Pop_dens/fpop_data/", popfolder, popfile))
+```
+
+#Pop data wrangling
+
+```{r}
+#reproject the designated population raster
+popdens <- project(pop, lulc)
+  
+#mask pop density to africa extent
+popdens_africa <- mask(popdens, africa_rast)
+  
+#aggregate pop density
+africa_popdens_agg <- terra::aggregate(popdens_africa, fact = 10, fun = sum, na.rm = TRUE)
+  
+#keep only the top decile (as in Di Minin et al.)
+
+#calculate deciles
+decs <- global(africa_popdens_agg, quantile, probs = seq(0, 1, 0.1), na.rm = TRUE)
+  
+#save cutoff value for highest decile
+topdec <- decs$X90.
+  
+#reclassify so that the upper decile is 1 and all other values are NA
+  
+top10_pop <- africa_popdens_agg
+  
+top10_pop[top10_pop < topdec] <- NA
+  
+top10_pop[top10_pop >= topdec] <- 1
+```
+
+#Set up crop variables
+
+All SSPs
+
+SSP 1 RCP 2.6
+SSP 2 RCP 4.5
+SSP 3 RCP 7.0 
+SSP 4 RCP 6.0 
+SSP 5 RCP 8.5
+
+Years: 2030, 2050, 2070
+
+```{r eval = FALSE}
+year <- 2050
+
+ssp <- 1
+
+rcp <- 26 #2.6 - no decimals in the file path
+
+```
+
+#Load in crop data
+
+```{r}
+
+cropfolder <- paste0("SSP", ssp, "_", "RCP", rcp)
+
+cropfile <- paste0("global_", "SSP", ssp, "_", "RCP", rcp, "_", year, ".tif")
+
+crop <- rast(here(HWC_data, "/Geospatial Data/Chen_LULC_data", cropfolder, cropfile))
+```
+
+#Crop data wrangling
+
+```{r}
+#turn off spherical geometry to simplify joins, etc.
+sf_use_s2(FALSE)
+
+#read in a shapefile for Africa and rasterize it
+
+africa <- vect(here(HWC_data, "/Geospatial Data/basemaps/africa_continent/africa_continent.shp"))
+
+africa_rast <- rasterize(africa, crop)
+
+#mask lulc to africa extent
+
+lulc_africa <- mask(crop, africa)
+
+#filter just for cropland by reclassifying (cropland is 1, everything else is 0)
+
+africa_cropland <- lulc_africa
+
+africa_cropland[africa_cropland != 5] <- 0
+
+africa_cropland[africa_cropland == 5] <- 1
+
+#aggregate cropland
+
+africa_cropland_agg <- terra::aggregate(africa_cropland, fact = 10, fun = mean, na.rm = TRUE)
+
+#reclassify aggregated agriculture into 3 categories
+
+# keep only the top decile (as in Di Minin et al.)
+
+top10_crop <- africa_cropland_agg
+
+top10_crop[top10_crop < 0.9] <- NA
+
+top10_crop[top10_crop >= 0.9] <- 1
+
+```
+
+#Ranked pressures map
+
+```{r}
+#read in the data, set NA values to 0
+
+human_dens <- top10_pop
+
+human_dens[is.na(human_dens)] <- 0 
+
+crop_dens <- top10_crop
+
+crop_dens[is.na(crop_dens)] <- 0 
+
+#read in a shapefile for Africa and rasterize it
+
+africa <- vect(here(HWC_data, "/Geospatial Data/basemaps/africa_continent/africa_continent.shp")) %>% 
+  project(crop_dens)
+
+africa_rast <-rasterize(africa, crop_dens)
+
+#raster math to create ranked conflict layer
+
+ranked_conflict <- human_dens + crop_dens
+
+#re-mask to Africa
+
+ranked_conflict_masked <- mask(ranked_conflict, africa_rast)
+
+#create a basemap
+
+basemap_africa <- ne_countries(
+  continent = "Africa",
+  scale = "medium", 
+  returnclass = "sf") %>% 
+  st_transform(crs = crs(ranked_conflict))  # make sure crs is same as raster
+
+basemap_africa_vect <- basemap_africa %>% 
+  vect()
+
+#map ranked conflict
+
+plot(basemap_africa_vect, col = "grey98")
+plot(ranked_conflict_masked, add = TRUE)
+
+```
