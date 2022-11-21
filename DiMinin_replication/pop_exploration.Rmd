@@ -50,71 +50,164 @@ SSP5 <- rast(here(HWC_data, "/Geospatial Data/Pop_dens/fpop_data/FPOP_SSP5/FPOP_
 #read in lulc for reprojection
 lulc <- rast(here(HWC_data, "/Geospatial Data/Chen_LULC_data/global_LULC_2015.tif"))
   
-#read in a shapefile for Africa and rasterize it (to mask extent of population data)
+#read in a ratser for Africa 
   
-africa <- vect(here(HWC_data, "/Geospatial Data/basemaps/africa_continent/africa_continent.shp")) %>% 
-  project(lulc)
-  
-africa_rast <- rasterize(africa, lulc)
+africa <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/africa_rast/africa_rast.tiff"))
+```
+
+```{r}
+#save the Africa raster for later processing
+
+writeRaster(africa, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/africa_rast/africa_rast.tif"), filetype = "GTiff", overwrite = TRUE)
+
 ```
 
 
-
-#Wrangling function
+#Wrangling 
 
 ```{r}
-top_pop <- function(x){
+#turn off spherical geometry to simplify joins, etc.
+sf_use_s2(FALSE)
+
+#Function to aggregate pop density
+
+pop_agg <- function(x){
   
   #reproject the designated population raster
   popdens <- project(x, lulc)
   
   #mask pop density to africa extent
-  popdens_africa <- mask(popdens, africa_rast)
+  popdens_africa <- mask(popdens, africa)
   
   #aggregate pop density
   
   africa_popdens_agg <- terra::aggregate(popdens_africa, fact = 10, fun = sum, na.rm = TRUE)
+  
+  return(africa_popdens_agg)
 }
 
+
+SSP1_agg <- pop_agg(SSP1)
+
+SSP2_agg <- pop_agg(SSP2)
+
+SSP3_agg <- pop_agg(SSP3)
+
+SSP4_agg <- pop_agg(SSP4)
+
+SSP5_agg <- pop_agg(SSP5)
+
+wp2010_agg <- pop_agg(wp2010)
 ```
 
 ```{r}
- #keep only the top decile (as in Di Minin et al.) - not running this for the time being
-  
-  #calculate deciles
-  decs <- global(africa_popdens_agg, quantile, probs = seq(0, 1, 0.1), na.rm = TRUE)
-  
-  #save cutoff value for highest decile
-  
-  topdec <- decs$X90.
-  
-  #reclassify so that the upper decile is 1 and all other values are NA
-  
-  top10_pop <- africa_popdens_agg
-  
-  top10_pop[top10_pop < topdec] <- NA
-  
-  top10_pop[top10_pop >= topdec] <- 1
-  
-  return(top10_pop)
+#saving the aggregated rasters
+
+writeRaster(SSP1_agg, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/pop_density/2020_agg_pop/ssp1.tif"), filetype = "GTiff", overwrite = TRUE)
+
+writeRaster(SSP2_agg, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/pop_density/2020_agg_pop/ssp2.tif"), filetype = "GTiff", overwrite = TRUE)
+
+writeRaster(SSP3_agg, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/pop_density/2020_agg_pop/ssp3.tif"), filetype = "GTiff", overwrite = TRUE)
+
+writeRaster(SSP4_agg, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/pop_density/2020_agg_pop/ssp4.tif"), filetype = "GTiff", overwrite = TRUE)
+
+writeRaster(SSP5_agg, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/pop_density/2020_agg_pop/ssp5.tif"), filetype = "GTiff", overwrite = TRUE)
+
+writeRaster(wp2010_agg, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/pop_density/wp2010_agg.tif"), filetype = "GTiff", overwrite = TRUE)
+
 ```
 
 
 #Run the wrangling function
 
 ```{r}
+#reading in the saved rasters
 
-ssp1_diff <- SSP1 - wp2010
+ssp1 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/pop_density/2020_agg_pop/ssp1.tif"))
 
-ssp2_diff <- SSP2 - wp2010
+ssp2 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/pop_density/2020_agg_pop/ssp2.tif"))
 
-ssp3_diff <- SSP3 - wp2010
+ssp3 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/pop_density/2020_agg_pop/ssp3.tif"))
 
-ssp4_diff <- SSP4 - wp2010
+ssp4 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/pop_density/2020_agg_pop/ssp4.tif"))
 
-ssp5_diff <- SSP5 - wp2010
+ssp5 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/pop_density/2020_agg_pop/ssp5.tif"))
+
+wp2010 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/pop_density/wp2010_agg.tif"))
 
 ```
+
+
+```{r}
+#take the difference
+
+ssp1_diff <- ssp1 - wp2010
+
+#min value   :      -97705.66 
+#max value   :     1915242.31 
+
+ssp2_diff <- ssp2 - wp2010
+
+# min value   :      -98834.27 
+# max value   :      454501.91 
+
+ssp3_diff <- ssp3 - wp2010
+
+# min value   :      -96657.59 
+# max value   :      466582.34 
+
+ssp4_diff <- ssp4 - wp2010
+
+# min value   :      -97658.98 
+# max value   :      461080.28 
+
+ssp5_diff <- ssp5 - wp2010
+
+# min value   :       -97879.8 
+# max value   :       459688.4 
+
+```
+
+```{r}
+#test plots 
+
+#create a basemap
+
+basemap_africa <- ne_countries(
+  continent = "Africa",
+  scale = "medium", 
+  returnclass = "sf") %>% 
+  st_transform(crs = crs(ssp1_diff))  # make sure crs is same as raster
+
+basemap_africa_vect <- basemap_africa %>% 
+  vect()
+
+#map pop density difference rasters
+
+#combine all plots into one graphic
+par(mfrow=c(2,3))
+
+#SSP1
+plot(basemap_africa_vect, col = "grey98")
+plot(ssp1_diff, add = TRUE)
+
+#SSP2
+plot(basemap_africa_vect, col = "grey98")
+plot(ssp2_diff, add = TRUE)
+
+#SSP3
+plot(basemap_africa_vect, col = "grey98")
+plot(ssp3_diff, add = TRUE)
+
+#SSP4
+plot(basemap_africa_vect, col = "grey98")
+plot(ssp2_diff, add = TRUE)
+
+#SSP5
+plot(basemap_africa_vect, col = "grey98")
+plot(ssp5_diff, add = TRUE)
+```
+
 
 #Plot
 

@@ -440,12 +440,9 @@ lulc <- rast(here(HWC_data, "/Geospatial Data/Chen_LULC_data/global_LULC_2015.ti
 #turn off spherical geometry to simplify joins, etc.
 sf_use_s2(FALSE)
   
-#read in a shapefile for Africa and rasterize it (to mask extent of population data)
+#read in a raster for Africa
   
-africa <- vect(here(HWC_data, "/Geospatial Data/basemaps/africa_continent/africa_continent.shp")) %>% 
-  project(lulc)
-  
-africa_rast <- rasterize(africa, lulc)
+africa <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/africa_rast/africa_rast.tif"))
 
 #create a function
 
@@ -455,7 +452,7 @@ pop_wrangling <- function(x){
   popdens <- project(x, lulc)
   
   #mask pop density to africa extent
-  popdens_africa <- mask(popdens, africa_rast)
+  popdens_africa <- mask(popdens, africa)
   
   #aggregate pop density
   
@@ -559,6 +556,29 @@ writeRaster(top10_pop, filename = here(HWC_data, "/Geospatial Data/Diminin_Repli
 
 ```
 
+Worldpop 2015
+
+```{r}
+#read in the data
+wpop_2015 <- rast(here(HWC_data, "/Geospatial Data/Pop_dens/fpop_data/ppp_2015_1km_Aggregated.tif"))
+
+#read in lulc for reprojection
+lulc <- rast(here(HWC_data, "/Geospatial Data/Chen_LULC_data/global_LULC_2015.tif"))
+
+#read in a raster for Africa
+  
+africa <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/africa_rast/africa_rast.tif"))
+
+#run the wrangling function (created above)
+wp_15_wrangled <- pop_wrangling(wpop_2015)
+
+#save raster for pop density top decile
+
+writeRaster(wp_15_wrangled, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/pop_density/wpop_2015_top10.tif"), filetype = "GTiff", overwrite = TRUE)
+
+```
+
+
 GPW v 4 - we decided ultimately not to use this one
 
 ```{r}
@@ -641,7 +661,7 @@ writeRaster(top10_pop_gpw, filename = here(HWC_data, "/Geospatial Data/Diminin_R
 ```{r}
 #read in the data, set NA values to 0
 
-human_dens <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/pop_density/top10_pop.tif"))
+human_dens <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/pop_density/wpop_2015_top10.tif"))
 
 human_dens[is.na(human_dens)] <- 0 
 
@@ -686,7 +706,7 @@ plot(ranked_conflict_masked, add = TRUE)
 ```{r}
 #save the ranked conflict layer
 
-writeRaster(ranked_conflict_masked, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/ranked_pressure_layers/current_day_rp.tif"), filetype = "GTiff", overwrite = TRUE)
+writeRaster(ranked_conflict_masked, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/ranked_pressure_layers/wp2015_current_day_rp.tif"), filetype = "GTiff", overwrite = TRUE)
 
 ```
 
@@ -728,7 +748,7 @@ buffers_only <- mask(range_buff_rast, ext_range_rast, inverse = TRUE)
 
 #read in the ranked pressures map
 
-ranked_press <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/ranked_pressure_layers/current_day_rp.tif")) %>% 
+ranked_press <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/ranked_pressure_layers/wp2015_current_day_rp.tif")) %>% 
   project(lulc, method = "near")
 
 conflict_int <- mask(ranked_press, buffers_only)
@@ -770,7 +790,7 @@ tm_shape(ext_range_buffered) +
 ```{r}
 #save the layer into drive
 
-writeRaster(conflict_int, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/current_day_cb_raster.tif"), filetype = "GTiff", overwrite = TRUE)
+writeRaster(conflict_int, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/wp2015_current_day_cb_raster.tif"), filetype = "GTiff", overwrite = TRUE)
 
 ```
 
@@ -779,7 +799,7 @@ writeRaster(conflict_int, filename = here(HWC_data, "/Geospatial Data/Diminin_Re
 ```{r}
 #read in the conflict boundaries and test plot
 
-current_cb <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/current_day_cb_raster.tif"))
+current_cb <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/wp2015_current_day_cb_raster.tif"))
 
 #create a basemap
 
@@ -798,6 +818,8 @@ colors <- rbind(c(0, "darkgreen"),
                 c(1, "goldenrod"),
                 c(2, "orangered"))
 
+pal <- c("darkgreen", "goldenrod", "orangered")
+
 #plot conflict boundaries
 plot(basemap_africa_vect, col = "grey98")
 plot(current_cb, add = TRUE, col = colors)
@@ -814,7 +836,14 @@ current_cb_line <- st_as_sf(current_cb_vect) %>%
 
 #plot conflict boundaries
 plot(basemap_africa_vect, col = "grey98")
-plot(current_cb_vect, add = TRUE)
+plot(current_cb_line, add = TRUE, pal = pal)
+
+```
+
+```{r}
+#save the polyline shapefile
+
+st_write(current_cb_line, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/wp2015_current_day_cb_lines.shp"))
 
 ```
 

@@ -1,11 +1,4 @@
----
-title: "Projection Wrangling Script"
-author: "Mia Guarnieri"
-date: "2022-11-11"
-output: html_document
----
-
-```{r setup, include=FALSE}
+## ----setup, include=FALSE---------------------------------------------------------------------------------------------------
 knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
@@ -21,23 +14,16 @@ library(tidyterra)
 #File path to the HWC_data folder
 
 HWC_data <- "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data"
-```
 
-#Set up pop variables
 
-All SSPs
-Years: 2030, 2050, 2070
+## ----eval = FALSE-----------------------------------------------------------------------------------------------------------
+## year <- 2030
+## 
+## ssp <- 1
+## 
 
-```{r eval = FALSE}
-year <- 2030
 
-ssp <- 1
-
-```
-
-#Load in pop data
-
-```{r}
+## ---------------------------------------------------------------------------------------------------------------------------
 
 popfolder <- paste0("FPOP_SSP", ssp)
 
@@ -45,11 +31,9 @@ popfile <- paste0("FPOP_SSP", ssp, "_" , year, ".tif")
 
 pop <- rast(here(HWC_data, "/Geospatial Data/Pop_dens/fpop_data/", popfolder, popfile))
 
-```
 
-#Pop data wrangling
 
-```{r}
+## ---------------------------------------------------------------------------------------------------------------------------
 #turn off spherical geometry to simplify joins, etc.
 sf_use_s2(FALSE)
 
@@ -82,32 +66,18 @@ top10_pop <- africa_popdens_agg
 top10_pop[top10_pop < topdec] <- NA
   
 top10_pop[top10_pop >= topdec] <- 1
-```
 
-#Set up crop variables
 
-All SSPs
+## ----eval = FALSE-----------------------------------------------------------------------------------------------------------
+## year <- 2030
+## 
+## ssp <- 1
+## 
+## rcp <- 26 #2.6 - no decimals in the file path
+## 
 
-SSP 1 RCP 2.6
-SSP 2 RCP 4.5
-SSP 3 RCP 7.0 
-SSP 4 RCP 6.0 
-SSP 5 RCP 8.5
 
-Years: 2030, 2050, 2070
-
-```{r eval = FALSE}
-year <- 2030
-
-ssp <- 1
-
-rcp <- 26 #2.6 - no decimals in the file path
-
-```
-
-#Load in crop data
-
-```{r}
+## ---------------------------------------------------------------------------------------------------------------------------
 
 cropfolder <- paste0("SSP", ssp, "_", "RCP", rcp)
 
@@ -115,11 +85,9 @@ cropfile <- paste0("global_", "SSP", ssp, "_", "RCP", rcp, "_", year, ".tif")
 
 crop <- rast(here(HWC_data, "/Geospatial Data/Chen_LULC_data", cropfolder, cropfile)) %>% 
   project(lulc)
-```
 
-#Crop data wrangling
 
-```{r}
+## ---------------------------------------------------------------------------------------------------------------------------
 #turn off spherical geometry to simplify joins, etc.
 sf_use_s2(FALSE)
 
@@ -153,11 +121,9 @@ top10_crop[top10_crop < 0.9] <- NA
 
 top10_crop[top10_crop >= 0.9] <- 1
 
-```
 
-#Ranked pressures map
 
-```{r}
+## ---------------------------------------------------------------------------------------------------------------------------
 #read in the data, set NA values to 0
 
 human_dens <- top10_pop
@@ -181,11 +147,9 @@ ranked_conflict <- (human_dens + crop_dens) %>%
 
 ranked_conflict_masked <- mask(ranked_conflict, africa)
 
-```
 
-#Conflict boundaries
 
-```{r}
+## ---------------------------------------------------------------------------------------------------------------------------
 #read in lulc data for reprojection
 
 lulc <- rast(here(HWC_data, "/Geospatial Data/Chen_LULC_data/global_LULC_2015.tif"))
@@ -248,16 +212,11 @@ pal <- c("darkgreen", "goldenrod", "orangered")
 #plot conflict boundaries
 plot(basemap_africa_vect, col = "grey98")
 plot(current_cb_line, add = TRUE, pal = pal)
-```
 
-#Save the conflict boundaries
 
-```{r}
+## ---------------------------------------------------------------------------------------------------------------------------
 
 name <- paste0("SSP", ssp, "_" , "RCP", rcp, "_", year, ".shp")
 
 st_write(current_cb_line, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/", name))
-```
-
-
 

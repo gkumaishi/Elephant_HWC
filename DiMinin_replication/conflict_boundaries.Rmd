@@ -1,0 +1,66 @@
+---
+title: "Ranked Conflict Maps"
+author: "Mia Guarnieri"
+date: "2022-11-18"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(here)
+library(terra)
+library(sf)
+library(tmap)
+library(geos)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(tidyterra)
+
+#File path to the HWC_data folder
+
+HWC_data <- "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data"
+```
+
+
+All SSPs
+
+SSP 1 RCP 2.6
+SSP 2 RCP 4.5
+SSP 3 RCP 7.0 
+SSP 4 RCP 6.0 
+SSP 5 RCP 8.5
+
+Years: 2030, 2050, 2070
+
+```{r}
+ssp <- 1
+
+year <- 2030
+
+rcp <- 26
+
+source(knitr::purl(here("DiMinin_replication", "conflict_boundary_script.rmd"), quiet = TRUE))
+```
+
+```{r}
+ssp <- 1
+
+year <- 2050
+
+rcp <- 26
+
+source(knitr::purl(here("DiMinin_replication", "conflict_boundary_script.rmd"), quiet = TRUE))
+```
+
+```{r}
+ssp <- 1
+
+year <- 2070
+
+rcp <- 26
+
+source(knitr::purl(here("DiMinin_replication", "conflict_boundary_script.rmd"), quiet = TRUE))
+```
+
