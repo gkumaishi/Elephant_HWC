@@ -316,7 +316,7 @@ Land classification：
 6	Urban
 7	Permanent snow and ice
 
-```{r}
+```{r cropping to Africa}
 #turn off spherical geometry to simplify joins, etc.
 sf_use_s2(FALSE)
 
@@ -343,14 +343,18 @@ tm_shape(lulc_africa, raster.warp = FALSE) +
   tmap_mode("view")
 ```
 
-```{r}
+```{r save}
 #save the file to the drive
 
 writeRaster(lulc_africa, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/cropped_lulc/lulc_africa.tif"), filetype = "GTiff")
 ```
 
 
-```{r}
+```{r aggregate}
+#read in lulc data
+
+lulc_africa <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/cropped_lulc/lulc_africa.tif"))
+
 #filter just for cropland by reclassifying (cropland is 1, everything else is 0)
 
 africa_cropland <- lulc_africa
@@ -363,43 +367,51 @@ africa_cropland[africa_cropland == 5] <- 1
 
 plot(africa_cropland)
 
-tm_shape(africa_cropland, raster.warp = FALSE) +
-  tm_raster() +
-  tmap_mode("view")
-
 #aggregate cropland
 
 africa_cropland_agg <- terra::aggregate(africa_cropland, fact = 10, fun = mean, na.rm = TRUE)
 
 plot(africa_cropland_agg)
 
-#reclassify aggregated agriculture into 3 categories
+#save raster for aggregated cropland
+writeRaster(africa_cropland_agg, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/lulc_formatted/lulc_aggregated/africa_cropland_agg.tif"), filetype = "GTiff", overwrite = TRUE)
+
+#read in and calculate max
+crop <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/lulc_formatted/lulc_aggregated/africa_cropland_agg.tif"))
+
+#max value: 1
+```
+
+
+```{r top decile}
+#read in the data
+crop <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/lulc_formatted/lulc_aggregated/africa_cropland_agg.tif"))
+
+#calculate deciles
+decs_crop <- global(africa_cropland_agg, quantile, probs = seq(0, 1, 0.1), na.rm = TRUE)
+  
+#save cutoff value for highest decile
+topdec_crop <- decs_crop$X90.
 
 # keep only the top decile (as in Di Minin et al.)
 
 top10_crop <- africa_cropland_agg
 
-top10_crop[top10_crop < 0.9] <- NA
+top10_crop[top10_crop < topdec_crop] <- NA
 
-top10_crop[top10_crop >= 0.9] <- 1
+top10_crop[top10_crop >= topdec_crop] <- 1
 
 plot(top10_crop)
 
-```
-
-
-```{r}
-#save raster for aggregated cropland
-
-writeRaster(africa_cropland_agg, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/lulc_formatted/lulc_aggregated/africa_cropland_agg.tif"), filetype = "GTiff")
-
 #save raster for cropland top decile
 
-writeRaster(top10_crop, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/lulc_formatted/lulc_top10/top10_crop.tif"), filetype = "GTiff")
+writeRaster(top10_crop, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/lulc_formatted/lulc_top10/top10_crop.tif"), filetype = "GTiff", overwrite = TRUE)
 
+#90th percentile: 0.65
 ```
 
-```{r}
+
+```{r data vis}
 #visualization
 
 #turn off spherical geometry to simplify joins, etc.
@@ -429,7 +441,7 @@ plot(crop_dens, add = TRUE)
 
 ##Human density data
 
-Fpop data
+Fpop data - exploratory
 
 ```{r}
 #read in necessary data layers
@@ -556,7 +568,7 @@ writeRaster(top10_pop, filename = here(HWC_data, "/Geospatial Data/Diminin_Repli
 
 ```
 
-Worldpop 2015
+Worldpop 2015 - exploratory
 
 ```{r}
 #read in the data
@@ -576,6 +588,74 @@ wp_15_wrangled <- pop_wrangling(wpop_2015)
 
 writeRaster(wp_15_wrangled, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/pop_density/wpop_2015_top10.tif"), filetype = "GTiff", overwrite = TRUE)
 
+```
+
+Worldpop 2010 - this is the layer we will use for the baseline
+
+```{r wp2010 aggregated}
+
+#read in the data
+wpop_2010 <- rast(here(HWC_data, "/Geospatial Data/Pop_dens/fpop_data/ppp_2010_1km_Aggregated.tif"))
+
+lulc <- rast(here(HWC_data, "/Geospatial Data/Chen_LULC_data/global_LULC_2015.tif"))
+
+africa <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/africa_rast/africa_rast.tif"))
+
+#calclulating max value
+agg_pop <- function(x){
+  
+  #reproject the designated population raster
+  popdens <- project(x, lulc)
+  
+  #mask pop density to africa extent
+  popdens_africa <- mask(popdens, africa)
+  
+  #aggregate pop density
+  
+  africa_popdens_agg <- terra::aggregate(popdens_africa, fact = 10, fun = sum, na.rm = TRUE)
+  
+  return(africa_popdens_agg)
+}
+
+wp2010_aggregated <- agg_pop(wpop_2010)
+
+
+writeRaster(wp2010_aggregated, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/pop_density/wpop_2010_agg.tif"), filetype = "GTiff", overwrite = TRUE)
+
+#max: 2953414
+
+```
+
+
+```{r wp2010 top dec}
+
+#read in aggregated raster
+
+wp2010_agg <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/pop_density/wpop_2010_agg.tif"))
+
+#keep only the top decile (as in Di Minin et al.)
+  
+#calculate deciles
+decs <- global(wp2010_agg, quantile, probs = seq(0, 1, 0.1), na.rm = TRUE)
+  
+#save cutoff value for highest decile
+  
+topdec <- decs$X90.
+  
+#reclassify so that the upper decile is 1 and all other values are NA
+  
+top10_pop <- wp2010_agg
+  
+top10_pop[top10_pop < topdec] <- NA
+  
+top10_pop[top10_pop >= topdec] <- 1
+
+#save raster for pop density top decile
+
+writeRaster(top10_pop, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/pop_density/wpop_2010_top10.tif"), filetype = "GTiff", overwrite = TRUE)
+
+
+#top decile: 5184.694 (rounded to 3 decimals)
 ```
 
 
@@ -661,7 +741,7 @@ writeRaster(top10_pop_gpw, filename = here(HWC_data, "/Geospatial Data/Diminin_R
 ```{r}
 #read in the data, set NA values to 0
 
-human_dens <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/pop_density/wpop_2015_top10.tif"))
+human_dens <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/pop_density/wpop_2010_top10.tif"))
 
 human_dens[is.na(human_dens)] <- 0 
 
@@ -706,7 +786,7 @@ plot(ranked_conflict_masked, add = TRUE)
 ```{r}
 #save the ranked conflict layer
 
-writeRaster(ranked_conflict_masked, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/ranked_pressure_layers/wp2015_current_day_rp.tif"), filetype = "GTiff", overwrite = TRUE)
+writeRaster(ranked_conflict_masked, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/ranked_pressure_layers/wp2010_current_day_rp.tif"), filetype = "GTiff", overwrite = TRUE)
 
 ```
 
@@ -748,7 +828,7 @@ buffers_only <- mask(range_buff_rast, ext_range_rast, inverse = TRUE)
 
 #read in the ranked pressures map
 
-ranked_press <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/ranked_pressure_layers/wp2015_current_day_rp.tif")) %>% 
+ranked_press <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/ranked_pressure_layers/wp2010_current_day_rp.tif")) %>% 
   project(lulc, method = "near")
 
 conflict_int <- mask(ranked_press, buffers_only)
@@ -790,7 +870,7 @@ tm_shape(ext_range_buffered) +
 ```{r}
 #save the layer into drive
 
-writeRaster(conflict_int, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/wp2015_current_day_cb_raster.tif"), filetype = "GTiff", overwrite = TRUE)
+writeRaster(conflict_int, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/wp2010_current_day_cb_raster.tif"), filetype = "GTiff", overwrite = TRUE)
 
 ```
 
@@ -799,7 +879,7 @@ writeRaster(conflict_int, filename = here(HWC_data, "/Geospatial Data/Diminin_Re
 ```{r}
 #read in the conflict boundaries and test plot
 
-current_cb <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/wp2015_current_day_cb_raster.tif"))
+current_cb <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/wp2010_current_day_cb_raster.tif"))
 
 #create a basemap
 
@@ -843,7 +923,7 @@ plot(current_cb_line, add = TRUE, pal = pal)
 ```{r}
 #save the polyline shapefile
 
-st_write(current_cb_line, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/wp2015_current_day_cb_lines.shp"))
+st_write(current_cb_line, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/wp2010_current_day_cb_lines.shp"))
 
 ```
 

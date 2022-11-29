@@ -67,13 +67,9 @@ popdens_africa <- mask(popdens, africa)
 #aggregate pop density
 africa_popdens_agg <- terra::aggregate(popdens_africa, fact = 10, fun = sum, na.rm = TRUE)
   
-#keep only the top decile (as in Di Minin et al.)
+#cutoff value for highest decile (from baseline)
 
-#calculate deciles
-decs <- global(africa_popdens_agg, quantile, probs = seq(0, 1, 0.1), na.rm = TRUE)
-  
-#save cutoff value for highest decile
-topdec <- decs$X90.
+topdec <- 5184.694
   
 #reclassify so that the upper decile is 1 and all other values are NA
   
@@ -145,13 +141,13 @@ africa_cropland_agg <- terra::aggregate(africa_cropland, fact = 10, fun = mean, 
 
 #reclassify aggregated agriculture into 3 categories
 
-# keep only the top decile (as in Di Minin et al.)
+# keep only the top decile (as in Di Minin et al.) - cutoff from baseline is 0.65 for 90th percentile
 
 top10_crop <- africa_cropland_agg
 
-top10_crop[top10_crop < 0.9] <- NA
+top10_crop[top10_crop < 0.65] <- NA
 
-top10_crop[top10_crop >= 0.9] <- 1
+top10_crop[top10_crop >= 0.65] <- 1
 
 ```
 
