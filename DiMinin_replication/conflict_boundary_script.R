@@ -1,4 +1,4 @@
-## ----setup, include=FALSE---------------------------------------------------------------------------------------------------
+## ----setup, include=FALSE-------------------------------------------------------------------------------------------------
 knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
@@ -16,14 +16,14 @@ library(tidyterra)
 HWC_data <- "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data"
 
 
-## ----eval = FALSE-----------------------------------------------------------------------------------------------------------
+## ----eval = FALSE---------------------------------------------------------------------------------------------------------
 ## year <- 2030
 ## 
 ## ssp <- 1
 ## 
 
 
-## ---------------------------------------------------------------------------------------------------------------------------
+## -------------------------------------------------------------------------------------------------------------------------
 
 popfolder <- paste0("FPOP_SSP", ssp)
 
@@ -33,7 +33,7 @@ pop <- rast(here(HWC_data, "/Geospatial Data/Pop_dens/fpop_data/", popfolder, po
 
 
 
-## ---------------------------------------------------------------------------------------------------------------------------
+## -------------------------------------------------------------------------------------------------------------------------
 #turn off spherical geometry to simplify joins, etc.
 sf_use_s2(FALSE)
 
@@ -51,13 +51,9 @@ popdens_africa <- mask(popdens, africa)
 #aggregate pop density
 africa_popdens_agg <- terra::aggregate(popdens_africa, fact = 10, fun = sum, na.rm = TRUE)
   
-#keep only the top decile (as in Di Minin et al.)
+#cutoff value for highest decile (from baseline)
 
-#calculate deciles
-decs <- global(africa_popdens_agg, quantile, probs = seq(0, 1, 0.1), na.rm = TRUE)
-  
-#save cutoff value for highest decile
-topdec <- decs$X90.
+topdec <- 5184.694
   
 #reclassify so that the upper decile is 1 and all other values are NA
   
@@ -68,7 +64,7 @@ top10_pop[top10_pop < topdec] <- NA
 top10_pop[top10_pop >= topdec] <- 1
 
 
-## ----eval = FALSE-----------------------------------------------------------------------------------------------------------
+## ----eval = FALSE---------------------------------------------------------------------------------------------------------
 ## year <- 2030
 ## 
 ## ssp <- 1
@@ -77,7 +73,7 @@ top10_pop[top10_pop >= topdec] <- 1
 ## 
 
 
-## ---------------------------------------------------------------------------------------------------------------------------
+## -------------------------------------------------------------------------------------------------------------------------
 
 cropfolder <- paste0("SSP", ssp, "_", "RCP", rcp)
 
@@ -87,7 +83,7 @@ crop <- rast(here(HWC_data, "/Geospatial Data/Chen_LULC_data", cropfolder, cropf
   project(lulc)
 
 
-## ---------------------------------------------------------------------------------------------------------------------------
+## -------------------------------------------------------------------------------------------------------------------------
 #turn off spherical geometry to simplify joins, etc.
 sf_use_s2(FALSE)
 
@@ -113,17 +109,17 @@ africa_cropland_agg <- terra::aggregate(africa_cropland, fact = 10, fun = mean, 
 
 #reclassify aggregated agriculture into 3 categories
 
-# keep only the top decile (as in Di Minin et al.)
+# keep only the top decile (as in Di Minin et al.) - cutoff from baseline is 0.65 for 90th percentile
 
 top10_crop <- africa_cropland_agg
 
-top10_crop[top10_crop < 0.9] <- NA
+top10_crop[top10_crop < 0.65] <- NA
 
-top10_crop[top10_crop >= 0.9] <- 1
+top10_crop[top10_crop >= 0.65] <- 1
 
 
 
-## ---------------------------------------------------------------------------------------------------------------------------
+## -------------------------------------------------------------------------------------------------------------------------
 #read in the data, set NA values to 0
 
 human_dens <- top10_pop
@@ -149,7 +145,7 @@ ranked_conflict_masked <- mask(ranked_conflict, africa)
 
 
 
-## ---------------------------------------------------------------------------------------------------------------------------
+## -------------------------------------------------------------------------------------------------------------------------
 #read in lulc data for reprojection
 
 lulc <- rast(here(HWC_data, "/Geospatial Data/Chen_LULC_data/global_LULC_2015.tif"))
@@ -214,9 +210,9 @@ plot(basemap_africa_vect, col = "grey98")
 plot(current_cb_line, add = TRUE, pal = pal)
 
 
-## ---------------------------------------------------------------------------------------------------------------------------
+## -------------------------------------------------------------------------------------------------------------------------
 
 name <- paste0("SSP", ssp, "_" , "RCP", rcp, "_", year, ".shp")
 
-st_write(current_cb_line, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/", name))
+st_write(current_cb_line, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/", name), append = FALSE)
 

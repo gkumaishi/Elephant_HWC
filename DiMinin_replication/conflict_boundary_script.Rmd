@@ -252,7 +252,7 @@ plot(current_cb_line, add = TRUE, pal = pal)
 
 name <- paste0("SSP", ssp, "_" , "RCP", rcp, "_", year, ".shp")
 
-st_write(current_cb_line, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/", name))
+st_write(current_cb_line, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/", name), append = FALSE)
 ```
 
 
