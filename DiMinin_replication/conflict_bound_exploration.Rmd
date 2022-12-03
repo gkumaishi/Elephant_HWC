@@ -1,0 +1,193 @@
+---
+title: "Conflict Boundary Exploration"
+author: "Mia Guarnieri"
+date: "2022-12-02"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(here)
+library(terra)
+library(sf)
+library(tmap)
+library(geos)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(tidyterra)
+
+#File path to the HWC_data folder
+
+HWC_data <- "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data"
+```
+
+#SSP1
+
+```{r}
+#read in baseline
+
+ref_rast <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/wp2010_current_day_cb_raster.tif"))
+
+base <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/wp2010_current_day_cb_lines.shp"))
+
+names(base) <- c("conflict", "geometry")
+
+ssp1_2030 <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/SSP1_RCP26_2030.shp"))
+
+names(ssp1_2030) <- c("conflict", "geometry")
+
+ssp1_2050 <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/SSP1_RCP26_2050.shp"))
+
+ssp1_2070 <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/SSP1_RCP26_2070.shp"))
+
+#rasterize for raster math
+
+base_rast <- vect(base) %>% 
+  rasterize(ref_rast)
+
+ssp1_2030_rast <- vect(ssp1_2030) %>% 
+  rasterize(ref_rast)
+
+ssp1_2050_rast <- vect(ssp1_2050) %>% 
+  rasterize(ref_rast)
+
+ssp1_2070_rast <- vect(ssp1_2070) %>% 
+  rasterize(ref_rast)
+
+#create differenced rasters
+
+diff_2030 <- ssp1_2030_rast - base_rast
+
+diff_2050 <- ssp1_2050_rast - base_rast
+
+diff_2070 <- ssp1_2070_rast - base_rast
+
+#polyline function
+
+poly <- function(x){
+  #first make it a spatvector
+  current_cb_vect <- terra::as.polygons(x, trunc=TRUE, dissolve=TRUE, values=TRUE,
+    na.rm=TRUE, na.all=FALSE, extent=FALSE)
+  
+  #then turn that into a polyline
+  current_cb_line <- st_as_sf(current_cb_vect) %>% 
+    st_cast("MULTILINESTRING")
+  
+  return(current_cb_line)
+}
+
+diff_2030_line <- poly(diff_2030)
+
+diff_2050_line <- poly(diff_2050)
+
+diff_2070_line <- poly(diff_2070)
+
+#create a basemap
+
+basemap_africa <- ne_countries(
+  continent = "Africa",
+  scale = "medium", 
+  returnclass = "sf") %>% 
+  st_transform(crs = crs(ssp1_2030))  # make sure crs is same as raster
+
+basemap_africa_vect <- basemap_africa %>% 
+  vect()
+
+#plot conflict boundaries
+
+pal <- c("darkgreen", "goldenrod", "orangered")
+
+
+plot(basemap_africa_vect, col = "grey98")
+plot(diff_2070, add = TRUE)
+
+
+```
+
+#SSP2
+
+```{r}
+#read in baseline
+
+ref_rast <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/wp2010_current_day_cb_raster.tif"))
+
+base <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/wp2010_current_day_cb_lines.shp"))
+
+names(base) <- c("conflict", "geometry")
+
+ssp2_2030 <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/SSP2_RCP45_2030.shp"))
+
+names(ssp2_2030) <- c("conflict", "geometry")
+
+ssp2_2050 <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/SSP2_RCP45_2050.shp"))
+
+names(ssp2_2050) <- c("conflict", "geometry")
+
+ssp2_2070 <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/SSP2_RCP45_2070.shp"))
+
+names(ssp2_2070) <- c("conflict", "geometry")
+
+#rasterize for raster math
+
+base_rast <- vect(base) %>% 
+  rasterize(ref_rast)
+
+ssp2_2030_rast <- vect(ssp2_2030) %>% 
+  rasterize(ref_rast)
+
+ssp2_2050_rast <- vect(ssp2_2050) %>% 
+  rasterize(ref_rast)
+
+ssp2_2070_rast <- vect(ssp2_2070) %>% 
+  rasterize(ref_rast)
+
+#create differenced rasters
+
+ssp2_diff_2030 <- ssp2_2030_rast - base_rast
+
+ssp2_diff_2050 <- ssp2_2050_rast - base_rast
+
+ssp2_diff_2070 <- ssp2_2070_rast - base_rast
+
+#polyline function
+
+poly <- function(x){
+  #first make it a spatvector
+  current_cb_vect <- terra::as.polygons(x, trunc=TRUE, dissolve=TRUE, values=TRUE,
+    na.rm=TRUE, na.all=FALSE, extent=FALSE)
+  
+  #then turn that into a polyline
+  current_cb_line <- st_as_sf(current_cb_vect) %>% 
+    st_cast("MULTILINESTRING")
+  
+  return(current_cb_line)
+}
+
+ssp2_diff_2030_line <- poly(ssp2_diff_2030)
+
+ssp2_diff_2050_line <- poly(ssp2_diff_2050)
+
+ssp2_diff_2070_line <- poly(ssp2_diff_2070)
+
+#create a basemap
+
+basemap_africa <- ne_countries(
+  continent = "Africa",
+  scale = "medium", 
+  returnclass = "sf") %>% 
+  st_transform(crs = crs(ssp2_2070))  # make sure crs is same as raster
+
+basemap_africa_vect <- basemap_africa %>% 
+  vect()
+
+#plot conflict boundaries
+
+pal <- c("darkgreen", "goldenrod", "orangered")
+
+
+plot(basemap_africa_vect, col = "grey98")
+plot(ssp2_diff_2070, add = TRUE)
+```
+

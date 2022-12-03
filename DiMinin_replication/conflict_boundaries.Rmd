@@ -27,6 +27,7 @@ Years: 2030, 2050, 2070
 
 #SSP 1 RCP 2.6
 
+##2030
 ```{r}
 ssp <- 1
 
@@ -36,7 +37,7 @@ rcp <- 26
 
 source(knitr::purl(here("DiMinin_replication", "conflict_boundary_script.rmd"), quiet = TRUE))
 ```
-
+##2050
 ```{r}
 ssp <- 1
 
@@ -46,7 +47,7 @@ rcp <- 26
 
 source(knitr::purl(here("DiMinin_replication", "conflict_boundary_script.rmd"), quiet = TRUE))
 ```
-
+##2070
 ```{r}
 ssp <- 1
 
@@ -59,6 +60,7 @@ source(knitr::purl(here("DiMinin_replication", "conflict_boundary_script.rmd"), 
 
 #SSP 2 RCP 4.5
 
+##2030
 ```{r}
 ssp <- 2
 
@@ -69,6 +71,7 @@ rcp <- 45
 source(knitr::purl(here("DiMinin_replication", "conflict_boundary_script.rmd"), quiet = TRUE))
 ```
 
+##2050
 ```{r}
 ssp <- 2
 
@@ -79,7 +82,7 @@ rcp <- 45
 source(knitr::purl(here("DiMinin_replication", "conflict_boundary_script.rmd"), quiet = TRUE))
 ```
 
-
+##2070
 ```{r}
 ssp <- 2
 
@@ -93,12 +96,46 @@ source(knitr::purl(here("DiMinin_replication", "conflict_boundary_script.rmd"), 
 
 #SSP 3 RCP 7.0 
 
+##2030
 ```{r}
+ssp <- 3
 
+year <- 2030
+
+rcp <- 70
+
+source(knitr::purl(here("DiMinin_replication", "conflict_boundary_script.rmd"), quiet = TRUE))
 ```
+
+
+##2050
+```{r}
+ssp <- 3
+
+year <- 2050
+
+rcp <- 70
+
+source(knitr::purl(here("DiMinin_replication", "conflict_boundary_script.rmd"), quiet = TRUE))
+```
+
+
+##2070
+```{r}
+ssp <- 3
+
+year <- 2070
+
+rcp <- 70
+
+source(knitr::purl(here("DiMinin_replication", "conflict_boundary_script.rmd"), quiet = TRUE))
+```
+
 
 #SSP 4 RCP 6.0 
 
+
+##2030
 ```{r}
 
 ```

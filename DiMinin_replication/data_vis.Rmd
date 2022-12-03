@@ -1,0 +1,50 @@
+---
+title: "Data Vis"
+author: "Mia Guarnieri"
+date: "2022-12-03"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(here)
+library(terra)
+library(sf)
+library(tmap)
+library(geos)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(tidyterra)
+
+#File path to the HWC_data folder
+
+HWC_data <- "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data"
+```
+
+#Baseline
+
+```{r}
+base <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/wp2010_current_day_cb_lines.shp"))
+
+#create a basemap
+
+basemap_africa <- ne_countries(
+  continent = "Africa",
+  scale = "medium", 
+  returnclass = "sf") %>% 
+  st_transform(crs = crs(base))  # make sure crs is same as raster
+
+basemap_africa_vect <- basemap_africa %>% 
+  vect()
+
+#plot conflict boundaries
+
+pal <- c("darkgreen", "goldenrod", "orangered")
+
+plot(basemap_africa_vect, col = "grey98")
+plot(base, add = TRUE, pal = pal)
+
+```
+

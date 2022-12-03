@@ -1,4 +1,4 @@
-## ----setup, include=FALSE-------------------------------------------------------------------------------------------------
+## ----setup, include=FALSE------------------------------------------------------------------------------------------------
 knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
@@ -16,14 +16,14 @@ library(tidyterra)
 HWC_data <- "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data"
 
 
-## ----eval = FALSE---------------------------------------------------------------------------------------------------------
-## year <- 2030
+## ----eval = FALSE--------------------------------------------------------------------------------------------------------
+## #year <- 2030
 ## 
-## ssp <- 1
+## #ssp <- 1
 ## 
 
 
-## -------------------------------------------------------------------------------------------------------------------------
+## ------------------------------------------------------------------------------------------------------------------------
 
 popfolder <- paste0("FPOP_SSP", ssp)
 
@@ -33,7 +33,7 @@ pop <- rast(here(HWC_data, "/Geospatial Data/Pop_dens/fpop_data/", popfolder, po
 
 
 
-## -------------------------------------------------------------------------------------------------------------------------
+## ------------------------------------------------------------------------------------------------------------------------
 #turn off spherical geometry to simplify joins, etc.
 sf_use_s2(FALSE)
 
@@ -64,16 +64,16 @@ top10_pop[top10_pop < topdec] <- NA
 top10_pop[top10_pop >= topdec] <- 1
 
 
-## ----eval = FALSE---------------------------------------------------------------------------------------------------------
-## year <- 2030
+## ----eval = FALSE--------------------------------------------------------------------------------------------------------
+## #year <- 2030
 ## 
-## ssp <- 1
+## #ssp <- 1
 ## 
-## rcp <- 26 #2.6 - no decimals in the file path
+## #rcp <- 26 #2.6 - no decimals in the file path
 ## 
 
 
-## -------------------------------------------------------------------------------------------------------------------------
+## ------------------------------------------------------------------------------------------------------------------------
 
 cropfolder <- paste0("SSP", ssp, "_", "RCP", rcp)
 
@@ -83,7 +83,7 @@ crop <- rast(here(HWC_data, "/Geospatial Data/Chen_LULC_data", cropfolder, cropf
   project(lulc)
 
 
-## -------------------------------------------------------------------------------------------------------------------------
+## ------------------------------------------------------------------------------------------------------------------------
 #turn off spherical geometry to simplify joins, etc.
 sf_use_s2(FALSE)
 
@@ -119,7 +119,7 @@ top10_crop[top10_crop >= 0.65] <- 1
 
 
 
-## -------------------------------------------------------------------------------------------------------------------------
+## ------------------------------------------------------------------------------------------------------------------------
 #read in the data, set NA values to 0
 
 human_dens <- top10_pop
@@ -145,7 +145,7 @@ ranked_conflict_masked <- mask(ranked_conflict, africa)
 
 
 
-## -------------------------------------------------------------------------------------------------------------------------
+## ------------------------------------------------------------------------------------------------------------------------
 #read in lulc data for reprojection
 
 lulc <- rast(here(HWC_data, "/Geospatial Data/Chen_LULC_data/global_LULC_2015.tif"))
@@ -177,7 +177,7 @@ buffers_only <- mask(range_buff_rast, ext_range_rast, inverse = TRUE)
 
 #read in the ranked pressures map
 
-ranked_press <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/ranked_pressure_layers/current_day_rp.tif")) %>% 
+ranked_press <- ranked_conflict_masked%>% 
   project(lulc, method = "near")
 
 conflict_int <- mask(ranked_press, buffers_only)
@@ -196,23 +196,23 @@ basemap_africa_vect <- basemap_africa %>%
 #vectorize
 
 #first make it a spatvector
-current_cb_vect <- terra::as.polygons(conflict_int, trunc=TRUE, dissolve=TRUE, values=TRUE,
+cb_vect <- terra::as.polygons(conflict_int, trunc=TRUE, dissolve=TRUE, values=TRUE,
     na.rm=TRUE, na.all=FALSE, extent=FALSE)
 
 #then turn that into a polyline
-current_cb_line <- st_as_sf(current_cb_vect) %>% 
+cb_line <- st_as_sf(cb_vect) %>% 
   st_cast("MULTILINESTRING")
 
 pal <- c("darkgreen", "goldenrod", "orangered")
 
 #plot conflict boundaries
 plot(basemap_africa_vect, col = "grey98")
-plot(current_cb_line, add = TRUE, pal = pal)
+plot(cb_line, add = TRUE, pal = pal)
 
 
-## -------------------------------------------------------------------------------------------------------------------------
+## ------------------------------------------------------------------------------------------------------------------------
 
 name <- paste0("SSP", ssp, "_" , "RCP", rcp, "_", year, ".shp")
 
-st_write(current_cb_line, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/", name), append = FALSE)
+st_write(cb_line, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/", name), append = FALSE)
 

@@ -29,9 +29,9 @@ All SSPs
 Years: 2030, 2050, 2070
 
 ```{r eval = FALSE}
-year <- 2030
+#year <- 2030
 
-ssp <- 1
+#ssp <- 1
 
 ```
 
@@ -93,11 +93,11 @@ SSP 5 RCP 8.5
 Years: 2030, 2050, 2070
 
 ```{r eval = FALSE}
-year <- 2030
+#year <- 2030
 
-ssp <- 1
+#ssp <- 1
 
-rcp <- 26 #2.6 - no decimals in the file path
+#rcp <- 26 #2.6 - no decimals in the file path
 
 ```
 
@@ -213,7 +213,7 @@ buffers_only <- mask(range_buff_rast, ext_range_rast, inverse = TRUE)
 
 #read in the ranked pressures map
 
-ranked_press <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/ranked_pressure_layers/current_day_rp.tif")) %>% 
+ranked_press <- ranked_conflict_masked%>% 
   project(lulc, method = "near")
 
 conflict_int <- mask(ranked_press, buffers_only)
@@ -232,18 +232,18 @@ basemap_africa_vect <- basemap_africa %>%
 #vectorize
 
 #first make it a spatvector
-current_cb_vect <- terra::as.polygons(conflict_int, trunc=TRUE, dissolve=TRUE, values=TRUE,
+cb_vect <- terra::as.polygons(conflict_int, trunc=TRUE, dissolve=TRUE, values=TRUE,
     na.rm=TRUE, na.all=FALSE, extent=FALSE)
 
 #then turn that into a polyline
-current_cb_line <- st_as_sf(current_cb_vect) %>% 
+cb_line <- st_as_sf(cb_vect) %>% 
   st_cast("MULTILINESTRING")
 
 pal <- c("darkgreen", "goldenrod", "orangered")
 
 #plot conflict boundaries
 plot(basemap_africa_vect, col = "grey98")
-plot(current_cb_line, add = TRUE, pal = pal)
+plot(cb_line, add = TRUE, pal = pal)
 ```
 
 #Save the conflict boundaries
@@ -252,7 +252,7 @@ plot(current_cb_line, add = TRUE, pal = pal)
 
 name <- paste0("SSP", ssp, "_" , "RCP", rcp, "_", year, ".shp")
 
-st_write(current_cb_line, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/", name), append = FALSE)
+st_write(cb_line, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/", name), append = FALSE)
 ```
 
 
