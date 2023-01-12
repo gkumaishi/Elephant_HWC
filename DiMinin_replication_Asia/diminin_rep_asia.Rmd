@@ -38,8 +38,75 @@ asian_elephant_range <- read_sf(here(HWC_data, "/Data/Asian_Elephant/redlist_spe
   filter(LEGEND %in% c("Extant (resident)", "Extant & Reintroduced (resident)"))
 ```
 
+```{r}
+# plot range
+tm_shape(asian_elephant_range) +
+  tm_polygons(col = "LEGEND") +
+  tmap_mode("view")
+```
 
+## World protected areas (WPAs) data
 
+WPA data obtained from The World Database on Protected Areas (<http://www.protectedplanet.net>).
+
+World protected area data is divided into 3 sets of polygons and 3 sets of points which need to be merged together to create one polygon layer and one points layer for use. We will be using only the polygons layer for analysis.
+
+Di Minin et al. (2021) only included in their analysis IUCN categories Ia (Strict Nature Reserve), Ib (Wilderness Area), II (National Park), III (Natural Monument or Feature), and IV (Habitat/Species Management Area). Additionally, to prevent overestimation of the area coverage of protected areas caused by overlapping designations, Di Minin et al. merged polygons into a single layer. 
+
+```{r}
+indomalay_region <- read_sf(here(HWC_data, "/R_files/R_output_data/indomalay_region/indomalay_region.shp"))
+```
+
+```{r}
+#turn off spherical geometry to simplify joins, etc.
+sf_use_s2(FALSE)
+
+#polygon layers
+
+wpa_1_pol <- read_sf(here(HWC_data, "/Geospatial Data/protected_areas/WDPA_Asia_Jan2023_shp/WDPA_WDOECM_Jan2023_Public_AS_shp_0/WDPA_WDOECM_Jan2023_Public_AS_shp-polygons.shp"))
+
+wpa_2_pol <- read_sf(here(HWC_data, "/Geospatial Data/protected_areas/WDPA_Asia_Jan2023_shp/WDPA_WDOECM_Jan2023_Public_AS_shp_1/WDPA_WDOECM_Jan2023_Public_AS_shp-polygons.shp"))
+
+wpa_3_pol <- read_sf(here(HWC_data, "/Geospatial Data/protected_areas/WDPA_Asia_Jan2023_shp/WDPA_WDOECM_Jan2023_Public_AS_shp_2/WDPA_WDOECM_Jan2023_Public_AS_shp-polygons.shp"))
+
+#combine polygon layers and filter for IUCN categories Ia (Strict Nature Reserve), Ib (Wilderness Area), II (National Park), III (Natural Monument or Feature), and IV (Habitat/Species Management Area)
+
+wpa_all_polygons_uncropped <- rbind(wpa_1_pol, wpa_2_pol, wpa_3_pol) %>% 
+  filter(IUCN_CAT %in% c("Ia", "Ib", "II", "III", "IV"))
+
+# crop to indomalaya region
+wpa_all_polygons <- st_crop(wpa_all_polygons_uncropped, indomalay_region)
+
+#merge polygons into a single layer
+
+wpa_allpol_dissolved <- st_union(wpa_all_polygons, by_feature = FALSE) %>% 
+  st_cast(to = "POLYGON")
+
+#wpa polygons, geometry only - no other attributes
+
+wpa_allpol_geom <- wpa_all_polygons %>% 
+  select(geometry)
+
+#plot merged polygon layer
+
+tm_shape(wpa_allpol_dissolved) +
+  tm_polygons() +
+  tmap_mode("view")
+```
+
+```{r}
+# save the wpa shapefiles
+
+st_write(wpa_all_polygons, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/wpas_merged_filtered/wpa_allpol_filtered_ASIA.shp"))
+
+st_write(wpa_allpol_dissolved, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/wpas_filtered_dissolved/wpa_allpol_filtered_diss_ASIA.shp"))
+
+#read them back in and check them
+
+wpa_allpol <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/wpas_merged_filtered/wpa_allpol_filtered_ASIA.shp"))
+
+wpa_dissolved <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/wpas_filtered_dissolved/wpa_allpol_filtered_diss_ASIA.shp"))
+```
 
 
 
