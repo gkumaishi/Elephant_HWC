@@ -167,5 +167,20 @@ ext_range <- rbind(asian_elephant_range, wpa_intersect, wpa_adj)
 ext_range_dissolved <- st_union(ext_range)
 ```
 
+```{r}
+#save the shapefile
+
+st_write(ext_range, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/extended_range/extended_range_asia.shp"))
+
+#read it back in and check it
+
+ext_range_asia <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/extended_range/extended_range_asia.shp"))
+
+tm_shape(ext_range) +
+  tm_polygons(col = "blue") +
+tm_shape(ext_range_asia) +
+  tm_polygons() +
+  tmap_mode("view")
+```
 
 
