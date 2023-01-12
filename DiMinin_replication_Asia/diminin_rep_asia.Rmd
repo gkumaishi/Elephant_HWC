@@ -1,0 +1,49 @@
+---
+title: "Replication of DiMinin 2021 Analysis - ASIA"
+author: "Grace Kumaishi"
+date: "1/12/2023"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(here)
+library(terra)
+library(sf)
+library(tmap)
+library(geos)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(tidyterra)
+
+#File path to the HWC_data folder
+
+HWC_data <- "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data"
+```
+
+# Input data
+
+## Range data
+
+Species range data for Asian elephant, downloaded from IUCN redlist.
+
+```{r}
+# turn off spherical geometry to simplify joins, etc.
+sf_use_s2(FALSE)
+
+# Asian elephant range (filtered to keep only extant ranges)
+asian_elephant_range <- read_sf(here(HWC_data, "/Data/Asian_Elephant/redlist_species_data/data_0.shp")) %>% 
+  filter(LEGEND %in% c("Extant (resident)", "Extant & Reintroduced (resident)"))
+```
+
+
+
+
+
+
+
+
+
+
