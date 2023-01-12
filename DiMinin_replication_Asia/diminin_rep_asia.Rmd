@@ -108,9 +108,64 @@ wpa_allpol <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/
 wpa_dissolved <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/wpas_filtered_dissolved/wpa_allpol_filtered_diss_ASIA.shp"))
 ```
 
+```{r point data}
+#point data layers - not used in analysis, provided just for thoroughness
 
+wpa_1_point <- read_sf(here(HWC_data, "/Geospatial Data/protected_areas/WDPA_Asia_Jan2023_shp/WDPA_WDOECM_Jan2023_Public_AS_shp_0/WDPA_WDOECM_Jan2023_Public_AS_shp-points.shp"))
 
+wpa_2_point <- read_sf(here(HWC_data, "//Geospatial Data/protected_areas/WDPA_Asia_Jan2023_shp/WDPA_WDOECM_Jan2023_Public_AS_shp_1/WDPA_WDOECM_Jan2023_Public_AS_shp-points.shp"))
 
+wpa_3_point <- read_sf(here(HWC_data, "/Geospatial Data/protected_areas/WDPA_Asia_Jan2023_shp/WDPA_WDOECM_Jan2023_Public_AS_shp_2/WDPA_WDOECM_Jan2023_Public_AS_shp-points.shp"))
+
+#combined points layer
+
+wpa_all_points <- rbind(wpa_1_point, wpa_2_point, wpa_3_point)
+
+#plot points layer
+
+tm_shape(wpa_all_points) +
+  tm_dots() +
+  tmap_mode("view")
+
+#plot polygon and point layers together
+tm_shape(wpa_allpol_dissolved) +
+  tm_polygons() +
+tm_shape(wpa_all_points) +
+  tm_dots() +
+  tmap_mode("view")
+```
+
+#Creating extended range maps
+
+From Di Minin et al: The elephant range maps and the protected area layer were intersected to select all protected areas that contain parts of lion and elephant range and/or were adjacent to the species-range maps. The identified protected areas were then merged with the species-range maps to create a new extended range layer
+
+```{r}
+# Asian elephant
+
+#protected areas that contain part of elephant range
+
+wpa_intersect <- st_join(wpa_allpol_geom, asian_elephant_range, join = st_intersects, left = FALSE)
+
+#verification plot: sav range and intersection
+
+tm_shape(asian_elephant_range) +
+  tm_polygons() +
+tm_shape(wpa_intersect) +
+  tm_polygons( col = "blue") +
+tmap_mode("view")
+
+#protected areas that are adjacent to elephant range
+
+wpa_adj <- st_join(wpa_allpol_geom, asian_elephant_range, join = st_touches, left = FALSE)
+
+#this join is returning no data, suggesting that there are no polygons that satisfy the st_touches function (i.e., no adjacent polygons)
+
+#creating an extended range map - no data, just polygons
+ext_range <- rbind(asian_elephant_range, wpa_intersect, wpa_adj)
+
+#dissolving polygons into one layer - didn't save this one as it may not be correct
+ext_range_dissolved <- st_union(ext_range)
+```
 
 
 
