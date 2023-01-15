@@ -23,10 +23,192 @@ library(tidyterra)
 HWC_data <- "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data"
 ```
 
-#Baseline
+#Keeping only increasing areas
 
 ```{r}
-base <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/wp2010_current_day_cb_lines.shp"))
+#load in all of the rasters and filter each to keep only positive values (increased conflict)
+
+s1_2030 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters/ssp1_rcp26_2030_diff.tif")) 
+s1_2030[s1_2030 < 1] <- NA
+  
+s1_2030[s1_2030 >= 1] <- 1
+
+
+s1_2050 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters/ssp1_rcp26_2050_diff.tif")) 
+s1_2050[s1_2050 < 1] <- NA
+  
+s1_2050[s1_2050 >= 1] <- 1
+
+
+s1_2070 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters/ssp1_rcp26_2070_diff.tif"))
+
+s1_2070[s1_2070 < 1] <- NA
+  
+s1_2070[s1_2070 >= 1] <- 1
+
+
+s2_2030 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters/ssp2_rcp45_2030_diff.tif"))
+
+s2_2030[s2_2030 < 1] <- NA
+  
+s2_2030[s2_2030 >= 1] <- 1
+
+
+s2_2050 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters/ssp2_rcp45_2050_diff.tif")) 
+s2_2050[s2_2050 < 1] <- NA
+  
+s2_2050[s2_2050 >= 1] <- 1
+
+
+s2_2070 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters/ssp2_rcp45_2070_diff.tif")) 
+s2_2070[s2_2070 < 1] <- NA
+  
+s2_2070[s2_2070 >= 1] <- 1
+
+
+s3_2030 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters/ssp3_rcp70_2030_diff.tif")) 
+s3_2030[s3_2030 < 1] <- NA
+  
+s3_2030[s3_2030 >= 1] <- 1
+
+
+s3_2050 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters/ssp3_rcp70_2050_diff.tif")) 
+s3_2050[s3_2050 < 1] <- NA
+  
+s3_2050[s3_2050 >= 1] <- 1
+
+
+s3_2070 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters/ssp3_rcp70_2070_diff.tif")) 
+s3_2070[s3_2070 < 1] <- NA
+  
+s3_2070[s3_2070 >= 1] <- 1
+
+
+s4_2030 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters/ssp4_rcp60_2030_diff.tif")) 
+s4_2030[s4_2030 < 1] <- NA
+  
+s4_2030[s4_2030 >= 1] <- 1
+
+
+s4_2050 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters/ssp4_rcp60_2050_diff.tif")) 
+s4_2050[s4_2050 < 1] <- NA
+  
+s4_2050[s4_2050 >= 1] <- 1
+
+
+s4_2070 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters/ssp4_rcp60_2070_diff.tif")) 
+s4_2070[s4_2070 < 1] <- NA
+  
+s4_2070[s4_2070 >= 1] <- 1
+
+
+s5_2030 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters/ssp5_rcp85_2030_diff.tif")) 
+s5_2030[s5_2030 < 1] <- NA
+  
+s5_2030[s5_2030 >= 1] <- 1
+
+
+s5_2050 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters/ssp5_rcp85_2050_diff.tif")) 
+s5_2050[s5_2050 < 1] <- NA
+  
+s5_2050[s5_2050 >= 1] <- 1
+
+
+s5_2070 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters/ssp5_rcp85_2070_diff.tif")) 
+s5_2070[s5_2070 < 1] <- NA
+  
+s5_2070[s5_2070 >= 1] <- 1
+
+```
+
+#Save those rasters
+
+```{r}
+saverast <- function(x){
+  name <- paste0(deparse(substitute(x)), ".tif")
+  writeRaster(x, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters/increasing_only", name), overwrite = TRUE)
+}
+
+saverast(s1_2030)
+saverast(s1_2050)
+saverast(s1_2070)
+
+saverast(s2_2030)
+saverast(s2_2050)
+saverast(s2_2070)
+
+saverast(s3_2030)
+saverast(s3_2050)
+saverast(s3_2070)
+
+saverast(s4_2030)
+saverast(s4_2050)
+saverast(s4_2070)
+
+saverast(s5_2030)
+saverast(s5_2050)
+saverast(s5_2070)
+
+```
+
+
+#Keep only cells present in all ssps
+
+```{r}
+#2030
+
+agg_2030 <- mask(s1_2030, s2_2030) %>% 
+  mask(s3_2030) %>% 
+  mask(s4_2030) %>% 
+  mask(s5_2030)
+
+saverast(agg_2030)
+
+#2050
+
+agg_2050 <- mask(s1_2050, s2_2050) %>% 
+  mask(s3_2050) %>% 
+  mask(s4_2050) %>% 
+  mask(s5_2050)
+
+saverast(agg_2050)
+
+#2070
+
+agg_2070 <- mask(s1_2070, s2_2070) %>% 
+  mask(s3_2070) %>% 
+  mask(s4_2070) %>% 
+  mask(s5_2070)
+
+saverast(agg_2070)
+
+```
+
+
+#vectorize and plot
+
+```{r}
+#vectorize
+
+#first make it a spatvector
+agg_2030_vect <- terra::as.polygons(agg_2030, trunc=TRUE, dissolve=TRUE, values=TRUE,
+    na.rm=TRUE, na.all=FALSE, extent=FALSE)
+
+agg_2050_vect <- terra::as.polygons(agg_2050, trunc=TRUE, dissolve=TRUE, values=TRUE,
+    na.rm=TRUE, na.all=FALSE, extent=FALSE)
+
+agg_2070_vect <- terra::as.polygons(agg_2070, trunc=TRUE, dissolve=TRUE, values=TRUE,
+    na.rm=TRUE, na.all=FALSE, extent=FALSE)
+
+#then turn that into a polyline
+agg_2030_line <- st_as_sf(agg_2030_vect) %>% 
+  st_cast("MULTILINESTRING")
+
+agg_2050_line <- st_as_sf(agg_2050_vect) %>% 
+  st_cast("MULTILINESTRING")
+
+agg_2070_line <- st_as_sf(agg_2070_vect) %>% 
+  st_cast("MULTILINESTRING")
 
 #create a basemap
 
@@ -41,10 +223,27 @@ basemap_africa_vect <- basemap_africa %>%
 
 #plot conflict boundaries
 
-pal <- c("darkgreen", "goldenrod", "orangered")
+par(mfcol=c(1,3))
 
-plot(basemap_africa_vect, col = "grey98")
-plot(base, add = TRUE, pal = pal)
+plot(basemap_africa_vect, col = "grey98", axes = FALSE, main = "2030")
+plot(agg_2030_line, add = TRUE, lwd = 2.5, axes = FALSE)
+
+plot(basemap_africa_vect, col = "grey98", axes = FALSE, main = "2050")
+plot(agg_2050_line, add = TRUE, lwd = 2.5, axes = FALSE)
+
+plot(basemap_africa_vect, col = "grey98", axes = FALSE, main = "2070")
+plot(agg_2070_line, add = TRUE, lwd = 2.5, axes = FALSE)
+
+```
+
+```{r}
+#save the polylines
+
+st_write(agg_2030_line, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines/agg_2030_line.shp"), append = FALSE)
+
+st_write(agg_2050_line, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines/agg_2050_line.shp"), append = FALSE)
+
+st_write(agg_2070_line, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines/agg_2070_line.shp"), append = FALSE)
 
 ```
 

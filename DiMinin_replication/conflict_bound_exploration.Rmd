@@ -23,133 +23,151 @@ library(tidyterra)
 HWC_data <- "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data"
 ```
 
-#SSP1
+#Differencing function
 
 ```{r}
-#read in baseline
-
-ref_rast <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/wp2010_current_day_cb_raster.tif"))
-
-base <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/wp2010_current_day_cb_lines.shp"))
-
-names(base) <- c("conflict", "geometry")
-
-ssp1_2030 <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/SSP1_RCP26_2030.shp"))
-
-names(ssp1_2030) <- c("conflict", "geometry")
-
-ssp1_2050 <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/SSP1_RCP26_2050.shp"))
-
-ssp1_2070 <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/SSP1_RCP26_2070.shp"))
-
-#rasterize for raster math
-
-base_rast <- vect(base) %>% 
-  rasterize(ref_rast)
-
-ssp1_2030_rast <- vect(ssp1_2030) %>% 
-  rasterize(ref_rast)
-
-ssp1_2050_rast <- vect(ssp1_2050) %>% 
-  rasterize(ref_rast)
-
-ssp1_2070_rast <- vect(ssp1_2070) %>% 
-  rasterize(ref_rast)
-
-#create differenced rasters
-
-diff_2030 <- ssp1_2030_rast - base_rast
-
-diff_2050 <- ssp1_2050_rast - base_rast
-
-diff_2070 <- ssp1_2070_rast - base_rast
-
-#polyline function
-
-poly <- function(x){
-  #first make it a spatvector
-  current_cb_vect <- terra::as.polygons(x, trunc=TRUE, dissolve=TRUE, values=TRUE,
-    na.rm=TRUE, na.all=FALSE, extent=FALSE)
+rast_diff <- function(x){
   
-  #then turn that into a polyline
-  current_cb_line <- st_as_sf(current_cb_vect) %>% 
-    st_cast("MULTILINESTRING")
+  base <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/wp2010_current_day_cb_raster.tif"))
   
-  return(current_cb_line)
+  diff <- base - x
+  
+  return(diff)
+}
+```
+
+#Create differenced rasters
+
+##SSP1
+
+```{r}
+#read in rasters
+
+ssp1_rcp26_2030 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundary_rasters/SSP1_RCP26_2030.tif"))
+
+ssp1_rcp26_2050 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundary_rasters/SSP1_RCP26_2050.tif"))
+
+ssp1_rcp26_2070 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundary_rasters/SSP1_RCP26_2070.tif"))
+
+#difference the rasters and save them
+
+##saving function
+saverast <- function(x){
+  
+  name <- paste0(deparse(substitute(x)), ".tif")
+  
+  writeRaster(x, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters/", name), overwrite = TRUE)
 }
 
-diff_2030_line <- poly(diff_2030)
+ssp1_rcp26_2030_diff <- rast_diff(ssp1_rcp26_2030)
+saverast(ssp1_rcp26_2030_diff)
 
-diff_2050_line <- poly(diff_2050)
+ssp1_rcp26_2050_diff <- rast_diff(ssp1_rcp26_2050)
+saverast(ssp1_rcp26_2050_diff)
 
-diff_2070_line <- poly(diff_2070)
-
-#create a basemap
-
-basemap_africa <- ne_countries(
-  continent = "Africa",
-  scale = "medium", 
-  returnclass = "sf") %>% 
-  st_transform(crs = crs(ssp1_2030))  # make sure crs is same as raster
-
-basemap_africa_vect <- basemap_africa %>% 
-  vect()
-
-#plot conflict boundaries
-
-pal <- c("darkgreen", "goldenrod", "orangered")
-
-
-plot(basemap_africa_vect, col = "grey98")
-plot(diff_2070, add = TRUE)
-
+ssp1_rcp26_2070_diff <- rast_diff(ssp1_rcp26_2070)
+saverast(ssp1_rcp26_2070_diff)
 
 ```
 
-#SSP2
+##SSP2
 
 ```{r}
-#read in baseline
+#read in rasters
 
-ref_rast <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/wp2010_current_day_cb_raster.tif"))
+ssp2_rcp45_2030 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundary_rasters/SSP2_RCP45_2030.tif"))
 
-base <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/wp2010_current_day_cb_lines.shp"))
+ssp2_rcp45_2050 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundary_rasters/SSP2_RCP45_2050.tif"))
 
-names(base) <- c("conflict", "geometry")
+ssp2_rcp45_2070 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundary_rasters/SSP2_RCP45_2070.tif"))
 
-ssp2_2030 <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/SSP2_RCP45_2030.shp"))
+#difference the rasters and save them
 
-names(ssp2_2030) <- c("conflict", "geometry")
+ssp2_rcp45_2030_diff <- rast_diff(ssp2_rcp45_2030)
+saverast(ssp2_rcp45_2030_diff)
 
-ssp2_2050 <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/SSP2_RCP45_2050.shp"))
+ssp2_rcp45_2050_diff <- rast_diff(ssp2_rcp45_2050)
+saverast(ssp2_rcp45_2050_diff)
 
-names(ssp2_2050) <- c("conflict", "geometry")
+ssp2_rcp45_2070_diff <- rast_diff(ssp2_rcp45_2070)
+saverast(ssp2_rcp45_2070_diff)
 
-ssp2_2070 <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/SSP2_RCP45_2070.shp"))
+```
 
-names(ssp2_2070) <- c("conflict", "geometry")
+##SSP3
 
-#rasterize for raster math
+```{r}
+#read in rasters
 
-base_rast <- vect(base) %>% 
-  rasterize(ref_rast)
+ssp3_rcp70_2030 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundary_rasters/SSP3_RCP70_2030.tif"))
 
-ssp2_2030_rast <- vect(ssp2_2030) %>% 
-  rasterize(ref_rast)
+ssp3_rcp70_2050 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundary_rasters/SSP3_RCP70_2050.tif"))
 
-ssp2_2050_rast <- vect(ssp2_2050) %>% 
-  rasterize(ref_rast)
+ssp3_rcp70_2070 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundary_rasters/SSP3_RCP70_2070.tif"))
 
-ssp2_2070_rast <- vect(ssp2_2070) %>% 
-  rasterize(ref_rast)
+#difference the rasters and save them
 
-#create differenced rasters
+ssp3_rcp70_2030_diff <- rast_diff(ssp3_rcp70_2030)
+saverast(ssp3_rcp70_2030_diff)
 
-ssp2_diff_2030 <- ssp2_2030_rast - base_rast
+ssp3_rcp70_2050_diff <- rast_diff(ssp3_rcp70_2050)
+saverast(ssp3_rcp70_2050_diff)
 
-ssp2_diff_2050 <- ssp2_2050_rast - base_rast
+ssp3_rcp70_2070_diff <- rast_diff(ssp3_rcp70_2070)
+saverast(ssp3_rcp70_2070_diff)
 
-ssp2_diff_2070 <- ssp2_2070_rast - base_rast
+```
+
+##SSP4
+
+```{r}
+#read in rasters
+
+ssp4_rcp60_2030 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundary_rasters/SSP4_RCP60_2030.tif"))
+
+ssp4_rcp60_2050 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundary_rasters/SSP4_RCP60_2050.tif"))
+
+ssp4_rcp60_2070 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundary_rasters/SSP4_RCP60_2070.tif"))
+
+#difference the rasters and save them
+
+ssp4_rcp60_2030_diff <- rast_diff(ssp4_rcp60_2030)
+saverast(ssp4_rcp60_2030_diff)
+
+ssp4_rcp60_2050_diff <- rast_diff(ssp4_rcp60_2050)
+saverast(ssp4_rcp60_2050_diff)
+
+ssp4_rcp60_2070_diff <- rast_diff(ssp4_rcp60_2070)
+saverast(ssp4_rcp60_2070_diff)
+```
+
+##SSP5
+
+```{r}
+#read in rasters
+
+ssp5_rcp85_2030 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundary_rasters/SSP5_RCP85_2030.tif"))
+
+ssp5_rcp85_2050 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundary_rasters/SSP5_RCP85_2050.tif"))
+
+ssp5_rcp85_2070 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundary_rasters/SSP5_RCP85_2070.tif"))
+
+#difference the rasters and save them
+
+ssp5_rcp85_2030_diff <- rast_diff(ssp5_rcp85_2030)
+saverast(ssp5_rcp85_2030_diff)
+
+ssp5_rcp85_2050_diff <- rast_diff(ssp5_rcp85_2050)
+saverast(ssp5_rcp85_2050_diff)
+
+ssp5_rcp85_2070_diff <- rast_diff(ssp5_rcp85_2070)
+saverast(ssp5_rcp85_2070_diff)
+```
+
+
+#Polygonize difference rasters for visualization
+
+```{r}
 
 #polyline function
 
@@ -165,29 +183,97 @@ poly <- function(x){
   return(current_cb_line)
 }
 
-ssp2_diff_2030_line <- poly(ssp2_diff_2030)
+#ssp1
 
-ssp2_diff_2050_line <- poly(ssp2_diff_2050)
+ssp1_2030_diff_poly <- poly(ssp1_rcp26_2030_diff)
+ssp1_2050_diff_poly <- poly(ssp1_rcp26_2050_diff)
+ssp1_2070_diff_poly <- poly(ssp1_rcp26_2070_diff)
 
-ssp2_diff_2070_line <- poly(ssp2_diff_2070)
+#ssp2
 
+ssp2_2030_diff_poly <- poly(ssp2_rcp45_2030_diff)
+ssp2_2050_diff_poly <- poly(ssp2_rcp45_2050_diff)
+ssp2_2070_diff_poly <- poly(ssp2_rcp45_2070_diff)
+
+#ssp3
+
+ssp3_2030_diff_poly <- poly(ssp3_rcp70_2030_diff)
+ssp3_2050_diff_poly <- poly(ssp3_rcp70_2050_diff)
+ssp3_2070_diff_poly <- poly(ssp3_rcp70_2070_diff)
+
+#ssp4
+
+ssp4_2030_diff_poly <- poly(ssp4_rcp60_2030_diff)
+ssp4_2050_diff_poly <- poly(ssp4_rcp60_2050_diff)
+ssp4_2070_diff_poly <- poly(ssp4_rcp60_2070_diff)
+
+#ssp5
+
+ssp5_2030_diff_poly <- poly(ssp5_rcp85_2030_diff)
+ssp5_2050_diff_poly <- poly(ssp5_rcp85_2050_diff)
+ssp5_2070_diff_poly <- poly(ssp5_rcp85_2070_diff)
+
+#save polylines for use in GIS
+
+#ssp1
+st_write(ssp1_2030_diff_poly, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines/ssp1_rcp26_2030_diff.shp"), append = FALSE)
+
+st_write(ssp1_2050_diff_poly, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines/ssp1_rcp26_2050_diff.shp"), append = FALSE)
+
+st_write(ssp1_2070_diff_poly, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines/ssp1_rcp26_2070_diff.shp"), append = FALSE)
+
+#ssp2
+
+st_write(ssp2_2030_diff_poly, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines/ssp2_rcp45_2030_diff.shp"), append = FALSE)
+
+st_write(ssp2_2050_diff_poly, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines/ssp2_rcp45_2050_diff.shp"), append = FALSE)
+
+st_write(ssp2_2070_diff_poly, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines/ssp2_rcp45_2070_diff.shp"), append = FALSE)
+
+#ssp3
+
+st_write(ssp3_2030_diff_poly, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines/ssp3_rcp70_2030_diff.shp"), append = FALSE)
+
+st_write(ssp3_2050_diff_poly, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines/ssp3_rcp70_2050_diff.shp"), append = FALSE)
+
+st_write(ssp3_2070_diff_poly, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines/ssp3_rcp70_2070_diff.shp"), append = FALSE)
+
+#ssp4
+
+st_write(ssp4_2030_diff_poly, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines/ssp4_rcp60_2030_diff.shp"), append = FALSE)
+
+st_write(ssp4_2050_diff_poly, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines/ssp4_rcp60_2050_diff.shp"), append = FALSE)
+
+st_write(ssp4_2070_diff_poly, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines/ssp4_rcp60_2070_diff.shp"), append = FALSE)
+
+#ssp5
+
+st_write(ssp5_2030_diff_poly, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines/ssp5_rcp85_2030_diff.shp"), append = FALSE)
+
+st_write(ssp5_2050_diff_poly, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines/ssp5_rcp85_2050_diff.shp"), append = FALSE)
+
+st_write(ssp5_2070_diff_poly, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines/ssp5_rcp85_2070_diff.shp"), append = FALSE)
+
+
+#test plot:
 #create a basemap
 
 basemap_africa <- ne_countries(
   continent = "Africa",
   scale = "medium", 
   returnclass = "sf") %>% 
-  st_transform(crs = crs(ssp2_2070))  # make sure crs is same as raster
+  st_transform(crs = crs(ssp1_2030_diff_poly))  # make sure crs is same as raster
 
 basemap_africa_vect <- basemap_africa %>% 
   vect()
 
 #plot conflict boundaries
 
-pal <- c("darkgreen", "goldenrod", "orangered")
+#pal <- c("darkgreen", "goldenrod", "orangered")
 
 
 plot(basemap_africa_vect, col = "grey98")
-plot(ssp2_diff_2070, add = TRUE)
+plot(ssp1_2030_diff_poly, add = TRUE, legend = TRUE)
+
 ```
 
