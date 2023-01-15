@@ -146,7 +146,7 @@ From Di Minin et al: The elephant range maps and the protected area layer were i
 
 wpa_intersect <- st_join(wpa_allpol_geom, asian_elephant_range, join = st_intersects, left = FALSE)
 
-#verification plot: sav range and intersection
+#verification plot: Asian elephant range and intersection
 
 tm_shape(asian_elephant_range) +
   tm_polygons() +
@@ -162,9 +162,6 @@ wpa_adj <- st_join(wpa_allpol_geom, asian_elephant_range, join = st_touches, lef
 
 #creating an extended range map - no data, just polygons
 ext_range <- rbind(asian_elephant_range, wpa_intersect, wpa_adj)
-
-#dissolving polygons into one layer - didn't save this one as it may not be correct
-ext_range_dissolved <- st_union(ext_range)
 ```
 
 ```{r}
@@ -182,5 +179,129 @@ tm_shape(ext_range_asia) +
   tm_polygons() +
   tmap_mode("view")
 ```
+
+# Pressure Layers
+
+Di Minin et al. only retained areas where human, cattle, and crop densities were in the first decile (the decile with the highest human population, crop, and cattle densities). We will only be using human population and cropland measurements, as we aren't looking at lion conflict (cattle predation).
+
+## Land cover data
+
+Land classification：
+1	Water
+2	Forest
+3	Grassland
+4	Barren
+5	Cropland - this is the one we will select for
+6	Urban
+7	Permanent snow and ice
+
+```{r}
+#turn off spherical geometry to simplify joins, etc.
+sf_use_s2(FALSE)
+
+#load in the land use/ land cover data
+
+lulc <- rast(here(HWC_data, "/Geospatial Data/Chen_LULC_data/global_LULC_2015.tif"))
+
+# read in shapefile for Indomalaya and rasterize it
+
+indomalaya <- vect(here(HWC_data, "/R_files/R_output_data/indomalay_region/indomalay_region.shp"))
+
+indomalaya_rast <- rasterize(indomalaya, lulc) ### What is this used for?
+
+# mask lulc to africa extent
+
+lulc_indomalaya <- mask(lulc, indomalaya)
+
+# test plot
+
+plot(lulc_indomalaya)
+```
+
+```{r}
+#save the file to the drive
+
+writeRaster(lulc_indomalaya, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/cropped_lulc/lulc_asia.tif"), filetype = "GTiff")
+```
+
+
+```{r}
+# read in lulc data
+
+lulc_asia <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/cropped_lulc/lulc_asia.tif"))
+                       
+# filter just for cropland by reclassifying (cropland is 1, everything else is 0)
+
+asia_cropland <- lulc_asia
+
+asia_cropland[asia_cropland != 5] <- 0
+asia_cropland[asia_cropland == 5] <- 1
+
+# test plot
+
+plot(asia_cropland)
+
+# aggregate cropland 
+
+asia_cropland_agg <- terra::aggregate(asia_cropland, fact = 10, fun = mean, na.rm = TRUE)
+
+plot(asia_cropland_agg)
+
+# save raster for aggregated cropland
+writeRaster(asia_cropland_agg, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/lulc_formatted/lulc_aggregated/asia_cropland_agg.tif"))
+
+# max value: 1
+```
+
+```{r}
+# calculate deciles
+decs_crop <- global(asia_cropland_agg, quantile, probs = seq(0, 1, 0.1), na.rm = TRUE)
+
+# save cutoff value for highest decile
+topdec_crop <- decs_crop$X90
+
+# keep only the top decile (as in Di Minin et al.)
+top10_crop <- asia_cropland_agg
+
+top10_crop[top10_crop < topdec_crop] <- NA
+
+top10_crop[top10_crop >= topdec_crop] <- 1
+
+plot(top10_crop)
+
+# save raster for cropland top decile
+
+writeRaster(top10_crop, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/lulc_formatted/lulc_top10/top10_crop_asia.tif"))
+```
+
+```{r}
+# vizualization
+
+#turn off spherical geometry
+sf_use_s2(FALSE)
+
+extended_range <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/extended_range/extended_range_asia.shp"))
+
+crop_dens <- (rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/lulc_formatted/lulc_top10/top10_crop_asia.tif")))
+
+# create a basemap
+
+basemap_asia <- ne_countries(
+  continent = "Asia",
+  scale = "medium", 
+  returnclass = "sf") %>% 
+  st_transform(crs = crs(crop_dens))  # make sure crs is same as raster
+
+basemap_asia_vect <- basemap_asia %>% 
+  vect()
+
+# map crop density
+plot(basemap_asia_vect, col = "grey90")
+plot(crop_dens, add = TRUE)
+```
+
+
+
+
 
 
