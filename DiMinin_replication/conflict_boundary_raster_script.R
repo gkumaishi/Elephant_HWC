@@ -1,0 +1,209 @@
+## ----setup, include=FALSE----------------------------------------------------------------------------------------
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(here)
+library(terra)
+library(sf)
+library(tmap)
+library(geos)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(tidyterra)
+
+#File path to the HWC_data folder
+
+HWC_data <- "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data"
+
+
+## ----eval = FALSE------------------------------------------------------------------------------------------------
+## #year <- 2030
+## 
+## #ssp <- 1
+## 
+
+
+## ----------------------------------------------------------------------------------------------------------------
+
+popfolder <- paste0("FPOP_SSP", ssp)
+
+popfile <- paste0("FPOP_SSP", ssp, "_" , year, ".tif")
+
+pop <- rast(here(HWC_data, "/Geospatial Data/Pop_dens/fpop_data/", popfolder, popfile))
+
+
+
+## ----------------------------------------------------------------------------------------------------------------
+#turn off spherical geometry to simplify joins, etc.
+sf_use_s2(FALSE)
+
+#read in lulc for reprojection
+lulc <- rast(here(HWC_data, "/Geospatial Data/Chen_LULC_data/global_LULC_2015.tif"))
+
+#reproject the designated population raster
+popdens <- project(pop, lulc)
+  
+#mask pop density to africa extent
+africa <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/africa_rast/africa_rast.tif"))
+
+popdens_africa <- mask(popdens, africa)
+  
+#aggregate pop density
+africa_popdens_agg <- terra::aggregate(popdens_africa, fact = 10, fun = sum, na.rm = TRUE)
+  
+#cutoff value for highest decile (from baseline)
+
+topdec <- 5184.694
+  
+#reclassify so that the upper decile is 1 and all other values are NA
+  
+top10_pop <- africa_popdens_agg
+  
+top10_pop[top10_pop < topdec] <- NA
+  
+top10_pop[top10_pop >= topdec] <- 1
+
+
+## ----eval = FALSE------------------------------------------------------------------------------------------------
+## #year <- 2030
+## 
+## #ssp <- 1
+## 
+## #rcp <- 26 #2.6 - no decimals in the file path
+## 
+
+
+## ----------------------------------------------------------------------------------------------------------------
+
+cropfolder <- paste0("SSP", ssp, "_", "RCP", rcp)
+
+cropfile <- paste0("global_", "SSP", ssp, "_", "RCP", rcp, "_", year, ".tif")
+
+crop <- rast(here(HWC_data, "/Geospatial Data/Chen_LULC_data", cropfolder, cropfile)) %>% 
+  project(lulc)
+
+
+## ----------------------------------------------------------------------------------------------------------------
+#turn off spherical geometry to simplify joins, etc.
+sf_use_s2(FALSE)
+
+#read in a raster for Africa
+
+africa <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/africa_rast/africa_rast.tif"))
+
+#mask lulc to africa extent
+
+lulc_africa <- mask(crop, africa)
+
+#filter just for cropland by reclassifying (cropland is 1, everything else is 0)
+
+africa_cropland <- lulc_africa
+
+africa_cropland[africa_cropland != 5] <- 0
+
+africa_cropland[africa_cropland == 5] <- 1
+
+#aggregate cropland
+
+africa_cropland_agg <- terra::aggregate(africa_cropland, fact = 10, fun = mean, na.rm = TRUE)
+
+#reclassify aggregated agriculture into 3 categories
+
+# keep only the top decile (as in Di Minin et al.) - cutoff from baseline is 0.65 for 90th percentile
+
+top10_crop <- africa_cropland_agg
+
+top10_crop[top10_crop < 0.65] <- NA
+
+top10_crop[top10_crop >= 0.65] <- 1
+
+
+
+## ----------------------------------------------------------------------------------------------------------------
+#read in the data, set NA values to 0
+
+human_dens <- top10_pop
+
+human_dens[is.na(human_dens)] <- 0 
+
+crop_dens <- top10_crop
+
+crop_dens[is.na(crop_dens)] <- 0 
+
+#read in a raster for Africa
+
+africa <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/africa_rast/africa_rast.tif"))
+
+#raster math to create ranked conflict layer
+
+ranked_conflict <- (human_dens + crop_dens) %>% 
+  project(lulc)
+
+#re-mask to Africa
+
+ranked_conflict_masked <- mask(ranked_conflict, africa)
+
+
+
+## ----------------------------------------------------------------------------------------------------------------
+#read in lulc data for reprojection
+
+lulc <- rast(here(HWC_data, "/Geospatial Data/Chen_LULC_data/global_LULC_2015.tif"))
+
+crs <- crs(lulc)
+
+#read in the extended range map and reproject to the correct crs
+
+ext_range <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/extended_range/extended_range_sav.shp")) %>% 
+  st_transform(crs = crs)
+
+#buffer the extended range map by 10 km
+
+ext_range_buffered <- st_buffer(ext_range, 10000)
+
+#intersect the pressure layer with extended range map
+
+#convert range map to a spatvector and then a spatraster
+
+range_buff_rast <- vect(ext_range_buffered) %>% 
+  rasterize(lulc)
+
+#cut out internal polygons of protected areas so that only the buffer remains
+
+ext_range_rast <- vect(ext_range) %>% 
+  rasterize(lulc)
+
+buffers_only <- mask(range_buff_rast, ext_range_rast, inverse = TRUE)
+
+#read in the ranked pressures map
+
+ranked_press <- ranked_conflict_masked%>% 
+  project(lulc, method = "near")
+
+conflict_int <- mask(ranked_press, buffers_only)
+
+#create a basemap
+
+basemap_africa <- ne_countries(
+  continent = "Africa",
+  scale = "medium", 
+  returnclass = "sf") %>% 
+  st_transform(crs = crs(ranked_press))  # make sure crs is same as raster
+
+basemap_africa_vect <- basemap_africa %>% 
+  vect()
+
+#plot conflict boundaries
+
+pal <- c("darkgreen", "goldenrod", "orangered")
+
+plot(basemap_africa_vect, col = "grey98")
+plot(conflict_int, add = TRUE, pal = pal)
+
+
+## ----------------------------------------------------------------------------------------------------------------
+
+name <- paste0("SSP", ssp, "_" , "RCP", rcp, "_", year, ".tif")
+
+writeRaster(conflict_int, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundary_rasters", name), overwrite = TRUE)
+
