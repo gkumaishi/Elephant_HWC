@@ -207,7 +207,7 @@ lulc <- rast(here(HWC_data, "/Geospatial Data/Chen_LULC_data/global_LULC_2015.ti
 
 indomalaya <- vect(here(HWC_data, "/R_files/R_output_data/indomalay_region/indomalay_region.shp"))
 
-indomalaya_rast <- rasterize(indomalaya, lulc) ### What is this used for?
+#indomalaya_rast <- rasterize(indomalaya, lulc) ### What is this used for?
 
 # mask lulc to africa extent
 

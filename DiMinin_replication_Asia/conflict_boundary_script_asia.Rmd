@@ -54,16 +54,17 @@ pop <- rast(here(HWC_data, "/Geospatial Data/Pop_dens/fpop_data/", popfolder, po
 sf_use_s2(FALSE)
 
 #read in lulc for reprojection
-lulc <- rast(here(HWC_data, "/Geospatial Data/Chen_LULC_data/global_LULC_2015.tif"))
+lulc <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/cropped_lulc/lulc_asia.tif"))
 
 #reproject the designated population raster
 popdens <- project(pop, lulc)
   
 #mask pop density to asia extent
-asia_vect <- vect(here(HWC_data, "/R_files/R_output_data/indomalay_region/indomalay_region.shp"))
-asia <- project(asia_vect, "epsg:9001")
 
-popdens_asia <- mask(popdens, asia)
+#asia_vect <- vect(here(HWC_data, "/R_files/R_output_data/indomalay_region/indomalay_region.shp"))
+#asia <- project(asia_vect, "epsg:9001")
+
+popdens_asia <- mask(popdens, lulc)
   
 #aggregate pop density
 asia_popdens_agg <- terra::aggregate(popdens_asia, fact = 10, fun = sum, na.rm = TRUE)
@@ -122,7 +123,7 @@ sf_use_s2(FALSE)
 
 #mask lulc to asia extent
 
-lulc_asia <- mask(crop, asia)
+lulc_asia <- mask(crop, lulc)
 
 #filter just for cropland by reclassifying (cropland is 1, everything else is 0)
 
@@ -142,9 +143,9 @@ asia_cropland_agg <- terra::aggregate(asia_cropland, fact = 10, fun = mean, na.r
 
 top10_crop <- asia_cropland_agg
 
-top10_crop[top10_crop < .9999] <- NA
+top10_crop[top10_crop < 1] <- NA
 
-top10_crop[top10_crop >= .9999] <- 1
+top10_crop[top10_crop >= 1] <- 1
 
 ```
 
@@ -168,7 +169,7 @@ ranked_conflict <- (human_dens + crop_dens) %>%
 
 #re-mask to Asia
 
-ranked_conflict_masked <- mask(ranked_conflict, asia)
+ranked_conflict_masked <- mask(ranked_conflict, lulc)
 
 ```
 
@@ -177,7 +178,7 @@ ranked_conflict_masked <- mask(ranked_conflict, asia)
 ```{r}
 #read in lulc data for reprojection
 
-lulc <- rast(here(HWC_data, "/Geospatial Data/Chen_LULC_data/global_LULC_2015.tif"))
+#lulc <- rast(here(HWC_data, "/Geospatial Data/Chen_LULC_data/global_LULC_2015.tif"))
 
 crs <- crs(lulc)
 
