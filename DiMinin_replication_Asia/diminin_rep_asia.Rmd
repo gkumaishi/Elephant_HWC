@@ -493,23 +493,69 @@ colors <- rbind(c(0, "darkgreen"),
 
 #plot conflict intersection
 plot(basemap_asia_vect, col = "grey98")
-plot(conflict_int, add = TRUE, col = colors) ### This isn't working for some reason!!
+plot(conflict_int, add = TRUE, col = colors) 
 ```
-
 
 ```{r}
-#test plots
+#save the layer into drive
 
-#buffered extended range map
-tm_shape(ext_range_buffered) +
-  tm_polygons() +
-  tm_shape(ext_range) +
-  tm_polygons(col = "blue") +
-  tmap_mode("view")
+writeRaster(conflict_int, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/wp2010_current_day_cb_raster_asia.tif"), filetype = "GTiff", overwrite = TRUE)
 ```
 
+##Vector version
 
+```{r}
+#read in the conflict boundaries and test plot
 
+current_cb <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/wp2010_current_day_cb_raster_asia.tif"))
+
+#create a basemap
+
+basemap_aasia <- ne_countries(
+  continent = "Asia",
+  scale = "medium", 
+  returnclass = "sf") %>% 
+  st_transform(crs = crs(current_cb))  # make sure crs is same as raster
+
+basemap_asia_vect <- basemap_asia %>% 
+  vect()
+
+#set color matrix
+
+colors <- rbind(c(0, "darkgreen"),
+                c(1, "goldenrod"),
+                c(2, "orangered"))
+
+pal <- c("darkgreen", "goldenrod", "orangered")
+
+#plot conflict boundaries
+plot(basemap_asia_vect, col = "grey98")
+plot(current_cb, add = TRUE, col = colors)
+
+#vectorize
+
+#first make it a spatvector
+current_cb_vect <- terra::as.polygons(current_cb, trunc = TRUE, dissolve = TRUE, values = TRUE,
+    na.rm = TRUE, extent = FALSE) # deleted `na.all = FALSE`
+
+#then turn that into a polyline
+current_cb_line <- st_as_sf(current_cb_vect) %>% 
+  st_cast("MULTILINESTRING")
+
+#plot conflict boundaries
+plot(basemap_asia_vect, col = "grey98")
+plot(current_cb_line, add = TRUE, pal = pal)
+```
+
+```{r}
+#save the polyline shapefile
+
+st_write(current_cb_line, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/wp2010_current_day_cb_lines_asia.shp"))
+```
+
+##Asessing validity
+
+"Used Latin hypercube sampling, which is a form of sampling used to reduce the number of runs necessary for a Monte Carlo simulation to achieve a reasonably accurate random distribution67, to randomly vary 100 times the distance values between the extended range and human pressure maps. Specifically, we divided the low, moderate, high, and severe conflict lines into 100-m segments, calculated the minimum distance for each segment to human pressure within a 10, 20, and 30-km buffer distance from the edge of the extended range map layer, and then randomly varied that distance 100 times across ±10% of the value. We then averaged the resulting 100 randomly created distance values for each segment and identified which segments fell outside of the analyzed buffer distances of 10, 20, and 30-km. We tested for 20 and 30-km buffer distances, as we wanted to assess the variability of the fencing distance to different buffer sizes."
 
 
 
