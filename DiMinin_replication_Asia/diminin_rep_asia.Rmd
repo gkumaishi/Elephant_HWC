@@ -511,7 +511,7 @@ current_cb <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/con
 
 #create a basemap
 
-basemap_aasia <- ne_countries(
+basemap_asia <- ne_countries(
   continent = "Asia",
   scale = "medium", 
   returnclass = "sf") %>% 
