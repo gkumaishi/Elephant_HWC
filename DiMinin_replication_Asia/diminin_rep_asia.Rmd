@@ -207,7 +207,7 @@ lulc <- rast(here(HWC_data, "/Geospatial Data/Chen_LULC_data/global_LULC_2015.ti
 
 indomalaya <- vect(here(HWC_data, "/R_files/R_output_data/indomalay_region/indomalay_region.shp"))
 
-indomalaya_rast <- rasterize(indomalaya, lulc) ### What is this used for?
+#indomalaya_rast <- rasterize(indomalaya, lulc) ### What is this used for?
 
 # mask lulc to africa extent
 
@@ -299,6 +299,263 @@ basemap_asia_vect <- basemap_asia %>%
 plot(basemap_asia_vect, col = "grey90")
 plot(crop_dens, add = TRUE)
 ```
+
+## Human density data
+
+Fpop data - exploratory
+
+```{r}
+# read in necessary data layer
+
+# read in lulc for reprojection
+lulc <- rast(here(HWC_data, "/Geospatial Data/Chen_LULC_data/global_LULC_2015.tif"))
+
+# turn off spherical geometry to simplify joins, etc.
+sf_use_s2(FALSE)
+
+# read in a raster for Asia 
+indomalaya <- vect(here(HWC_data, "/R_files/R_output_data/indomalay_region/indomalay_region.shp"))
+
+#read in the data
+wpop_2010 <- rast(here(HWC_data, "/Geospatial Data/Pop_dens/fpop_data/ppp_2010_1km_Aggregated.tif"))
+
+# create a function
+
+agg_pop <- function(x){
+  
+  # reproject the designated population raster
+  popdens <- project(x, lulc)
+  
+  # mask pop density to indomalaya extent
+  popdens_asia <- mask(popdens, indomalaya)
+  
+  # aggregate pop density
+  asia_popdens_agg <- terra::aggregate(popdens_asia, fact = 10, fun = sum, na.rm = TRUE)
+  
+  # Keep only the top decile as in Di Minin
+  
+  # calculate deciles
+  decs <- global(asia_popdens_agg, quantile, probs = seq(0, 1, 0.1), na.rm = TRUE)
+  
+  return(asia_popdens_agg)
+}
+
+wp2010_aggregated <- agg_pop(wpop_2010)
+
+writeRaster(wp2010_aggregated, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/pop_density/wpop_2010_agg_asia.tif"), filetype = "GTiff", overwrite = TRUE)
+
+# max 3940171
+```
+
+```{r}
+# Find the top decile
+
+#read in aggregated raster
+
+wp2010_agg <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/pop_density/wpop_2010_agg_asia.tif"))
+
+#keep only the top decile (as in Di Minin et al.)
+  
+#calculate deciles
+decs <- global(wp2010_agg, quantile, probs = seq(0, 1, 0.1), na.rm = TRUE)
+  
+#save cutoff value for highest decile
+
+topdec <- decs$X90.
+  
+#reclassify so that the upper decile is 1 and all other values are NA
+  
+top10_pop <- wp2010_agg
+  
+top10_pop[top10_pop < topdec] <- NA
+  
+top10_pop[top10_pop >= topdec] <- 1
+
+#save raster for pop density top decile
+
+writeRaster(top10_pop, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/pop_density/wpop_2010_top10_asia.tif"), filetype = "GTiff", overwrite = TRUE)
+
+# top decile 48851.86875
+```
+
+##Ranked pressures layer
+
+2 - High risk: high human + crop density 
+1 - Med risk: high human OR crop density 
+0 - Low risk: NO high human and NO high crop density
+
+```{r}
+#read in the data, set NA values to 0
+
+human_dens <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/pop_density/wpop_2010_top10_asia.tif"))
+
+human_dens[is.na(human_dens)] <- 0 
+
+crop_dens <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/lulc_formatted/lulc_top10/top10_crop_asia.tif"))
+
+crop_dens[is.na(crop_dens)] <- 0 
+
+# read in a raster for Asia 
+asia <- vect(here(HWC_data, "/R_files/R_output_data/indomalay_region/indomalay_region.shp")) %>% 
+  project(crop_dens)
+
+asia_rast <- rasterize(asia, crop_dens)
+
+# raster math to create ranked conflict layer
+
+ranked_conflict <- human_dens + crop_dens
+
+# re-mask to Asia
+
+ranked_conflict_masked <- mask(ranked_conflict, asia_rast)
+
+# create a basemap
+
+basemap_asia <- ne_countries(
+  continent = "Asia",
+  scale = "medium", 
+  returnclass = "sf") %>% 
+  st_transform(crs = crs(ranked_conflict))  # make sure crs is same as raster
+
+basemap_asia_vect <- basemap_asia %>% 
+  vect()
+
+# map ranked conflict
+
+plot(basemap_asia_vect, col = "grey98")
+plot(ranked_conflict_masked, add = TRUE)
+```
+
+```{r}
+# save the ranked conflict layer
+
+writeRaster(ranked_conflict_masked, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/ranked_pressure_layers/wp2010_current_day_rp_asia.tif"), filetype = "GTiff", overwrite = TRUE)
+```
+
+#Conflict boundaries
+
+##Raster version
+Extended range map is buffered by 10 km and intersected with classified pressures layer
+
+```{r}
+#read in lulc data for reprojection
+
+lulc <- rast(here(HWC_data, "/Geospatial Data/Chen_LULC_data/global_LULC_2015.tif"))
+
+crs <- crs(lulc)
+
+#read in the extended range map and reproject to the correct crs
+
+ext_range <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/extended_range/extended_range_asia.shp")) %>% 
+  st_transform(crs = crs)
+
+#buffer the extended range map by 10 km
+
+ext_range_buffered <- st_buffer(ext_range, 10000)
+
+#intersect the pressure layer with extended range map
+
+#convert range map to a spatvector and then a spatraster
+
+range_buff_rast <- vect(ext_range_buffered) %>% 
+  rasterize(lulc)
+
+#cut out internal polygons of protected areas so that only the buffer remains
+
+ext_range_rast <- vect(ext_range) %>% 
+  rasterize(lulc)
+
+buffers_only <- mask(range_buff_rast, ext_range_rast, inverse = TRUE)
+
+#read in the ranked pressures map
+
+ranked_press <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/ranked_pressure_layers/wp2010_current_day_rp_asia.tif")) %>% 
+  project(lulc, method = "near")
+
+conflict_int <- mask(ranked_press, buffers_only)
+
+#create a basemap
+
+basemap_asia <- ne_countries(
+  continent = "Asia",
+  scale = "medium", 
+  returnclass = "sf") %>% 
+  st_transform(crs = crs(ranked_press))  # make sure crs is same as raster
+
+basemap_asia_vect <- basemap_asia %>% 
+  vect()
+
+#set color matrix
+
+colors <- rbind(c(0, "darkgreen"),
+                c(1, "goldenrod"),
+                c(2, "orangered"))
+
+#plot conflict intersection
+plot(basemap_asia_vect, col = "grey98")
+plot(conflict_int, add = TRUE, col = colors) 
+```
+
+```{r}
+#save the layer into drive
+
+writeRaster(conflict_int, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/wp2010_current_day_cb_raster_asia.tif"), filetype = "GTiff", overwrite = TRUE)
+```
+
+##Vector version
+
+```{r}
+#read in the conflict boundaries and test plot
+
+current_cb <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/wp2010_current_day_cb_raster_asia.tif"))
+
+#create a basemap
+
+basemap_asia <- ne_countries(
+  continent = "Asia",
+  scale = "medium", 
+  returnclass = "sf") %>% 
+  st_transform(crs = crs(current_cb))  # make sure crs is same as raster
+
+basemap_asia_vect <- basemap_asia %>% 
+  vect()
+
+#set color matrix
+
+colors <- rbind(c(0, "darkgreen"),
+                c(1, "goldenrod"),
+                c(2, "orangered"))
+
+pal <- c("darkgreen", "goldenrod", "orangered")
+
+#plot conflict boundaries
+plot(basemap_asia_vect, col = "grey98")
+plot(current_cb, add = TRUE, col = colors)
+
+#vectorize
+
+#first make it a spatvector
+current_cb_vect <- terra::as.polygons(current_cb, trunc = TRUE, dissolve = TRUE, values = TRUE,
+    na.rm = TRUE, extent = FALSE) # deleted `na.all = FALSE`
+
+#then turn that into a polyline
+current_cb_line <- st_as_sf(current_cb_vect) %>% 
+  st_cast("MULTILINESTRING")
+
+#plot conflict boundaries
+plot(basemap_asia_vect, col = "grey98")
+plot(current_cb_line, add = TRUE, pal = pal)
+```
+
+```{r}
+#save the polyline shapefile
+
+st_write(current_cb_line, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/wp2010_current_day_cb_lines_asia.shp"))
+```
+
+##Asessing validity
+
+"Used Latin hypercube sampling, which is a form of sampling used to reduce the number of runs necessary for a Monte Carlo simulation to achieve a reasonably accurate random distribution67, to randomly vary 100 times the distance values between the extended range and human pressure maps. Specifically, we divided the low, moderate, high, and severe conflict lines into 100-m segments, calculated the minimum distance for each segment to human pressure within a 10, 20, and 30-km buffer distance from the edge of the extended range map layer, and then randomly varied that distance 100 times across ±10% of the value. We then averaged the resulting 100 randomly created distance values for each segment and identified which segments fell outside of the analyzed buffer distances of 10, 20, and 30-km. We tested for 20 and 30-km buffer distances, as we wanted to assess the variability of the fencing distance to different buffer sizes."
 
 
 
