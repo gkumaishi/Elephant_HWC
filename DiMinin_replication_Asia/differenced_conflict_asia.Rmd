@@ -1,0 +1,288 @@
+---
+title: "Conflict Boundary Explanation Asia"
+author: "Grace Kumaishi"
+date: "1/25/2023"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(here)
+library(terra)
+library(sf)
+library(tmap)
+library(geos)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(tidyterra)
+
+#File path to the HWC_data folder
+
+HWC_data <- "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data"
+```
+
+#Differencing function
+
+```{r}
+rast_diff <- function(x){
+  
+  base <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/wp2010_current_day_cb_raster_asia.tif"))
+  
+  diff <- base - x
+  
+  return(diff)
+}
+```
+
+#Create differenced rasters
+
+##SSP1
+
+```{r}
+#read in rasters
+
+ssp1_rcp26_2030 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries_rasters_asia/SSP1_RCP26_2030.tif"))
+
+ssp1_rcp26_2050 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries_rasters_asia/SSP1_RCP26_2050.tif"))
+
+ssp1_rcp26_2070 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries_rasters_asia/SSP1_RCP26_2070.tif"))
+
+#difference the rasters and save them
+
+##saving function
+saverast <- function(x){
+  
+  name <- paste0(deparse(substitute(x)), ".tif")
+  
+  writeRaster(x, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters_asia/", name), overwrite = TRUE)
+}
+
+ssp1_rcp26_2030_diff <- rast_diff(ssp1_rcp26_2030)
+saverast(ssp1_rcp26_2030_diff)
+
+ssp1_rcp26_2050_diff <- rast_diff(ssp1_rcp26_2050)
+saverast(ssp1_rcp26_2050_diff)
+
+ssp1_rcp26_2070_diff <- rast_diff(ssp1_rcp26_2070)
+saverast(ssp1_rcp26_2070_diff)
+
+```
+
+##SSP2
+
+```{r}
+#read in rasters
+
+ssp2_rcp45_2030 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries_rasters_asia/SSP2_RCP45_2030.tif"))
+
+ssp2_rcp45_2050 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries_rasters_asia/SSP2_RCP45_2050.tif"))
+
+ssp2_rcp45_2070 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries_rasters_asia/SSP2_RCP45_2070.tif"))
+
+#difference the rasters and save them
+
+ssp2_rcp45_2030_diff <- rast_diff(ssp2_rcp45_2030)
+saverast(ssp2_rcp45_2030_diff)
+
+ssp2_rcp45_2050_diff <- rast_diff(ssp2_rcp45_2050)
+saverast(ssp2_rcp45_2050_diff)
+
+ssp2_rcp45_2070_diff <- rast_diff(ssp2_rcp45_2070)
+saverast(ssp2_rcp45_2070_diff)
+```
+
+##SSP3
+
+```{r}
+#read in rasters
+
+ssp3_rcp70_2030 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries_rasters_asia/SSP3_RCP70_2030.tif"))
+
+ssp3_rcp70_2050 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries_rasters_asia/SSP3_RCP70_2050.tif"))
+
+ssp3_rcp70_2070 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries_rasters_asia/SSP3_RCP70_2070.tif"))
+
+#difference the rasters and save them
+
+ssp3_rcp70_2030_diff <- rast_diff(ssp3_rcp70_2030)
+saverast(ssp3_rcp70_2030_diff)
+
+ssp3_rcp70_2050_diff <- rast_diff(ssp3_rcp70_2050)
+saverast(ssp3_rcp70_2050_diff)
+
+ssp3_rcp70_2070_diff <- rast_diff(ssp3_rcp70_2070)
+saverast(ssp3_rcp70_2070_diff)
+
+```
+
+##SSP4
+
+```{r}
+#read in rasters
+
+ssp4_rcp60_2030 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries_rasters_asia/SSP4_RCP60_2030.tif"))
+
+ssp4_rcp60_2050 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries_rasters_asia/SSP4_RCP60_2050.tif"))
+
+ssp4_rcp60_2070 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries_rasters_asia/SSP4_RCP60_2070.tif"))
+
+#difference the rasters and save them
+
+ssp4_rcp60_2030_diff <- rast_diff(ssp4_rcp60_2030)
+saverast(ssp4_rcp60_2030_diff)
+
+ssp4_rcp60_2050_diff <- rast_diff(ssp4_rcp60_2050)
+saverast(ssp4_rcp60_2050_diff)
+
+ssp4_rcp60_2070_diff <- rast_diff(ssp4_rcp60_2070)
+saverast(ssp4_rcp60_2070_diff)
+```
+
+##SSP5
+
+```{r}
+#read in rasters
+
+ssp5_rcp85_2030 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries_rasters_asia/SSP5_RCP85_2030.tif"))
+
+ssp5_rcp85_2050 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries_rasters_asia/SSP5_RCP85_2050.tif"))
+
+ssp5_rcp85_2070 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries_rasters_asia/SSP5_RCP85_2070.tif"))
+
+#difference the rasters and save them
+
+ssp5_rcp85_2030_diff <- rast_diff(ssp5_rcp85_2030)
+saverast(ssp5_rcp85_2030_diff)
+
+ssp5_rcp85_2050_diff <- rast_diff(ssp5_rcp85_2050)
+saverast(ssp5_rcp85_2050_diff)
+
+ssp5_rcp85_2070_diff <- rast_diff(ssp5_rcp85_2070)
+saverast(ssp5_rcp85_2070_diff)
+```
+
+#Polygonize difference rasters for visualization
+
+```{r}
+
+#polyline function
+
+poly <- function(x){
+  #first make it a spatvector
+  current_cb_vect <- terra::as.polygons(x, trunc=TRUE, dissolve=TRUE, values=TRUE,
+    na.rm=TRUE, extent=FALSE) #removed na.all = FALSE
+  
+  #then turn that into a polyline
+  current_cb_line <- st_as_sf(current_cb_vect) %>% 
+    st_cast("MULTILINESTRING")
+  
+  return(current_cb_line)
+}
+
+#ssp1
+
+ssp1_2030_diff_poly <- poly(ssp1_rcp26_2030_diff)
+ssp1_2050_diff_poly <- poly(ssp1_rcp26_2050_diff)
+ssp1_2070_diff_poly <- poly(ssp1_rcp26_2070_diff)
+
+#ssp2
+
+ssp2_2030_diff_poly <- poly(ssp2_rcp45_2030_diff)
+ssp2_2050_diff_poly <- poly(ssp2_rcp45_2050_diff)
+ssp2_2070_diff_poly <- poly(ssp2_rcp45_2070_diff)
+
+#ssp3
+
+ssp3_2030_diff_poly <- poly(ssp3_rcp70_2030_diff)
+ssp3_2050_diff_poly <- poly(ssp3_rcp70_2050_diff)
+ssp3_2070_diff_poly <- poly(ssp3_rcp70_2070_diff)
+
+#ssp4
+
+ssp4_2030_diff_poly <- poly(ssp4_rcp60_2030_diff)
+ssp4_2050_diff_poly <- poly(ssp4_rcp60_2050_diff)
+ssp4_2070_diff_poly <- poly(ssp4_rcp60_2070_diff)
+
+#ssp5
+
+ssp5_2030_diff_poly <- poly(ssp5_rcp85_2030_diff)
+ssp5_2050_diff_poly <- poly(ssp5_rcp85_2050_diff)
+ssp5_2070_diff_poly <- poly(ssp5_rcp85_2070_diff)
+
+#save polylines for use in GIS
+
+#ssp1
+st_write(ssp1_2030_diff_poly, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines_asia/ssp1_rcp26_2030_diff.shp"), append = FALSE)
+
+st_write(ssp1_2050_diff_poly, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines_asia/ssp1_rcp26_2050_diff.shp"), append = FALSE)
+
+st_write(ssp1_2070_diff_poly, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines_asia/ssp1_rcp26_2070_diff.shp"), append = FALSE)
+
+#ssp2
+
+st_write(ssp2_2030_diff_poly, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines_asia/ssp2_rcp45_2030_diff.shp"), append = FALSE)
+
+st_write(ssp2_2050_diff_poly, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines_asia/ssp2_rcp45_2050_diff.shp"), append = FALSE)
+
+st_write(ssp2_2070_diff_poly, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines_asia/ssp2_rcp45_2070_diff.shp"), append = FALSE)
+
+#ssp3
+
+st_write(ssp3_2030_diff_poly, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines_asia/ssp3_rcp70_2030_diff.shp"), append = FALSE)
+
+st_write(ssp3_2050_diff_poly, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines_asia/ssp3_rcp70_2050_diff.shp"), append = FALSE)
+
+st_write(ssp3_2070_diff_poly, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines_asia/ssp3_rcp70_2070_diff.shp"), append = FALSE)
+
+#ssp4
+
+st_write(ssp4_2030_diff_poly, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines_asia/ssp4_rcp60_2030_diff.shp"), append = FALSE)
+
+st_write(ssp4_2050_diff_poly, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines_asia/ssp4_rcp60_2050_diff.shp"), append = FALSE)
+
+st_write(ssp4_2070_diff_poly, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines_asia/ssp4_rcp60_2070_diff.shp"), append = FALSE)
+
+#ssp5
+
+st_write(ssp5_2030_diff_poly, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines_asia/ssp5_rcp85_2030_diff.shp"), append = FALSE)
+
+st_write(ssp5_2050_diff_poly, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines_asia/ssp5_rcp85_2050_diff.shp"), append = FALSE)
+
+st_write(ssp5_2070_diff_poly, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines_asia/ssp5_rcp85_2070_diff.shp"), append = FALSE)
+
+
+#test plot:
+#create a basemap
+
+basemap_asia <- ne_countries(
+  continent = "Asia",
+  scale = "medium", 
+  returnclass = "sf") %>% 
+  st_transform(crs = crs(ssp1_2030_diff_poly))  # make sure crs is same as raster
+
+basemap_asia_vect <- basemap_asia %>% 
+  vect()
+
+#plot conflict boundaries
+
+#pal <- c("darkgreen", "goldenrod", "orangered")
+
+
+plot(basemap_asia_vect, col = "grey98")
+plot(ssp1_2030_diff_poly, add = TRUE, legend = TRUE)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
