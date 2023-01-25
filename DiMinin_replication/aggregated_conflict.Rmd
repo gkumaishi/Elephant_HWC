@@ -20,7 +20,8 @@ library(tidyterra)
 
 #File path to the HWC_data folder
 
-HWC_data <- "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data"
+HWC_data <- "/Users/mia/Library/CloudStorage/GoogleDrive-mguarnieri@ucsb.edu/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data"
+
 ```
 
 #Keeping only increasing areas
@@ -245,5 +246,39 @@ st_write(agg_2050_line, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replicati
 
 st_write(agg_2070_line, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines/agg_2070_line.shp"), append = FALSE)
 
+```
+
+#Plot
+
+```{r}
+agg_2030_line <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines/agg_2030_line.shp"))
+
+agg_2050_line <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines/agg_2050_line.shp"))
+
+agg_2070_line <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines/agg_2070_line.shp"))
+
+#create a basemap
+
+basemap_africa <- ne_countries(
+  continent = "Africa",
+  scale = "medium", 
+  returnclass = "sf") %>% 
+  st_transform(crs = crs(agg_2030_line))  # make sure crs is same as raster
+
+basemap_africa_vect <- basemap_africa %>% 
+  vect()
+
+#plot conflict boundaries
+
+par(mfcol=c(1,3))
+
+plot(basemap_africa_vect, col = "grey98", axes = FALSE, main = "2030")
+plot(agg_2030_line, add = TRUE, lwd = 2.5, axes = FALSE)
+
+plot(basemap_africa_vect, col = "grey98", axes = FALSE, main = "2050")
+plot(agg_2050_line, add = TRUE, lwd = 2.5, axes = FALSE)
+
+plot(basemap_africa_vect, col = "grey98", axes = FALSE, main = "2070")
+plot(agg_2070_line, add = TRUE, lwd = 2.5, axes = FALSE)
 ```
 
