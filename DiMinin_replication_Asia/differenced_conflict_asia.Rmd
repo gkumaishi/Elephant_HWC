@@ -20,7 +20,11 @@ library(tidyterra)
 
 #File path to the HWC_data folder
 
-HWC_data <- "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data"
+#HWC_data <- "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data"
+
+#Mia's file path
+
+HWC_data <- "/Users/mia/Library/CloudStorage/GoogleDrive-mguarnieri@ucsb.edu/My Drive/Arnhold Project/HWC_data"
 ```
 
 #Differencing function
@@ -275,7 +279,256 @@ plot(ssp3_2050_diff_poly, add = TRUE, legend = TRUE)
 
 ```
 
+#Polygons
 
+```{r savepol function}
+
+savepol <- function(x){
+  
+  name <- paste0(deparse(substitute(x)), ".shp")
+ 
+  writeVector(x, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polygons_asia/", name), overwrite = TRUE)
+  
+}
+
+#SSP1
+
+ssp1_rcp26_2050_diff_polygon <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters_asia/ssp1_rcp26_2050_diff.tif")) %>% 
+  terra::as.polygons(trunc=TRUE, dissolve=TRUE, values=TRUE, na.rm=TRUE, na.all=FALSE, extent=FALSE)
+
+savepol(ssp1_rcp26_2050_diff_polygon)
+
+#SSP3
+
+ssp3_rcp70_2050_diff_polygon <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters_asia/ssp3_rcp70_2050_diff.tif")) %>% 
+  terra::as.polygons(trunc=TRUE, dissolve=TRUE, values=TRUE, na.rm=TRUE, na.all=FALSE, extent=FALSE)
+
+savepol(ssp3_rcp70_2050_diff_polygon)
+
+```
+
+
+#Percent value calculations
+
+##Read in the polyline and polygon files
+
+Polylines:
+
+```{r polylines}
+#Polylines
+
+#SSP1
+ssp1_2030_lines <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines_asia/ssp1_rcp26_2030_diff.shp"))
+
+ssp1_2050_lines <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines_asia/ssp1_rcp26_2050_diff.shp"))
+
+ssp1_2070_lines <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines/ssp1_rcp26_2070_diff.shp"))
+
+
+#SSP2
+
+ssp2_2030_lines <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines/ssp2_rcp45_2030_diff.shp"))
+
+ssp2_2050_lines <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines/ssp2_rcp45_2050_diff.shp"))
+
+ssp2_2070_lines <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines/ssp2_rcp45_2070_diff.shp"))
+
+
+#SSP3
+
+ssp3_2030_lines <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines/ssp3_rcp70_2030_diff.shp"))
+
+ssp3_2050_lines <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines/ssp3_rcp70_2050_diff.shp"))
+
+ssp3_2070_lines <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines/ssp3_rcp70_2070_diff.shp"))
+
+
+#SSP4
+
+ssp4_2030_lines <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines/ssp4_rcp60_2030_diff.shp"))
+
+ssp4_2050_lines <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines/ssp4_rcp60_2050_diff.shp"))
+
+ssp4_2070_lines <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines/ssp4_rcp60_2070_diff.shp"))
+
+
+#SSP5
+
+ssp5_2030_lines <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines/ssp5_rcp85_2030_diff.shp"))
+
+ssp5_2050_lines <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines/ssp5_rcp85_2050_diff.shp"))
+
+ssp5_2070_lines <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polylines/ssp5_rcp85_2070_diff.shp"))
+
+```
+
+Polygons:
+
+```{r}
+#Polygons
+
+#SSP1
+
+ssp1_2050_polygons <- vect(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polygons/ssp1_rcp26_2050_diff_polygon.shp"))
+
+
+#SSP3
+
+ssp3_2050_polygons <- vect(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polygons/ssp3_rcp70_2050_diff_polygon.shp"))
+
+```
+
+##Set up function for percentage area/length calculations
+
+```{r}
+perc_area_table <- function(x){
+  
+  cb_area_table <- x %>% 
+    as.data.frame() %>% 
+    mutate(area = expanse(x, unit = "m")) %>% 
+    mutate(perc_area = (area/sum(area) * 100))
+  
+  return(cb_area_table)
+}
+
+perc_length_table <- function(x){
+  
+  colnames(x) = c("class", "geometry")
+  
+  cb_area_table <- x %>% 
+    rowwise() %>%
+    mutate(length = st_length(geometry)) %>%
+    ungroup() %>%
+    group_by(class) %>%
+    summarize(length = as.numeric(sum(length))) %>%
+    ungroup() %>% 
+    as.data.frame() %>% 
+    mutate(perc_length = (length/sum(length) * 100))
+  
+  return(cb_area_table)
+}
+
+```
+
+##Run calculations
+
+###Lines
+```{r}
+
+#SSP1
+s1_2030_diff_table <- perc_length_table(ssp1_2030_lines)
+
+s1_2050_diff_table <- perc_length_table(ssp1_2050_lines)
+
+s1_2070_diff_table <- perc_length_table(ssp1_2070_lines)
+
+
+#SSP2
+s2_2030_diff_table <- perc_length_table(ssp2_2030_lines)
+
+s2_2050_diff_table <- perc_length_table(ssp2_2050_lines)
+
+s2_2070_diff_table <- perc_length_table(ssp2_2070_lines)
+
+
+#SSP3
+s3_2030_diff_table <- perc_length_table(ssp3_2030_lines)
+
+s3_2050_diff_table <- perc_length_table(ssp3_2050_lines)
+
+s3_2070_diff_table <- perc_length_table(ssp3_2070_lines)
+
+
+#SSP4
+s4_2030_diff_table <- perc_length_table(ssp4_2030_lines)
+
+s4_2050_diff_table <- perc_length_table(ssp4_2050_lines)
+
+s4_2070_diff_table <- perc_length_table(ssp4_2070_lines)
+
+
+#SSP5
+s5_2030_diff_table <- perc_length_table(ssp5_2030_lines)
+
+s5_2050_diff_table <- perc_length_table(ssp5_2050_lines)
+
+s5_2070_diff_table <- perc_length_table(ssp5_2070_lines)
+
+
+#Combined table
+
+conf_change_table <- cbind(
+  s1_2030_diff_table$class, 
+  
+  s1_2030_diff_table$perc_length,
+  s2_2030_diff_table$perc_length,
+  s3_2030_diff_table$perc_length,
+  s4_2030_diff_table$perc_length,
+  s5_2030_diff_table$perc_length,
+  
+  s1_2050_diff_table$perc_length,
+  s2_2050_diff_table$perc_length,
+  s3_2050_diff_table$perc_length,
+  s4_2050_diff_table$perc_length,
+  s5_2050_diff_table$perc_length,
+  
+  s1_2070_diff_table$perc_length,
+  s2_2070_diff_table$perc_length,
+  s3_2070_diff_table$perc_length,
+  s4_2070_diff_table$perc_length,
+  s5_2070_diff_table$perc_length
+  )
+
+colnames(conf_change_table) = c(
+  "Conflict Change", 
+  
+  "SSP1 2030", 
+  "SSP2 2030",
+  "SSP3 2030",
+  "SSP4 2030",
+  "SSP5 2030",
+  
+  "SSP1 2050",
+  "SSP2 2050",
+  "SSP3 2050",
+  "SSP4 2050",
+  "SSP5 2050",
+  
+  "SSP1 2070",
+  "SSP2 2070",
+  "SSP3 2070",
+  "SSP4 2070",
+  "SSP5 2070"
+  )
+
+write.csv(conf_change_table, file = here(HWC_data, "Data/Di Minin HWC", "conflict_change_lines_byyear.csv"), row.names=FALSE)
+```
+
+```{r}
+
+conf_change_table <- read_csv(here(HWC_data, "Data/Di Minin HWC", "conflict_change_lines_byyear.csv"))
+
+dec <- c(rep(2, each = 16))
+
+align <- c(rep("c", each = 16))
+
+conf_change_lines_nicetables <- conf_change_table %>%
+  kable(digits = dec,
+        escape = FALSE,
+        align = align) %>% 
+  kable_styling(full_width = FALSE, position = "center") %>% 
+  add_header_above(c(" ", "2030" = 5, "2050" = 5, "2070" = 5), background = c("#a8e6cf", "#dcedc1", "#ffd3b6")) %>% 
+  column_spec(2:6, background = "#a8e6cf") %>%
+  column_spec(7:11, background = "#dcedc1") %>% 
+  column_spec(12:16, background = "#ffd3b6")
+
+conf_change_lines_nicetables
+
+library(magick)
+
+save_kable(conf_change_lines_nicetables, file = here("/Users/mia/Desktop/Fellowships/Arnhold HWC/conf_change_lines_table_byyear.jpeg"))
+
+```
 
 
 
