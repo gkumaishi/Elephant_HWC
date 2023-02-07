@@ -34,7 +34,7 @@ rast_diff <- function(x){
   
   base <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/wp2010_current_day_cb_raster_asia.tif"))
   
-  diff <- base - x
+  diff <- x - base
   
   return(diff)
 }
@@ -264,7 +264,7 @@ basemap_asia <- ne_countries(
   continent = "Asia",
   scale = "medium", 
   returnclass = "sf") %>% 
-  st_transform(crs = crs(ssp1_2030_diff_poly))  # make sure crs is same as raster
+  st_transform(crs = crs(ssp3_2050_diff_poly))  # make sure crs is same as raster
 
 basemap_asia_vect <- basemap_asia %>% 
   vect()
@@ -275,7 +275,7 @@ basemap_asia_vect <- basemap_asia %>%
 
 
 plot(basemap_asia_vect, col = "grey98")
-plot(ssp1_2030_diff_poly, add = TRUE, legend = TRUE)
+plot(ssp3_2050_diff_poly, add = TRUE, legend = TRUE)
 
 ```
 
