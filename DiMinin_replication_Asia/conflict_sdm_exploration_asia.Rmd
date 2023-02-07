@@ -1,0 +1,191 @@
+---
+title: "Conflict and SDM Asia"
+author: "Mia Guarnieri"
+date: "2023-02-03"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(here)
+library(terra)
+library(sf)
+library(tmap)
+library(geos)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(tidyterra)
+library(kableExtra)
+
+#File path to the HWC_data folder
+
+HWC_data <- "/Users/mia/Library/CloudStorage/GoogleDrive-mguarnieri@ucsb.edu/My Drive/Arnhold Project/HWC_data"
+```
+
+#Reclass conflict layers to be binary inc/dec
+
+```{r}
+#reclassify function
+reclass_rast <- function(x){
+  
+  rast <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters_asia/", x))
+  
+  rast[rast == 0] <- NA
+  
+  rast[rast > 0] <- 1
+  
+  rast[rast < 0] <- -1
+  
+  writeRaster(rast, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters_asia/binary_diffs_asia/", name), overwrite = TRUE)
+
+}
+
+rast_list <- list.files(path = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters_asia/"), pattern = '.tif')
+
+for (i in rast_list) {
+  
+  name <- paste0("asia_binary_", i)
+  
+  reclass_rast(i)
+  
+}
+
+```
+
+#Filter binary conflict layers and mask SDMs
+
+Load in and reproject SDMs
+
+```{r}
+#read in raster for reprojection
+
+asia_diff_s12050 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters_asia/ssp1_rcp26_2050_diff.tif"))
+
+#read in and reproject SDMs
+asia_sdm_ssp1 <- rast(here(HWC_data, "/Wallace SDM Rasters/asia/2011_2040/change_maps/change_2011_2040_126_gfdl.tif")) %>% 
+  project(asia_diff_s12050)
+
+asia_sdm_ssp3 <- rast(here(HWC_data, "/Wallace SDM Rasters/asia/2011_2040/change_maps/change_2011_2040_370_gfdl.tif")) %>% 
+  project(asia_diff_s12050)
+```
+
+
+Read in binary conflict rasters and split into increasing/decreasing only
+
+```{r}
+asia_diff_s12050 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters_asia/ssp1_rcp26_2050_diff.tif"))
+
+s12050_inc <- asia_diff_s12050
+
+s12050_inc[s12050_inc > 0] <- 1
+
+s12050_inc[s12050_inc <= 0] <- NA
+
+
+s12050_dec <- asia_diff_s12050
+
+s12050_dec[s12050_dec >= 0] <- NA
+
+s12050_dec[s12050_dec < 0] <- 1
+
+
+
+asia_diff_s32050 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters_asia/ssp3_rcp70_2050_diff.tif"))
+
+s32050_inc <- asia_diff_s32050
+
+s32050_inc[s32050_inc > 0] <- 1
+
+s32050_inc[s32050_inc <= 0] <- NA
+
+
+s32050_dec <- asia_diff_s32050
+
+s32050_dec[s32050_dec >= 0] <- NA
+
+s32050_dec[s32050_dec < 0] <- 1
+
+```
+
+
+Mask SDM by separated rasters
+
+```{r}
+#increasing rasters
+
+s1_sdm_inc <- mask(asia_sdm_ssp1, s12050_inc)
+
+s3_sdm_inc <- mask(asia_sdm_ssp3, s32050_inc)
+
+#decreasing rasters
+
+s1_sdm_dec <- mask(asia_sdm_ssp1, s12050_dec)
+
+s3_sdm_dec <- mask(asia_sdm_ssp3, s32050_dec)
+
+```
+
+
+#Polygonize masked SDM rasters
+
+```{r}
+polygons <- function(x){
+  
+  pol <- x %>%
+    terra::as.polygons(trunc=TRUE, dissolve=TRUE, values=TRUE, na.rm=TRUE, na.all=FALSE, extent=FALSE)
+  
+  name <- paste0(deparse(substitute(x)), ".shp")
+ 
+  writeVector(pol, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/sdm_exploration_polygons", name), overwrite = TRUE)
+  
+}
+
+polygons(s1_sdm_inc)
+polygons(s3_sdm_inc)
+polygons(s1_sdm_dec)
+polygons(s3_sdm_dec)
+
+```
+
+
+#Percent area calculations
+
+```{r}
+
+test <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/sdm_exploration_polygons/s1_sdm_inc.shp"))
+
+#set up the function
+
+perc_area_table <- function(x){
+  
+  diff_pol <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/sdm_exploration_polygons", x))
+  
+  table <- diff_pol %>% 
+    as.data.frame() %>% 
+    mutate(area = st_area(diff_pol, unit = "m")) %>% 
+    mutate(perc_area = (area/sum(area) * 100))
+  
+  return(table)
+}
+
+#list all of the files
+
+pol_list <- list.files(path = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/sdm_exploration_polygons"), pattern = '.shp')
+
+
+#apply the area function over the list
+
+area_list <- lapply(pol_list, perc_area_table)
+
+conf_change_table_pol <- cbind(area_list[[1]]$FPOP_SSP1_)
+
+for (i in area_list) {
+ 
+  conf_change_table_pol <- cbind(conf_change_table_pol,
+                                 i$perc_area)
+   
+}
+```
+
