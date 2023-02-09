@@ -1,0 +1,286 @@
+---
+title: "Conflict and SDM Asia"
+author: "Mia Guarnieri"
+date: "2023-02-03"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(here)
+library(terra)
+library(sf)
+library(tmap)
+library(geos)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(tidyterra)
+library(kableExtra)
+
+#File path to the HWC_data folder
+
+HWC_data <- "/Users/mia/Library/CloudStorage/GoogleDrive-mguarnieri@ucsb.edu/My Drive/Arnhold Project/HWC_data"
+```
+
+#Reclass conflict layers to be binary inc/dec
+
+```{r}
+#reclassify function
+reclass_rast <- function(x){
+  
+  rast <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters_asia/", x))
+  
+  rast[rast == 0] <- NA
+  
+  rast[rast > 0] <- 1
+  
+  rast[rast < 0] <- -1
+  
+  writeRaster(rast, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters_asia/binary_diffs_asia/", name), overwrite = TRUE)
+
+}
+
+rast_list <- list.files(path = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters_asia/"), pattern = '.tif')
+
+for (i in rast_list) {
+  
+  name <- paste0("asia_binary_", i)
+  
+  reclass_rast(i)
+  
+}
+
+```
+
+#Filter binary conflict layers and mask SDMs
+
+Load in and reproject SDMs
+
+```{r}
+#read in raster for reprojection
+
+asia_diff_s12050 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters_asia/ssp1_rcp26_2050_diff.tif"))
+
+#read in and reproject SDMs
+asia_sdm_ssp1 <- rast(here(HWC_data, "/Wallace SDM Rasters/asia/2011_2040/change_maps/change_2011_2040_126_gfdl.tif")) %>% 
+  project(asia_diff_s12050)
+
+asia_sdm_ssp3 <- rast(here(HWC_data, "/Wallace SDM Rasters/asia/2011_2040/change_maps/change_2011_2040_370_gfdl.tif")) %>% 
+  project(asia_diff_s12050)
+```
+
+
+Read in binary conflict rasters and split into increasing/decreasing only
+
+```{r}
+asia_diff_s12050 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters_asia/ssp1_rcp26_2050_diff.tif"))
+
+s12050_inc <- asia_diff_s12050
+
+s12050_inc[s12050_inc > 0] <- 1
+
+s12050_inc[s12050_inc <= 0] <- NA
+
+
+s12050_dec <- asia_diff_s12050
+
+s12050_dec[s12050_dec >= 0] <- NA
+
+s12050_dec[s12050_dec < 0] <- 1
+
+
+
+asia_diff_s32050 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters_asia/ssp3_rcp70_2050_diff.tif"))
+
+s32050_inc <- asia_diff_s32050
+
+s32050_inc[s32050_inc > 0] <- 1
+
+s32050_inc[s32050_inc <= 0] <- NA
+
+
+s32050_dec <- asia_diff_s32050
+
+s32050_dec[s32050_dec >= 0] <- NA
+
+s32050_dec[s32050_dec < 0] <- 1
+
+```
+
+
+Mask SDM by separated rasters
+
+```{r}
+#increasing rasters
+
+s1_sdm_inc <- mask(asia_sdm_ssp1, s12050_inc)
+
+s3_sdm_inc <- mask(asia_sdm_ssp3, s32050_inc)
+
+#decreasing rasters
+
+s1_sdm_dec <- mask(asia_sdm_ssp1, s12050_dec)
+
+s3_sdm_dec <- mask(asia_sdm_ssp3, s32050_dec)
+
+```
+
+
+#Polygonize masked SDM rasters
+
+```{r}
+polygons <- function(x){
+  
+  pol <- x %>%
+    terra::as.polygons(trunc=TRUE, dissolve=TRUE, values=TRUE, na.rm=TRUE, na.all=FALSE, extent=FALSE)
+  
+  name <- paste0(deparse(substitute(x)), ".shp")
+ 
+  writeVector(pol, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/sdm_exploration_polygons", name), overwrite = TRUE)
+  
+}
+
+polygons(s1_sdm_inc)
+polygons(s3_sdm_inc)
+polygons(s1_sdm_dec)
+polygons(s3_sdm_dec)
+
+```
+
+
+#Percent area calculations
+
+1 = decreasing suitability
+4 = increasing suitability
+
+```{r}
+
+#set up the function
+
+perc_area_table <- function(x){
+  
+  diff_pol <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/sdm_exploration_polygons", x))
+  
+  colnames(diff_pol) = c("conflict_change", "geometry")
+  
+  table <- diff_pol %>% 
+    as.data.frame() %>% 
+    mutate(area = st_area(diff_pol, unit = "m")) %>% 
+    mutate(perc_area = (area/sum(area) * 100)) %>% 
+    select(conflict_change, perc_area) %>% 
+    filter(conflict_change == 1 | conflict_change == 4)
+  
+  return(table)
+}
+
+#list all of the files
+
+sdm_pol_list <- list.files(path = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/sdm_exploration_polygons"), pattern = '.shp')
+
+
+#apply the area function over the list
+
+sdm_area_list <- lapply(sdm_pol_list, perc_area_table)
+
+sdm_conf_change_table_pol <- sdm_area_list %>% reduce(full_join, by = "conflict_change") %>% 
+  units::drop_units()
+
+colnames(sdm_conf_change_table_pol) = c("suitability", sdm_pol_list)
+
+descriptor <- c("Decreasing", "Increasing")
+
+sdm_conf_change_table_pol$suitability <- descriptor
+
+write.csv(sdm_conf_change_table_pol, file = here(HWC_data, "Data/Di Minin HWC", "sdm_conf_change_table_asia.csv"), row.names=FALSE)
+
+```
+
+#Make a nice table
+
+```{r}
+sdm_conf_change_table_pol <- read_csv(here(HWC_data, "Data/Di Minin HWC", "sdm_conf_change_table_asia.csv"))
+
+dec <- c(rep(2, each = 5))
+
+align <- c(rep("c", each = 5))
+
+sdm_conf_change_pol_nicetable <- sdm_conf_change_table_pol %>%
+  kable(digits = dec,
+        escape = FALSE,
+        align = align,
+        col.names = c("Suitability Change", "Decreasing", "Increasing", "Decreasing", "Increasing"),
+        caption = "<center><strong>Percentage of Increasing or Decreasing Habitat Suitability Within Increasing or Decreasing Conflict Boundaries for Asian Elephants</strong></center>") %>% 
+  kable_styling(full_width = FALSE, position = "center") %>% 
+  add_header_above(c(" ", "SSP 1/RCP 2.6" = 2, "SSP 3/RCP 7.0" = 2), background = c("#ffd3b6", "#a8e6cf")) %>% 
+  add_header_above(c("", "Change in Conflict Risk" = 4)) %>% 
+  column_spec(2:3, background = "#a8e6cf") %>%
+  column_spec(4:5, background = "#ffd3b6")
+
+sdm_conf_change_pol_nicetable
+
+library(magick)
+
+save_kable(sdm_conf_change_pol_nicetable, file = here("/Users/mia/Desktop/Fellowships/Arnhold HWC/sdm_conf_change_pol_nicetable_asia.jpeg"), zoom = 2.5)
+```
+
+
+#Scaling it so that it is % of total range
+
+```{r}
+#read in range proportions from earlier
+
+props_table <- read_csv(here(HWC_data, "Data/Di Minin HWC", "conflict_change_polygons_byyear_asia.csv"))
+
+s1_inc <- (props_table$"SSP1 2050"[[4]] + props_table$"SSP1 2050"[[5]])/100
+
+s1_dec <- (props_table$"SSP1 2050"[[1]] + props_table$"SSP1 2050"[[2]])/100
+
+
+s3_inc <- (props_table$"SSP3 2050"[[4]] + props_table$"SSP3 2050"[[5]])/100
+
+s3_dec <- (props_table$"SSP3 2050"[[1]] + props_table$"SSP3 2050"[[2]])/100
+
+
+
+#multiply the percentages calculated here by those proportions to scale properly
+
+sdm_conf_change_table_pol <- read_csv(here(HWC_data, "Data/Di Minin HWC", "sdm_conf_change_table_asia.csv"))
+
+scaled_sdm_props <- sdm_conf_change_table_pol %>% 
+  transform(s1_sdm_dec.shp = ((s1_sdm_dec.shp/100) * s1_dec) * 100,
+            s1_sdm_inc.shp = ((s1_sdm_inc.shp/100) * s1_inc) * 100,
+            s3_sdm_dec.shp = ((s3_sdm_dec.shp/100) * s3_dec) * 100,
+            s3_sdm_inc.shp = ((s3_sdm_inc.shp/100) * s3_inc) * 100)
+
+write.csv(scaled_sdm_props, file = here(HWC_data, "Data/Di Minin HWC", "scaled_sdm_conf_change_table_asia.csv"), row.names=FALSE)
+
+```
+
+
+```{r}
+scaled_sdm_props <- read_csv(here(HWC_data, "Data/Di Minin HWC", "scaled_sdm_conf_change_table_asia.csv"))
+
+dec <- c(rep(2, each = 5))
+
+align <- c(rep("c", each = 5))
+
+sdm_conf_change_pol_nicetable <- scaled_sdm_props %>%
+  kable(digits = dec,
+        escape = FALSE,
+        align = align,
+        col.names = c("Suitability Change", "Decreasing", "Increasing", "Decreasing", "Increasing")) %>% 
+  kable_styling(full_width = FALSE, position = "center") %>% 
+  add_header_above(c(" ", "SSP 1/RCP 2.6" = 2, "SSP 3/RCP 7.0" = 2), background = c("#ffd3b6", "#a8e6cf")) %>% 
+  add_header_above(c("", "Change in Conflict Risk" = 4)) %>% 
+  column_spec(2:3, background = "#a8e6cf") %>%
+  column_spec(4:5, background = "#ffd3b6")
+
+sdm_conf_change_pol_nicetable
+
+library(magick)
+
+save_kable(sdm_conf_change_pol_nicetable, file = here("/Users/mia/Desktop/Fellowships/Arnhold HWC/scaled_sdm_conf_change_table_asia.jpeg"), zoom = 2.5)
+```
+

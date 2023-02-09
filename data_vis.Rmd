@@ -1,0 +1,50 @@
+---
+title: "Maps"
+author: "Mia Guarnieri"
+date: "2023-02-03"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(here)
+library(terra)
+library(sf)
+library(tmap)
+library(RColorBrewer)
+library(rnaturalearth)
+```
+
+#SSP1 Conflict Change
+
+##Africa
+
+```{r}
+ssp1_africa <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polygons/ssp1_rcp26_2050_diff_polygon.shp"))
+
+basemap_africa <- ne_countries(
+  continent = "Africa",
+  scale = "medium", 
+  returnclass = "sf") %>% 
+  st_transform(crs = crs(ssp1_africa))  # make sure crs is same as raster
+
+basemap_africa_vect <- basemap_africa %>% 
+  vect()
+
+
+pal <- c("#2B83BA", "#ABDDA4", "#FFFFBF", "#FDAE61", "#D7191C")
+
+#plot conflict boundaries
+plot(basemap_africa_vect, col = "grey98", axes = 0, legend = FALSE)
+plot(ssp1_africa, add = TRUE, pal = pal, border = pal, legend = "bottomright")
+
+
+
+tm_shape(ssp1_africa) +
+  tm_polygons(col = "FPOP_SSP1_", 
+              border.alpha = 0,
+              palette = pal)
+```
+

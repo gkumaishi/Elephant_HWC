@@ -280,29 +280,68 @@ plot(ssp1_2030_diff_poly, add = TRUE, legend = TRUE)
 
 #Polygons
 
-```{r savepol function}
+```{r}
 
-savepol <- function(x){
+polygons <- function(ssp, rcp, year){
   
-  name <- paste0(deparse(substitute(x)), ".shp")
+  file <- paste0(ssp, "_", rcp, "_", year, "_diff.tif")
+  
+  pol <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters/", file)) %>%
+    terra::as.polygons(trunc=TRUE, dissolve=TRUE, values=TRUE, na.rm=TRUE, na.all=FALSE, extent=FALSE)
+  
+  name <- paste0(ssp, "_", rcp, "_", year, "_diff_polygon.shp")
  
-  writeVector(x, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polygons/", name), overwrite = TRUE)
+  writeVector(pol, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polygons/", name), overwrite = TRUE)
   
 }
 
-#SSP1
 
-ssp1_rcp26_2050_diff_polygon <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters/ssp1_rcp26_2050_diff.tif")) %>% 
-  terra::as.polygons(trunc=TRUE, dissolve=TRUE, values=TRUE, na.rm=TRUE, na.all=FALSE, extent=FALSE)
+year_vect <- c("2030", "2050", "2070")
 
-savepol(ssp1_rcp26_2050_diff_polygon)
+#ssp1
 
-#SSP3
+for (i in year_vect) {
+  
+  polygons(ssp = "ssp1",
+           rcp = "rcp26",
+           year = i)
+}
 
-ssp3_rcp70_2050_diff_polygon <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters/ssp3_rcp70_2050_diff.tif")) %>% 
-  terra::as.polygons(trunc=TRUE, dissolve=TRUE, values=TRUE, na.rm=TRUE, na.all=FALSE, extent=FALSE)
+#ssp2
 
-savepol(ssp3_rcp70_2050_diff_polygon)
+for (i in year_vect) {
+  
+  polygons(ssp = "ssp2",
+           rcp = "rcp45",
+           year = i)
+}
+
+#ssp3
+
+for (i in year_vect) {
+  
+  polygons(ssp = "ssp3",
+           rcp = "rcp70",
+           year = i)
+} 
+
+#ssp4
+
+for (i in year_vect) {
+  
+  polygons(ssp = "ssp4",
+           rcp = "rcp60",
+           year = i)
+}
+
+#ssp5
+
+for (i in year_vect) {
+  
+  polygons(ssp = "ssp5",
+           rcp = "rcp85",
+           year = i)
+}
 
 ```
 
@@ -382,12 +421,17 @@ ssp3_2050_polygons <- vect(here(HWC_data, "/Geospatial Data/Diminin_Replication_
 ```{r}
 perc_area_table <- function(x){
   
-  cb_area_table <- x %>% 
-    as.data.frame() %>% 
-    mutate(area = expanse(x, unit = "m")) %>% 
-    mutate(perc_area = (area/sum(area) * 100))
+  diff_pol <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polygons", x))
   
-  return(cb_area_table)
+  colnames(diff_pol) = c("conflict_change", "geometry")
+  
+  table <- diff_pol %>% 
+    as.data.frame() %>% 
+    mutate(area = st_area(diff_pol, unit = "m")) %>% 
+    mutate(perc_area = (area/sum(area) * 100)) %>% 
+    select(conflict_change, perc_area)
+  
+  return(table)
 }
 
 perc_length_table <- function(x){
@@ -500,12 +544,12 @@ colnames(conf_change_table) = c(
   "SSP5 2070"
   )
 
-write.csv(conf_change_table, file = here(HWC_data, "Data/Di Minin HWC", "conflict_change_lines_byyear.csv"), row.names=FALSE)
+write.csv(conf_change_table, file = here(HWC_data, "Data/Di Minin HWC", "conflict_change_lines_byyear_africa.csv"), row.names=FALSE)
 ```
 
 ```{r}
 
-conf_change_table <- read_csv(here(HWC_data, "Data/Di Minin HWC", "conflict_change_lines_byyear.csv"))
+conf_change_table <- read_csv(here(HWC_data, "Data/Di Minin HWC", "conflict_change_lines_byyear_africa.csv"))
 
 dec <- c(rep(2, each = 16))
 
@@ -527,5 +571,126 @@ library(magick)
 
 save_kable(conf_change_lines_nicetables, file = here("/Users/mia/Desktop/Fellowships/Arnhold HWC/conf_change_lines_table_byyear.jpeg"))
 
+```
+
+##Polygons
+
+```{r}
+#list all of the files
+
+pol_list <- list.files(path = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polygons"), pattern = '.shp')
+
+#apply the area over the list
+
+area_list <- lapply(pol_list, perc_area_table)
+
+conf_change_table_pol <- area_list %>% reduce(full_join, by = "conflict_change") %>% 
+  units::drop_units()
+
+colnames(conf_change_table_pol) = c(
+  "Conflict Change", 
+  
+  "SSP1 2030", 
+  "SSP1 2050",
+  "SSP1 2070",
+  
+  
+  "SSP2 2030",
+  "SSP2 2050",
+  "SSP2 2070",
+  
+  
+  "SSP3 2030",
+  "SSP3 2050",
+  "SSP3 2070",
+  
+  
+  "SSP4 2030",
+  "SSP4 2050",
+  "SSP4 2070",
+  
+  
+  "SSP5 2030",
+  "SSP5 2050",
+  "SSP5 2070"
+  )
+
+write.csv(as.data.frame(conf_change_table_pol), file = here(HWC_data, "Data/Di Minin HWC", "conflict_change_polygons_byssp_africa.csv"), row.names=FALSE)
+
+```
+
+
+```{r}
+#sort by year rather than SSP
+
+conf_change_table_pol_year <- as.data.frame(conf_change_table_pol) %>% 
+  dplyr::select(
+  "Conflict Change", 
+  
+  "SSP1 2030", 
+  "SSP2 2030",
+  "SSP3 2030",
+  "SSP4 2030",
+  "SSP5 2030",
+  
+  "SSP1 2050",
+  "SSP2 2050",
+  "SSP3 2050",
+  "SSP4 2050",
+  "SSP5 2050",
+  
+  "SSP1 2070",
+  "SSP2 2070",
+  "SSP3 2070",
+  "SSP4 2070",
+  "SSP5 2070"
+  )
+
+write.csv(conf_change_table_pol_year, file = here(HWC_data, "Data/Di Minin HWC", "conflict_change_polygons_byyear_africa.csv"), row.names=FALSE)
+
+```
+
+
+```{r}
+conf_change_table_pol_year <- read_csv(here(HWC_data, "Data/Di Minin HWC", "conflict_change_polygons_byyear_africa.csv"))
+
+dec <- c(rep(2, each = 16))
+
+align <- c(rep("c", each = 16))
+
+conf_change_pols_nicetable <- conf_change_table_pol_year %>%
+  kable(digits = dec,
+        escape = FALSE,
+        align = align,
+        caption = "<center><strong>Percentage of Conflict Boundary Within Each Change Category for African Elephants</strong></center>") %>% 
+  kable_styling(full_width = FALSE, position = "center") %>% 
+  add_header_above(c(" ", "2030" = 5, "2050" = 5, "2070" = 5), background = c("#ffd3b6", "#a8e6cf", "#dcedc1")) %>% 
+  column_spec(2:6, background = "#a8e6cf") %>%
+  column_spec(7:11, background = "#dcedc1") %>% 
+  column_spec(12:16, background = "#ffd3b6")
+
+conf_change_pols_nicetable
+
+library(magick)
+
+save_kable(conf_change_pols_nicetable, file = here("/Users/mia/Desktop/Fellowships/Arnhold HWC/conf_change_polygons_table_byyear_africa.jpeg"))
+```
+
+
+#Numeric Change
+
+```{r}
+s1_inc <- conf_change_table_pol_year$"SSP1 2050"[[4]] + conf_change_table_pol_year$"SSP1 2050"[[5]]
+
+s3_inc <- conf_change_table_pol_year$"SSP3 2050"[[4]] + conf_change_table_pol_year$"SSP3 2050"[[5]]
+
+diff <- s3_inc - s1_inc
+
+s1_dec <- conf_change_table_pol_year$"SSP1 2050"[[1]] + conf_change_table_pol_year$"SSP1 2050"[[2]]
+
+s3_dec <- conf_change_table_pol_year$"SSP3 2050"[[1]] + conf_change_table_pol_year$"SSP3 2050"[[2]]
+
+dec_diff <- s3_dec - s1_dec
+dec_diff
 ```
 

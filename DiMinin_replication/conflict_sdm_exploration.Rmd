@@ -1,0 +1,97 @@
+---
+title: "Conflict and SDM"
+author: "Mia Guarnieri"
+date: "2023-02-02"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(here)
+library(terra)
+library(sf)
+library(tmap)
+library(geos)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(tidyterra)
+library(kableExtra)
+
+#File path to the HWC_data folder
+
+HWC_data <- "/Users/mia/Library/CloudStorage/GoogleDrive-mguarnieri@ucsb.edu/My Drive/Arnhold Project/HWC_data"
+```
+
+#Reclass conflict layers to be binary inc/dec
+
+```{r}
+#reclassify function
+reclass_rast <- function(x){
+  
+  rast <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters/", x))
+  
+  rast[rast == 0] <- NA
+  
+  rast[rast > 0] <- 1
+  
+  rast[rast < 0] <- -1
+  
+  writeRaster(rast, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters/binary_diffs/", name), overwrite = TRUE)
+
+}
+
+rast_list <- list.files(path = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters/"), pattern = '.tif')
+
+for (i in rast_list) {
+  
+  name <- paste0("binary_", i)
+  
+  reclass_rast(i)
+  
+}
+
+```
+
+#Filter binary conflict layers and mask SDMs
+
+Load in SDMs
+```{r}
+
+```
+
+
+
+#Turn binary rasters into polygons
+
+```{r}
+polygons <- function(ssp, rcp, year){
+  
+  file <- paste0(ssp, "_", rcp, "_", year, "_diff.tif")
+  
+  pol <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters/binary_diffs/", file)) %>%
+    terra::as.polygons(trunc=TRUE, dissolve=TRUE, values=TRUE, na.rm=TRUE, na.all=FALSE, extent=FALSE)
+  
+  name <- paste0(ssp, "_", rcp, "_", year, "_diff_polygon.shp")
+ 
+  writeVector(pol, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polygons/binary_differenced_polygons", name), overwrite = TRUE)
+  
+}
+
+
+ssp <- c("ssp1", "ssp2", "ssp3", "ssp4", "ssp5")
+rcp <- c("rcp26", "rcp45", "rcp70", "rcp60", "rcp85")
+year_vect <- c("2030", "2050", "2070")
+
+
+for (i in year_vect) {
+  
+  year <- i
+  
+  mapply(polygons(),
+       ssp, rcp)
+}
+
+```
+
