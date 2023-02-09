@@ -11,7 +11,7 @@ library(raster)
 library(here)
 
 #HWC data file path (# Enter file path to YOUR HWC_data folder, including "HWC_data")
-hwc_data <- "I:/My Drive/HWC_data"
+hwc_data <- "/Volumes/GoogleDrive/My Drive/HWC_data"
 ```
 
 ## Make continuous change maps for each GCM for 2041-2070
@@ -50,6 +50,47 @@ writeRaster(change_2041_2070_ukesm, filename = file.path(here(hwc_data, "Wallace
 ```
 
 ```{r}
+#2041-2070 SSP 3 RCP 7.0
+#read in historic and projected SDMs
+hist <- raster(here(hwc_data, "Wallace SDM Rasters/LQ/1981_2010/afel_historic_20p_sdm.tif"))
+proj_2041_2070_gfdl_370 <- raster(here(hwc_data, "Wallace SDM Rasters/LQ/2041_2070/370/afel_gfdl_2041_2070_370_20p_sdm_correctbio3.tif"))
+proj_2041_2070_ipsl_370 <- raster(here(hwc_data, "Wallace SDM Rasters/LQ/2041_2070/370/afel_ipsl_2041_2070_370_20p_sdm_correctbio3.tif"))
+proj_2041_2070_mpi_370 <- raster(here(hwc_data, "Wallace SDM Rasters/LQ/2041_2070/370/afel_mpi_2041_2070_370_20p_sdm_correctbio3.tif"))
+proj_2041_2070_mri_370 <- raster(here(hwc_data, "Wallace SDM Rasters/LQ/2041_2070/370/afel_mri_2041_2070_370_20p_sdm_correctbio3.tif"))
+proj_2041_2070_ukesm_370 <- raster(here(hwc_data, "Wallace SDM Rasters/LQ/2041_2070/370/afel_ukesm_2041_2070_370_20p_sdm_correctbio3.tif"))
+
+#reclassify values
+proj_2041_2070_gfdl_370[proj_2041_2070_gfdl_370 == 0] <- 2
+proj_2041_2070_gfdl_370[proj_2041_2070_gfdl_370 == 1] <- 4
+proj_2041_2070_ipsl_370[proj_2041_2070_ipsl_370 == 0] <- 2
+proj_2041_2070_ipsl_370[proj_2041_2070_ipsl_370 == 1] <- 4
+proj_2041_2070_mpi_370[proj_2041_2070_mpi_370 == 0] <- 2
+proj_2041_2070_mpi_370[proj_2041_2070_mpi_370 == 1] <- 4
+proj_2041_2070_mri_370[proj_2041_2070_mri_370 == 0] <- 2
+proj_2041_2070_mri_370[proj_2041_2070_mri_370 == 1] <- 4
+proj_2041_2070_ukesm_370[proj_2041_2070_ukesm_370 == 0] <- 2
+proj_2041_2070_ukesm_370[proj_2041_2070_ukesm_370 == 1] <- 4
+
+#subtract historic from projected
+change_2041_2070_gfdl_370 <- proj_2041_2070_gfdl_370 - hist
+change_2041_2070_ipsl_370 <- proj_2041_2070_ipsl_370 - hist
+change_2041_2070_mpi_370 <- proj_2041_2070_mpi_370 - hist
+change_2041_2070_mri_370 <- proj_2041_2070_mri_370 - hist
+change_2041_2070_ukesm_370 <- proj_2041_2070_ukesm_370 - hist
+
+#save
+writeRaster(change_2041_2070_gfdl_370, filename = file.path(here(hwc_data, "Wallace SDM Rasters/LQ/2041_2070/370/change_maps/afel_change_2041_2070_gfdl_370.tif")), overwrite = FALSE)
+
+writeRaster(change_2041_2070_ipsl_370, filename = file.path(here(hwc_data, "Wallace SDM Rasters/LQ/2041_2070/370/change_maps/afel_change_2041_2070_ipsl_370.tif")), overwrite = FALSE)
+
+writeRaster(change_2041_2070_mpi_370, filename = file.path(here(hwc_data, "Wallace SDM Rasters/LQ/2041_2070/370/change_maps/afel_change_2041_2070_mpi_370.tif")), overwrite = FALSE)
+
+writeRaster(change_2041_2070_mri_370, filename = file.path(here(hwc_data, "Wallace SDM Rasters/LQ/2041_2070/370/change_maps/afel_change_2041_2070_mri_370.tif")), overwrite = FALSE)
+
+writeRaster(change_2041_2070_ukesm_370, filename = file.path(here(hwc_data, "Wallace SDM Rasters/LQ/2041_2070/370/change_maps/afel_change_2041_2070_ukesm_370.tif")), overwrite = FALSE)
+```
+
+```{r}
 #2041-2070 SSP 5 RCP 8.5
 #read in historic and projected SDMs
 hist <- raster(here(hwc_data, "Wallace SDM Rasters/LQ/1981_2010/afel_historic_20p_sdm.tif"))
@@ -79,7 +120,15 @@ change_2041_2070_mri_585 <- proj_2041_2070_mri_585 - hist
 change_2041_2070_ukesm_585 <- proj_2041_2070_ukesm_585 - hist
 
 #save
-writeRaster(change_2041_2070_ukesm_585, filename = file.path(here(hwc_data, "Wallace SDM Rasters/LQ/2041_2070/585/change_maps/afel_change_2041_2070_585_ukesm.tif")), overwrite = FALSE)
+writeRaster(change_2041_2070_gfdl_585, filename = file.path(here(hwc_data, "Wallace SDM Rasters/LQ/2041_2070/585/change_maps/afel_change_2041_2070_gfdl_585.tif")), overwrite = FALSE)
+
+writeRaster(change_2041_2070_ipsl_585, filename = file.path(here(hwc_data, "Wallace SDM Rasters/LQ/2041_2070/585/change_maps/afel_change_2041_2070_ipsl_585.tif")), overwrite = FALSE)
+
+writeRaster(change_2041_2070_mpi_585, filename = file.path(here(hwc_data, "Wallace SDM Rasters/LQ/2041_2070/585/change_maps/afel_change_2041_2070_mpi_585.tif")), overwrite = FALSE)
+
+writeRaster(change_2041_2070_mri_585, filename = file.path(here(hwc_data, "Wallace SDM Rasters/LQ/2041_2070/585/change_maps/afel_change_2041_2070_mri_585.tif")), overwrite = FALSE)
+
+writeRaster(change_2041_2070_ukesm_585, filename = file.path(here(hwc_data, "Wallace SDM Rasters/LQ/2041_2070/585/change_maps/afel_change_2041_2070_ukesm_585.tif")), overwrite = FALSE)
 ```
 
 ## Make continuous change maps for each GCM for 2011-2040
@@ -115,6 +164,47 @@ change_2011_2040_ukesm_126 <- proj_2011_2040_ukesm_126 - hist
 
 #save
 writeRaster(change_2011_2040_gfdl_126, filename = file.path(here(hwc_data, "Wallace SDM Rasters/LQ/2011_2040/126/change_maps/afel_change_2011_2040_126_gfdl.tif")), overwrite = FALSE)
+```
+
+```{r}
+#2011-2040 SSP 3 RCP 7.0
+#read in historic and projected SDMs
+hist <- raster(here(hwc_data, "Wallace SDM Rasters/LQ/1981_2010/afel_historic_20p_sdm.tif"))
+proj_2011_2040_gfdl_370 <- raster(here(hwc_data, "Wallace SDM Rasters/LQ/2011_2040/370/afel_gfdl_2011_2040_370_20p_sdm_correctbio3.tif"))
+proj_2011_2040_ipsl_370 <- raster(here(hwc_data, "Wallace SDM Rasters/LQ/2011_2040/370/afel_ipsl_2011_2040_370_20p_sdm_correctbio3.tif"))
+proj_2011_2040_mpi_370 <- raster(here(hwc_data, "Wallace SDM Rasters/LQ/2011_2040/370/afel_mpi_2011_2040_370_20p_sdm_correctbio3.tif"))
+proj_2011_2040_mri_370 <- raster(here(hwc_data, "Wallace SDM Rasters/LQ/2011_2040/370/afel_mri_2011_2040_370_20p_sdm_correctbio3.tif"))
+proj_2011_2040_ukesm_370 <- raster(here(hwc_data, "Wallace SDM Rasters/LQ/2011_2040/370/afel_ukesm_2011_2040_370_20p_sdm_correctbio3.tif"))
+
+#reclassify values
+proj_2011_2040_gfdl_370[proj_2011_2040_gfdl_370 == 0] <- 2
+proj_2011_2040_gfdl_370[proj_2011_2040_gfdl_370 == 1] <- 4
+proj_2011_2040_ipsl_370[proj_2011_2040_ipsl_370 == 0] <- 2
+proj_2011_2040_ipsl_370[proj_2011_2040_ipsl_370 == 1] <- 4
+proj_2011_2040_mpi_370[proj_2011_2040_mpi_370 == 0] <- 2
+proj_2011_2040_mpi_370[proj_2011_2040_mpi_370 == 1] <- 4
+proj_2011_2040_mri_370[proj_2011_2040_mri_370 == 0] <- 2
+proj_2011_2040_mri_370[proj_2011_2040_mri_370 == 1] <- 4
+proj_2011_2040_ukesm_370[proj_2011_2040_ukesm_370 == 0] <- 2
+proj_2011_2040_ukesm_370[proj_2011_2040_ukesm_370 == 1] <- 4
+
+#subtract historic from projected
+change_2011_2040_gfdl_370 <- proj_2011_2040_gfdl_370 - hist
+change_2011_2040_ipsl_370 <- proj_2011_2040_ipsl_370 - hist
+change_2011_2040_mpi_370 <- proj_2011_2040_mpi_370 - hist
+change_2011_2040_mri_370 <- proj_2011_2040_mri_370 - hist
+change_2011_2040_ukesm_370 <- proj_2011_2040_ukesm_370 - hist
+
+#save
+writeRaster(change_2011_2040_gfdl_370, filename = file.path(here(hwc_data, "Wallace SDM Rasters/LQ/2011_2040/370/change_maps/afel_change_2011_2040_gfdl_370.tif")), overwrite = FALSE)
+
+writeRaster(change_2011_2040_ipsl_370, filename = file.path(here(hwc_data, "Wallace SDM Rasters/LQ/2011_2040/370/change_maps/afel_change_2011_2040_ipsl_370.tif")), overwrite = FALSE)
+
+writeRaster(change_2011_2040_mpi_370, filename = file.path(here(hwc_data, "Wallace SDM Rasters/LQ/2011_2040/370/change_maps/afel_change_2011_2040_mpi_370.tif")), overwrite = FALSE)
+
+writeRaster(change_2011_2040_mri_370, filename = file.path(here(hwc_data, "Wallace SDM Rasters/LQ/2011_2040/370/change_maps/afel_change_2011_2040_mri_370.tif")), overwrite = FALSE)
+
+writeRaster(change_2011_2040_ukesm_370, filename = file.path(here(hwc_data, "Wallace SDM Rasters/LQ/2011_2040/370/change_maps/afel_change_2011_2040_ukesm_370.tif")), overwrite = FALSE)
 ```
 
 ```{r}
@@ -183,6 +273,47 @@ change_2071_2100_ukesm_126 <- proj_2071_2100_ukesm_126 - hist
 
 #save
 writeRaster(change_2071_2100_ukesm_126, filename = file.path(here(hwc_data, "Wallace SDM Rasters/LQ/2071_2100/126/change_maps/afel_change_2071_2100_126_ukesm.tif")), overwrite = FALSE)
+```
+
+```{r}
+#2071-2100 SSP 3 RCP 7.0
+#read in historic and projected SDMs
+hist <- raster(here(hwc_data, "Wallace SDM Rasters/LQ/1981_2010/afel_historic_20p_sdm.tif"))
+proj_2071_2100_gfdl_370 <- raster(here(hwc_data, "Wallace SDM Rasters/LQ/2071_2100/370/afel_gfdl_2071_2100_370_20p_sdm_correctbio3.tif"))
+proj_2071_2100_ipsl_370 <- raster(here(hwc_data, "Wallace SDM Rasters/LQ/2071_2100/370/afel_ipsl_2071_2100_370_20p_sdm_correctbio3.tif"))
+proj_2071_2100_mpi_370 <- raster(here(hwc_data, "Wallace SDM Rasters/LQ/2071_2100/370/afel_mpi_2071_2100_370_20p_sdm_correctbio3.tif"))
+proj_2071_2100_mri_370 <- raster(here(hwc_data, "Wallace SDM Rasters/LQ/2071_2100/370/afel_mri_2071_2100_370_20p_sdm_correctbio3.tif"))
+proj_2071_2100_ukesm_370 <- raster(here(hwc_data, "Wallace SDM Rasters/LQ/2071_2100/370/afel_ukesm_2071_2100_370_20p_sdm_correctbio3.tif"))
+
+#reclassify values
+proj_2071_2100_gfdl_370[proj_2071_2100_gfdl_370 == 0] <- 2
+proj_2071_2100_gfdl_370[proj_2071_2100_gfdl_370 == 1] <- 4
+proj_2071_2100_ipsl_370[proj_2071_2100_ipsl_370 == 0] <- 2
+proj_2071_2100_ipsl_370[proj_2071_2100_ipsl_370 == 1] <- 4
+proj_2071_2100_mpi_370[proj_2071_2100_mpi_370 == 0] <- 2
+proj_2071_2100_mpi_370[proj_2071_2100_mpi_370 == 1] <- 4
+proj_2071_2100_mri_370[proj_2071_2100_mri_370 == 0] <- 2
+proj_2071_2100_mri_370[proj_2071_2100_mri_370 == 1] <- 4
+proj_2071_2100_ukesm_370[proj_2071_2100_ukesm_370 == 0] <- 2
+proj_2071_2100_ukesm_370[proj_2071_2100_ukesm_370 == 1] <- 4
+
+#subtract historic from projected
+change_2071_2100_gfdl_370 <- proj_2071_2100_gfdl_370 - hist
+change_2071_2100_ipsl_370 <- proj_2071_2100_ipsl_370 - hist
+change_2071_2100_mpi_370 <- proj_2071_2100_mpi_370 - hist
+change_2071_2100_mri_370 <- proj_2071_2100_mri_370 - hist
+change_2071_2100_ukesm_370 <- proj_2071_2100_ukesm_370 - hist
+
+#save
+writeRaster(change_2071_2100_gfdl_370, filename = file.path(here(hwc_data, "Wallace SDM Rasters/LQ/2071_2100/370/change_maps/afel_change_2071_2100_gfdl_370.tif")), overwrite = FALSE)
+
+writeRaster(change_2071_2100_ipsl_370, filename = file.path(here(hwc_data, "Wallace SDM Rasters/LQ/2071_2100/370/change_maps/afel_change_2071_2100_ipsl_370.tif")), overwrite = FALSE)
+
+writeRaster(change_2071_2100_mpi_370, filename = file.path(here(hwc_data, "Wallace SDM Rasters/LQ/2071_2100/370/change_maps/afel_change_2071_2100_mpi_370.tif")), overwrite = FALSE)
+
+writeRaster(change_2071_2100_mri_370, filename = file.path(here(hwc_data, "Wallace SDM Rasters/LQ/2071_2100/370/change_maps/afel_change_2071_2100_mri_370.tif")), overwrite = FALSE)
+
+writeRaster(change_2071_2100_ukesm_370, filename = file.path(here(hwc_data, "Wallace SDM Rasters/LQ/2071_2100/370/change_maps/afel_change_2071_2100_ukesm_370.tif")), overwrite = FALSE)
 ```
 
 ```{r}
