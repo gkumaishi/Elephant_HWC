@@ -422,10 +422,13 @@ perc_area_table <- function(x){
   
   diff_pol <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polygons_asia", x))
   
+  colnames(diff_pol) = c("conflict_change", "geometry")
+  
   table <- diff_pol %>% 
     as.data.frame() %>% 
     mutate(area = st_area(diff_pol, unit = "m")) %>% 
-    mutate(perc_area = (area/sum(area) * 100))
+    mutate(perc_area = (area/sum(area) * 100)) %>% 
+    select(conflict_change, perc_area)
   
   return(table)
 }
@@ -575,22 +578,16 @@ save_kable(conf_change_lines_nicetables, file = here("/Users/mia/Desktop/Fellows
 ```{r}
 #list all of the files
 
-pol_list <- list.files(path = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polygons_asia"), pattern = '.shp')
+pol_list_asia <- list.files(path = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polygons_asia"), pattern = '.shp')
 
 #apply the area over the list
 
-area_list <- lapply(pol_list, perc_area_table)
+area_list_asia <- lapply(pol_list, perc_area_table)
 
-conf_change_table_pol <- cbind(area_list[[2]]$FPOP_SSP1_)
+conf_change_table_pol_asia <- area_list %>% reduce(full_join, by = "conflict_change") %>% 
+  units::drop_units()
 
-for (i in area_list) {
- 
-  conf_change_table_pol <- cbind(conf_change_table_pol,
-                                 i$perc_area)
-   
-}
-
-colnames(conf_change_table_pol) = c(
+colnames(conf_change_table_pol_asia) = c(
   "Conflict Change", 
   
   "SSP1 2030", 
@@ -618,7 +615,7 @@ colnames(conf_change_table_pol) = c(
   "SSP5 2070"
   )
 
-write.csv(as.data.frame(conf_change_table_pol), file = here(HWC_data, "Data/Di Minin HWC", "conflict_change_polygons_byssp_asia.csv"), row.names=FALSE)
+write.csv(as.data.frame(conf_change_table_pol_asia), file = here(HWC_data, "Data/Di Minin HWC", "conflict_change_polygons_byssp_asia.csv"), row.names=FALSE)
 
 ```
 
@@ -626,7 +623,7 @@ write.csv(as.data.frame(conf_change_table_pol), file = here(HWC_data, "Data/Di M
 ```{r}
 #sort by year rather than SSP
 
-conf_change_table_pol_year <- as.data.frame(conf_change_table_pol) %>% 
+conf_change_table_pol_asia_year <- as.data.frame(conf_change_table_pol_asia) %>% 
   dplyr::select(
   "Conflict Change", 
   
@@ -649,12 +646,12 @@ conf_change_table_pol_year <- as.data.frame(conf_change_table_pol) %>%
   "SSP5 2070"
   )
 
-write.csv(conf_change_table_pol_year, file = here(HWC_data, "Data/Di Minin HWC", "conflict_change_polygons_byyear_asia.csv"), row.names=FALSE)
+write.csv(conf_change_table_pol_asia_year, file = here(HWC_data, "Data/Di Minin HWC", "conflict_change_polygons_byyear_asia.csv"), row.names=FALSE)
 
 ```
 
 ```{r}
-conf_change_table_pol_year <- read_csv(here(HWC_data, "Data/Di Minin HWC", "conflict_change_polygons_byyear_asia.csv"))
+conf_change_table_pol_asia_year <- read_csv(here(HWC_data, "Data/Di Minin HWC", "conflict_change_polygons_byyear_asia.csv"))
 
 dec <- c(rep(2, each = 16))
 
@@ -678,4 +675,20 @@ library(magick)
 save_kable(conf_change_pols_nicetable, file = here("/Users/mia/Desktop/Fellowships/Arnhold HWC/conf_change_polygons_table_byyear_asia.jpeg"))
 ```
 
+#Numeric Change
 
+```{r}
+s1_inc <- conf_change_table_pol_asia_year$"SSP1 2050"[[4]] + conf_change_table_pol_asia_year$"SSP1 2050"[[5]]
+
+s3_inc <- conf_change_table_pol_asia_year$"SSP3 2050"[[4]] + conf_change_table_pol_asia_year$"SSP3 2050"[[5]]
+
+diff <- s3_inc - s1_inc
+diff
+
+s1_dec <- conf_change_table_pol_asia_year$"SSP1 2050"[[1]] + conf_change_table_pol_asia_year$"SSP1 2050"[[2]]
+
+s3_dec <- conf_change_table_pol_asia_year$"SSP3 2050"[[1]] + conf_change_table_pol_asia_year$"SSP3 2050"[[2]]
+
+dec_diff <- s3_dec - s1_dec
+dec_diff
+```

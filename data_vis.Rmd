@@ -22,7 +22,7 @@ library(rnaturalearth)
 ##Africa
 
 ```{r}
-ssp1_africa <- vect(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polygons/ssp1_rcp26_2050_diff_polygon.shp"))
+ssp1_africa <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polygons/ssp1_rcp26_2050_diff_polygon.shp"))
 
 basemap_africa <- ne_countries(
   continent = "Africa",
@@ -37,13 +37,14 @@ basemap_africa_vect <- basemap_africa %>%
 pal <- c("#2B83BA", "#ABDDA4", "#FFFFBF", "#FDAE61", "#D7191C")
 
 #plot conflict boundaries
-plot(basemap_africa_vect, col = "grey98", axes = 0)
-plot(ssp1_africa, add = TRUE, pal = pal, border = pal, legend = TRUE)
+plot(basemap_africa_vect, col = "grey98", axes = 0, legend = FALSE)
+plot(ssp1_africa, add = TRUE, pal = pal, border = pal, legend = "bottomright")
 
 
 
 tm_shape(ssp1_africa) +
-  tm_polygons(col = "Conflict Change") +
-  tm_fill(palette = "Conflict Change")
+  tm_polygons(col = "FPOP_SSP1_", 
+              border.alpha = 0,
+              palette = pal)
 ```
 

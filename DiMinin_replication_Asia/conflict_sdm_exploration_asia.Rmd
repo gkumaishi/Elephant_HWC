@@ -152,9 +152,10 @@ polygons(s3_sdm_dec)
 
 #Percent area calculations
 
-```{r}
+1 = decreasing suitability
+4 = increasing suitability
 
-test <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/sdm_exploration_polygons/s1_sdm_inc.shp"))
+```{r}
 
 #set up the function
 
@@ -162,30 +163,124 @@ perc_area_table <- function(x){
   
   diff_pol <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/sdm_exploration_polygons", x))
   
+  colnames(diff_pol) = c("conflict_change", "geometry")
+  
   table <- diff_pol %>% 
     as.data.frame() %>% 
     mutate(area = st_area(diff_pol, unit = "m")) %>% 
-    mutate(perc_area = (area/sum(area) * 100))
+    mutate(perc_area = (area/sum(area) * 100)) %>% 
+    select(conflict_change, perc_area) %>% 
+    filter(conflict_change == 1 | conflict_change == 4)
   
   return(table)
 }
 
 #list all of the files
 
-pol_list <- list.files(path = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/sdm_exploration_polygons"), pattern = '.shp')
+sdm_pol_list <- list.files(path = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/sdm_exploration_polygons"), pattern = '.shp')
 
 
 #apply the area function over the list
 
-area_list <- lapply(pol_list, perc_area_table)
+sdm_area_list <- lapply(sdm_pol_list, perc_area_table)
 
-conf_change_table_pol <- cbind(area_list[[1]]$FPOP_SSP1_)
+sdm_conf_change_table_pol <- sdm_area_list %>% reduce(full_join, by = "conflict_change") %>% 
+  units::drop_units()
 
-for (i in area_list) {
- 
-  conf_change_table_pol <- cbind(conf_change_table_pol,
-                                 i$perc_area)
-   
-}
+colnames(sdm_conf_change_table_pol) = c("suitability", sdm_pol_list)
+
+descriptor <- c("Decreasing", "Increasing")
+
+sdm_conf_change_table_pol$suitability <- descriptor
+
+write.csv(sdm_conf_change_table_pol, file = here(HWC_data, "Data/Di Minin HWC", "sdm_conf_change_table_asia.csv"), row.names=FALSE)
+
+```
+
+#Make a nice table
+
+```{r}
+sdm_conf_change_table_pol <- read_csv(here(HWC_data, "Data/Di Minin HWC", "sdm_conf_change_table_asia.csv"))
+
+dec <- c(rep(2, each = 5))
+
+align <- c(rep("c", each = 5))
+
+sdm_conf_change_pol_nicetable <- sdm_conf_change_table_pol %>%
+  kable(digits = dec,
+        escape = FALSE,
+        align = align,
+        col.names = c("Suitability Change", "Decreasing", "Increasing", "Decreasing", "Increasing"),
+        caption = "<center><strong>Percentage of Increasing or Decreasing Habitat Suitability Within Increasing or Decreasing Conflict Boundaries for Asian Elephants</strong></center>") %>% 
+  kable_styling(full_width = FALSE, position = "center") %>% 
+  add_header_above(c(" ", "SSP 1/RCP 2.6" = 2, "SSP 3/RCP 7.0" = 2), background = c("#ffd3b6", "#a8e6cf")) %>% 
+  add_header_above(c("", "Change in Conflict Risk" = 4)) %>% 
+  column_spec(2:3, background = "#a8e6cf") %>%
+  column_spec(4:5, background = "#ffd3b6")
+
+sdm_conf_change_pol_nicetable
+
+library(magick)
+
+save_kable(sdm_conf_change_pol_nicetable, file = here("/Users/mia/Desktop/Fellowships/Arnhold HWC/sdm_conf_change_pol_nicetable_asia.jpeg"), zoom = 2.5)
+```
+
+
+#Scaling it so that it is % of total range
+
+```{r}
+#read in range proportions from earlier
+
+props_table <- read_csv(here(HWC_data, "Data/Di Minin HWC", "conflict_change_polygons_byyear_asia.csv"))
+
+s1_inc <- (props_table$"SSP1 2050"[[4]] + props_table$"SSP1 2050"[[5]])/100
+
+s1_dec <- (props_table$"SSP1 2050"[[1]] + props_table$"SSP1 2050"[[2]])/100
+
+
+s3_inc <- (props_table$"SSP3 2050"[[4]] + props_table$"SSP3 2050"[[5]])/100
+
+s3_dec <- (props_table$"SSP3 2050"[[1]] + props_table$"SSP3 2050"[[2]])/100
+
+
+
+#multiply the percentages calculated here by those proportions to scale properly
+
+sdm_conf_change_table_pol <- read_csv(here(HWC_data, "Data/Di Minin HWC", "sdm_conf_change_table_asia.csv"))
+
+scaled_sdm_props <- sdm_conf_change_table_pol %>% 
+  transform(s1_sdm_dec.shp = ((s1_sdm_dec.shp/100) * s1_dec) * 100,
+            s1_sdm_inc.shp = ((s1_sdm_inc.shp/100) * s1_inc) * 100,
+            s3_sdm_dec.shp = ((s3_sdm_dec.shp/100) * s3_dec) * 100,
+            s3_sdm_inc.shp = ((s3_sdm_inc.shp/100) * s3_inc) * 100)
+
+write.csv(scaled_sdm_props, file = here(HWC_data, "Data/Di Minin HWC", "scaled_sdm_conf_change_table_asia.csv"), row.names=FALSE)
+
+```
+
+
+```{r}
+scaled_sdm_props <- read_csv(here(HWC_data, "Data/Di Minin HWC", "scaled_sdm_conf_change_table_asia.csv"))
+
+dec <- c(rep(2, each = 5))
+
+align <- c(rep("c", each = 5))
+
+sdm_conf_change_pol_nicetable <- scaled_sdm_props %>%
+  kable(digits = dec,
+        escape = FALSE,
+        align = align,
+        col.names = c("Suitability Change", "Decreasing", "Increasing", "Decreasing", "Increasing")) %>% 
+  kable_styling(full_width = FALSE, position = "center") %>% 
+  add_header_above(c(" ", "SSP 1/RCP 2.6" = 2, "SSP 3/RCP 7.0" = 2), background = c("#ffd3b6", "#a8e6cf")) %>% 
+  add_header_above(c("", "Change in Conflict Risk" = 4)) %>% 
+  column_spec(2:3, background = "#a8e6cf") %>%
+  column_spec(4:5, background = "#ffd3b6")
+
+sdm_conf_change_pol_nicetable
+
+library(magick)
+
+save_kable(sdm_conf_change_pol_nicetable, file = here("/Users/mia/Desktop/Fellowships/Arnhold HWC/scaled_sdm_conf_change_table_asia.jpeg"), zoom = 2.5)
 ```
 
