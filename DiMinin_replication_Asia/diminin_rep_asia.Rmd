@@ -20,7 +20,11 @@ library(tidyterra)
 
 #File path to the HWC_data folder
 
-HWC_data <- "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data"
+#HWC_data <- "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data"
+
+#Mia's file path
+
+HWC_data <- "/Users/mia/Library/CloudStorage/GoogleDrive-mguarnieri@ucsb.edu/My Drive/Arnhold Project/HWC_data"
 ```
 
 # Input data
@@ -302,8 +306,6 @@ plot(crop_dens, add = TRUE)
 
 ## Human density data
 
-Fpop data - exploratory
-
 ```{r}
 # read in necessary data layer
 
@@ -438,16 +440,16 @@ writeRaster(ranked_conflict_masked, filename = here(HWC_data, "/Geospatial Data/
 Extended range map is buffered by 10 km and intersected with classified pressures layer
 
 ```{r}
-#read in lulc data for reprojection
+#read in the ranked pressures map
+
+ranked_press <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/ranked_pressure_layers/wp2010_current_day_rp_asia.tif"))
 
 lulc <- rast(here(HWC_data, "/Geospatial Data/Chen_LULC_data/global_LULC_2015.tif"))
-
-crs <- crs(lulc)
 
 #read in the extended range map and reproject to the correct crs
 
 ext_range <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/extended_range/extended_range_asia.shp")) %>% 
-  st_transform(crs = crs)
+  st_transform(crs = crs(ranked_press))
 
 #buffer the extended range map by 10 km
 
@@ -458,19 +460,17 @@ ext_range_buffered <- st_buffer(ext_range, 10000)
 #convert range map to a spatvector and then a spatraster
 
 range_buff_rast <- vect(ext_range_buffered) %>% 
-  rasterize(lulc)
+  rasterize(ranked_press)
 
 #cut out internal polygons of protected areas so that only the buffer remains
 
 ext_range_rast <- vect(ext_range) %>% 
-  rasterize(lulc)
+  rasterize(ranked_press)
 
 buffers_only <- mask(range_buff_rast, ext_range_rast, inverse = TRUE)
 
 #read in the ranked pressures map
 
-ranked_press <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/ranked_pressure_layers/wp2010_current_day_rp_asia.tif")) %>% 
-  project(lulc, method = "near")
 
 conflict_int <- mask(ranked_press, buffers_only)
 
@@ -480,7 +480,7 @@ basemap_asia <- ne_countries(
   continent = "Asia",
   scale = "medium", 
   returnclass = "sf") %>% 
-  st_transform(crs = crs(ranked_press))  # make sure crs is same as raster
+  st_transform(crs = crs(conflict_int))  # make sure crs is same as raster
 
 basemap_asia_vect <- basemap_asia %>% 
   vect()
@@ -499,7 +499,7 @@ plot(conflict_int, add = TRUE, col = colors)
 ```{r}
 #save the layer into drive
 
-writeRaster(conflict_int, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/wp2010_current_day_cb_raster_asia.tif"), filetype = "GTiff", overwrite = TRUE)
+writeRaster(conflict_int, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/conflict_boundary_rasters_asia/wp2010_current_day_cb_raster_asia.tif"), filetype = "GTiff", overwrite = TRUE)
 ```
 
 ##Vector version

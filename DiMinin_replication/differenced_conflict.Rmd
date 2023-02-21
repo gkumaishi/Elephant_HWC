@@ -24,157 +24,50 @@ library(kableExtra)
 HWC_data <- "/Users/mia/Library/CloudStorage/GoogleDrive-mguarnieri@ucsb.edu/My Drive/Arnhold Project/HWC_data"
 ```
 
-#Differencing function
-
-```{r}
-rast_diff <- function(x){
-  
-  base <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/wp2010_current_day_cb_raster.tif"))
-  
-  diff <- x - base
-  
-  return(diff)
-}
-```
-
 #Create differenced rasters
 
-##SSP1
-
 ```{r}
-#read in rasters
+# make a function to read in the designated raster, difference it from baseline, and save it
 
-ssp1_rcp26_2030 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundary_rasters/SSP1_RCP26_2030.tif"))
-
-ssp1_rcp26_2050 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundary_rasters/SSP1_RCP26_2050.tif"))
-
-ssp1_rcp26_2070 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundary_rasters/SSP1_RCP26_2070.tif"))
-
-#difference the rasters and save them
-
-##saving function
-saverast <- function(x){
+rast_diff <- function(x){
   
-  name <- paste0(deparse(substitute(x)), ".tif")
+  proj <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/conflict_boundary_rasters_africa/", x))
   
-  writeRaster(x, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters/", name), overwrite = TRUE)
+  base <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/conflict_boundary_rasters_africa/wp2010_current_day_cb_raster.tif"))
+  
+  diff <- proj - base
+  
+  writeRaster(diff, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_conflict/differenced_rasters_africa/", name), overwrite = TRUE)
 }
 
-ssp1_rcp26_2030_diff <- rast_diff(ssp1_rcp26_2030)
-saverast(ssp1_rcp26_2030_diff)
+#create a list of all files that need to be differenced and saved
 
-ssp1_rcp26_2050_diff <- rast_diff(ssp1_rcp26_2050)
-saverast(ssp1_rcp26_2050_diff)
+rast_files <- list.files(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/conflict_boundary_rasters_africa"))
 
-ssp1_rcp26_2070_diff <- rast_diff(ssp1_rcp26_2070)
-saverast(ssp1_rcp26_2070_diff)
 
-```
+for (i in rast_files) {
+  
+  file <- i
+  
+  name <- paste0("diff_", file)
+  
+  rast_diff(i)
+  
+}
 
-##SSP2
-
-```{r}
-#read in rasters
-
-ssp2_rcp45_2030 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundary_rasters/SSP2_RCP45_2030.tif"))
-
-ssp2_rcp45_2050 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundary_rasters/SSP2_RCP45_2050.tif"))
-
-ssp2_rcp45_2070 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundary_rasters/SSP2_RCP45_2070.tif"))
-
-#difference the rasters and save them
-
-ssp2_rcp45_2030_diff <- rast_diff(ssp2_rcp45_2030)
-saverast(ssp2_rcp45_2030_diff)
-
-ssp2_rcp45_2050_diff <- rast_diff(ssp2_rcp45_2050)
-saverast(ssp2_rcp45_2050_diff)
-
-ssp2_rcp45_2070_diff <- rast_diff(ssp2_rcp45_2070)
-saverast(ssp2_rcp45_2070_diff)
-
-```
-
-##SSP3
-
-```{r}
-#read in rasters
-
-ssp3_rcp70_2030 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundary_rasters/SSP3_RCP70_2030.tif"))
-
-ssp3_rcp70_2050 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundary_rasters/SSP3_RCP70_2050.tif"))
-
-ssp3_rcp70_2070 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundary_rasters/SSP3_RCP70_2070.tif"))
-
-#difference the rasters and save them
-
-ssp3_rcp70_2030_diff <- rast_diff(ssp3_rcp70_2030)
-saverast(ssp3_rcp70_2030_diff)
-
-ssp3_rcp70_2050_diff <- rast_diff(ssp3_rcp70_2050)
-saverast(ssp3_rcp70_2050_diff)
-
-ssp3_rcp70_2070_diff <- rast_diff(ssp3_rcp70_2070)
-saverast(ssp3_rcp70_2070_diff)
-
-```
-
-##SSP4
-
-```{r}
-#read in rasters
-
-ssp4_rcp60_2030 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundary_rasters/SSP4_RCP60_2030.tif"))
-
-ssp4_rcp60_2050 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundary_rasters/SSP4_RCP60_2050.tif"))
-
-ssp4_rcp60_2070 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundary_rasters/SSP4_RCP60_2070.tif"))
-
-#difference the rasters and save them
-
-ssp4_rcp60_2030_diff <- rast_diff(ssp4_rcp60_2030)
-saverast(ssp4_rcp60_2030_diff)
-
-ssp4_rcp60_2050_diff <- rast_diff(ssp4_rcp60_2050)
-saverast(ssp4_rcp60_2050_diff)
-
-ssp4_rcp60_2070_diff <- rast_diff(ssp4_rcp60_2070)
-saverast(ssp4_rcp60_2070_diff)
-```
-
-##SSP5
-
-```{r}
-#read in rasters
-
-ssp5_rcp85_2030 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundary_rasters/SSP5_RCP85_2030.tif"))
-
-ssp5_rcp85_2050 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundary_rasters/SSP5_RCP85_2050.tif"))
-
-ssp5_rcp85_2070 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundary_rasters/SSP5_RCP85_2070.tif"))
-
-#difference the rasters and save them
-
-ssp5_rcp85_2030_diff <- rast_diff(ssp5_rcp85_2030)
-saverast(ssp5_rcp85_2030_diff)
-
-ssp5_rcp85_2050_diff <- rast_diff(ssp5_rcp85_2050)
-saverast(ssp5_rcp85_2050_diff)
-
-ssp5_rcp85_2070_diff <- rast_diff(ssp5_rcp85_2070)
-saverast(ssp5_rcp85_2070_diff)
 ```
 
 
 #Polygonize difference rasters for visualization
 
+polylines - OUTDATED; maybe delete
 ```{r}
 
 #polyline function
 
 poly <- function(x){
   #first make it a spatvector
-  current_cb_vect <- terra::as.polygons(x, trunc=TRUE, dissolve=TRUE, values=TRUE,
+  current_cb_vect <- terra::as.polygons(x, dissolve=TRUE, values=TRUE,
     na.rm=TRUE, na.all=FALSE, extent=FALSE)
   
   #then turn that into a polyline
@@ -278,79 +171,40 @@ plot(ssp1_2030_diff_poly, add = TRUE, legend = TRUE)
 
 ```
 
-#Polygons
+
+Polygons
 
 ```{r}
 
-polygons <- function(ssp, rcp, year){
+polygons <- function(x){
   
-  file <- paste0(ssp, "_", rcp, "_", year, "_diff.tif")
-  
-  pol <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters/", file)) %>%
-    terra::as.polygons(trunc=TRUE, dissolve=TRUE, values=TRUE, na.rm=TRUE, na.all=FALSE, extent=FALSE)
-  
-  name <- paste0(ssp, "_", rcp, "_", year, "_diff_polygon.shp")
+  pol <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_conflict/differenced_rasters_africa/", x)) %>%
+    terra::as.polygons(dissolve=TRUE, values=TRUE, na.rm=TRUE, na.all=FALSE, extent=FALSE)
  
-  writeVector(pol, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polygons/", name), overwrite = TRUE)
+  writeVector(pol, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_conflict/differenced_polygons_africa/", name), overwrite = TRUE)
   
 }
 
+diff_rasts <- list.files(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_conflict/differenced_rasters_africa"))
 
-year_vect <- c("2030", "2050", "2070")
 
-#ssp1
-
-for (i in year_vect) {
+for (i in diff_rasts) {
   
-  polygons(ssp = "ssp1",
-           rcp = "rcp26",
-           year = i)
-}
-
-#ssp2
-
-for (i in year_vect) {
+  file <- str_remove(i, ".tif")
   
-  polygons(ssp = "ssp2",
-           rcp = "rcp45",
-           year = i)
-}
-
-#ssp3
-
-for (i in year_vect) {
+  name <- paste0(file, "_polygon.shp")
   
-  polygons(ssp = "ssp3",
-           rcp = "rcp70",
-           year = i)
-} 
-
-#ssp4
-
-for (i in year_vect) {
+  polygons(i)
   
-  polygons(ssp = "ssp4",
-           rcp = "rcp60",
-           year = i)
-}
-
-#ssp5
-
-for (i in year_vect) {
-  
-  polygons(ssp = "ssp5",
-           rcp = "rcp85",
-           year = i)
 }
 
 ```
-
 
 #Percent value calculations
 
 ##Read in the polyline and polygon files
 
-Polylines:
+Polylines - no longer using, maybe delete?
 
 ```{r polylines}
 #Polylines
@@ -407,12 +261,12 @@ Polygons:
 
 #SSP1
 
-ssp1_2050_polygons <- vect(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polygons/ssp1_rcp26_2050_diff_polygon.shp"))
+ssp1_2050_polygons <- vect(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_conflict/differenced_polygons_africa/diff_SSP1_RCP26_2050_polygon.shp"))
 
 
 #SSP3
 
-ssp3_2050_polygons <- vect(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polygons/ssp3_rcp70_2050_diff_polygon.shp"))
+ssp3_2050_polygons <- vect(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_conflict/differenced_polygons_africa/diff_SSP3_RCP70_2050_polygon.shp"))
 
 ```
 
@@ -421,7 +275,7 @@ ssp3_2050_polygons <- vect(here(HWC_data, "/Geospatial Data/Diminin_Replication_
 ```{r}
 perc_area_table <- function(x){
   
-  diff_pol <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polygons", x))
+  diff_pol <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_conflict/differenced_polygons_africa", x))
   
   colnames(diff_pol) = c("conflict_change", "geometry")
   
@@ -455,7 +309,8 @@ perc_length_table <- function(x){
 
 ##Run calculations
 
-###Lines
+###Lines - outdated, maybe remove
+
 ```{r}
 
 #SSP1
@@ -573,12 +428,13 @@ save_kable(conf_change_lines_nicetables, file = here("/Users/mia/Desktop/Fellows
 
 ```
 
+
 ##Polygons
 
 ```{r}
 #list all of the files
 
-pol_list <- list.files(path = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polygons"), pattern = '.shp')
+pol_list <- list.files(path = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_conflict/differenced_polygons_africa"), pattern = '.shp')
 
 #apply the area over the list
 
@@ -652,7 +508,31 @@ write.csv(conf_change_table_pol_year, file = here(HWC_data, "Data/Di Minin HWC",
 
 
 ```{r}
-conf_change_table_pol_year <- read_csv(here(HWC_data, "Data/Di Minin HWC", "conflict_change_polygons_byyear_africa.csv"))
+conf_change_table_pol_year <- read_csv(here(HWC_data, "Data/Di Minin HWC", "conflict_change_polygons_byyear_africa.csv")) %>% 
+  janitor::clean_names() %>% 
+  arrange(conflict_change)
+
+colnames(conf_change_table_pol_year) = c(
+  "Conflict Change", 
+  
+  "SSP1 2030", 
+  "SSP2 2030",
+  "SSP3 2030",
+  "SSP4 2030",
+  "SSP5 2030",
+  
+  "SSP1 2050",
+  "SSP2 2050",
+  "SSP3 2050",
+  "SSP4 2050",
+  "SSP5 2050",
+  
+  "SSP1 2070",
+  "SSP2 2070",
+  "SSP3 2070",
+  "SSP4 2070",
+  "SSP5 2070"
+)
 
 dec <- c(rep(2, each = 16))
 
@@ -673,24 +553,36 @@ conf_change_pols_nicetable
 
 library(magick)
 
-save_kable(conf_change_pols_nicetable, file = here("/Users/mia/Desktop/Fellowships/Arnhold HWC/conf_change_polygons_table_byyear_africa.jpeg"))
+save_kable(conf_change_pols_nicetable, file = here("/Users/mia/Desktop/Fellowships/Arnhold HWC/conf_change_polygons_table_byyear_africa.jpeg"), zoom = 2.5)
 ```
 
 
-#Numeric Change
-
 ```{r}
-s1_inc <- conf_change_table_pol_year$"SSP1 2050"[[4]] + conf_change_table_pol_year$"SSP1 2050"[[5]]
+conf_change_table_s1s3 <- read_csv(here(HWC_data, "Data/Di Minin HWC", "conflict_change_polygons_byyear_africa.csv")) %>% 
+  janitor::clean_names() %>% 
+  arrange(conflict_change) %>% 
+  filter(conflict_change != -2) %>% 
+  mutate("conflict_change" = c("Moderate Decrease", "No Change", "Moderate Increase", "Strong Increase")) %>% 
+  select(conflict_change, ssp1_2050, ssp3_2050)
 
-s3_inc <- conf_change_table_pol_year$"SSP3 2050"[[4]] + conf_change_table_pol_year$"SSP3 2050"[[5]]
+colnames(conf_change_table_s1s3) = c("Conflict Change", "SSP 1 - RCP 2.6", "SSP 3 - RCP 7.0")
 
-diff <- s3_inc - s1_inc
+dec <- c(rep(2, each = 3))
 
-s1_dec <- conf_change_table_pol_year$"SSP1 2050"[[1]] + conf_change_table_pol_year$"SSP1 2050"[[2]]
+align <- c(rep("c", each = 3))
 
-s3_dec <- conf_change_table_pol_year$"SSP3 2050"[[1]] + conf_change_table_pol_year$"SSP3 2050"[[2]]
+conf_change_s1s3_nicetable <- conf_change_table_s1s3 %>%
+  kable(digits = dec,
+        escape = FALSE,
+        align = align) %>% 
+  kable_styling(full_width = FALSE, position = "center") %>% 
+  column_spec(2, background = "#a8e6cf") %>%
+  column_spec(3, background = "#ffd3b6")
 
-dec_diff <- s3_dec - s1_dec
-dec_diff
+conf_change_s1s3_nicetable
+
+library(magick)
+
+save_kable(conf_change_s1s3_nicetable, file = here("/Users/mia/Desktop/Fellowships/Arnhold HWC/current_figures/conf_change_s1s3_africa.jpeg"), zoom = 2.5)
 ```
 

@@ -20,12 +20,13 @@ library(tidyterra)
 
 #File path to the HWC_data folder
 
-HWC_data <- "/Volumes/GoogleDrive/.shortcut-targets-by-id/1YB-Hz3L-kWyiZMg2UM89GQkvqXyZUW1H/HWC_data"
+HWC_data <- "/Users/mia/Library/CloudStorage/GoogleDrive-mguarnieri@ucsb.edu/My Drive/Arnhold Project/HWC_data"
 ```
 
 Years: 2030, 2050, 2070
 
-#Boundary lines
+#Boundary lines - this code is outdated; maybe delete later
+
 
 #SSP 1 RCP 2.6
 
@@ -207,6 +208,7 @@ rcp <- 85
 
 source(knitr::purl(here("DiMinin_replication", "conflict_boundary_script.rmd"), quiet = TRUE))
 ```
+
 
 #Boundary rasters
 
@@ -392,3 +394,35 @@ rcp <- 85
 
 source(knitr::purl(here("DiMinin_replication", "conflict_boundary_raster_script.rmd"), quiet = TRUE))
 ```
+
+
+#Conflict Boundary Polygons
+
+```{r}
+confpol <- function(x){
+  
+  #read in the raster
+  
+  conf_rast <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/conflict_boundary_rasters_africa/", x))
+  
+  #turn the raster layer into polygons
+  
+  cb_vect <- terra::as.polygons(conf_rast, dissolve=TRUE, values=TRUE, na.rm=TRUE, na.all=FALSE, extent=FALSE) %>% 
+    st_as_sf()
+  
+  st_write(cb_vect, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/conflict_boundary_polygons_africa", name), append = FALSE)
+}
+
+rast_list <- list.files(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/conflict_boundary_rasters_africa"))
+
+
+for (i in rast_list) {
+  
+  name <- str_replace(i, ".tif", ".shp")
+  
+  confpol(i)
+  
+}
+
+```
+

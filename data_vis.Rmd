@@ -15,36 +15,135 @@ library(sf)
 library(tmap)
 library(RColorBrewer)
 library(rnaturalearth)
+library(ggplot2)
+
+
+HWC_data <- "/Users/mia/Library/CloudStorage/GoogleDrive-mguarnieri@ucsb.edu/My Drive/Arnhold Project/HWC_data"
 ```
 
-#SSP1 Conflict Change
+#Africa
 
-##Africa
+#SDM Change vs Conflict Risk
 
 ```{r}
-ssp1_africa <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polygons/ssp1_rcp26_2050_diff_polygon.shp"))
 
-basemap_africa <- ne_countries(
-  continent = "Africa",
-  scale = "medium", 
-  returnclass = "sf") %>% 
-  st_transform(crs = crs(ssp1_africa))  # make sure crs is same as raster
+#load in conflict risk rasters for ssp1 and ssp3 in 2050
 
-basemap_africa_vect <- basemap_africa %>% 
-  vect()
+africa_s1conf <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundary_rasters/SSP1_RCP26_2050.tif"))
+
+asia_s3conf <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries_rasters_asia/SSP3_RCP70_2050.tif"))
 
 
-pal <- c("#2B83BA", "#ABDDA4", "#FFFFBF", "#FDAE61", "#D7191C")
+#load in rasters of SDM change and mask by conflict rasters
 
-#plot conflict boundaries
-plot(basemap_africa_vect, col = "grey98", axes = 0, legend = FALSE)
-plot(ssp1_africa, add = TRUE, pal = pal, border = pal, legend = "bottomright")
+asia_sdm_ssp1 <- rast(here(HWC_data, "/Wallace SDM Rasters/asia/2011_2040/change_maps/change_2011_2040_126_gfdl.tif")) %>% 
+  project(asia_s1conf) %>% 
+  mask(asia_s1conf)
+
+asia_sdm_ssp3 <- rast(here(HWC_data, "/Wallace SDM Rasters/asia/2011_2040/change_maps/change_2011_2040_370_gfdl.tif")) %>% 
+  project(asia_s3conf) %>% 
+  mask(asia_s3conf)
+
+#stack the corresponding conflict and sdm rasters
+
+asia_s1_stack <- c(asia_s1conf, asia_sdm_ssp1)
+
+#extract pixel values from the raster stack
+
+asia_s1_ext <- values(asia_s1_stack, dataframe = TRUE, na.rm = TRUE)
+```
 
 
 
-tm_shape(ssp1_africa) +
-  tm_polygons(col = "FPOP_SSP1_", 
-              border.alpha = 0,
-              palette = pal)
+#Asia
+
+#SDM Change vs Conflict Risk
+
+```{r}
+
+#load in conflict risk rasters for ssp1 and ssp3 in 2050
+
+asia_s1conf <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/conflict_boundary_rasters_asia/SSP1_RCP26_2050.tif"))
+
+asia_s3conf <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/conflict_boundary_rasters_asia/SSP3_RCP70_2050.tif"))
+
+
+#load in rasters of SDM change and mask by conflict rasters
+
+asia_sdm_ssp1 <- rast(here(HWC_data, "/Wallace SDM Rasters/asia/2011_2040/change_maps/change_2011_2040_126_gfdl.tif")) %>% 
+  terra::project(asia_s1conf, method = "near") %>% 
+  terra::mask(., asia_s1conf)
+
+asia_sdm_ssp3 <- rast(here(HWC_data, "/Wallace SDM Rasters/asia/2011_2040/change_maps/change_2011_2040_370_gfdl.tif")) %>% 
+  project(asia_s3conf) %>% 
+  mask(asia_s3conf)
+
+#stack the corresponding conflict and sdm rasters
+
+asia_s1_stack <- c(asia_s1conf, asia_sdm_ssp1)
+
+#extract pixel values from the raster stack
+
+asia_s1ext <- values(asia_s1_stack, dataframe = TRUE, na.rm = TRUE)
+
+colnames(asia_s1ext) = c("conflict_risk", "suitability_change")
+
+#summarize values
+
+asia_s1_summary <- asia_s1ext %>% 
+  group_by(conflict_risk, suitability_change) %>% 
+  summarize(n())
+
+colnames(asia_s1_summary) = c("conflict_risk", "suitability_change", "count")
+
+#make a bubble plot
+ggplot(asia_s1_summary, aes(x = suitability_change, y = conflict_risk, size = count)) +
+  geom_point(alpha=0.5)
+
+#make a heatmap
+ggplot(asia_s1_summary, aes(x = suitability_change, y = conflict_risk, fill = count)) + 
+  geom_tile()
+```
+
+#SDM Change vs Conflict Change
+
+```{r}
+#load in conflict risk rasters for ssp1 and ssp3 in 2050
+
+asia_s1confchange <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_conflict/differenced_rasters_asia/diff_SSP1_RCP26_2050.tif"))
+
+
+#load in rasters of SDM change and mask by conflict rasters
+
+asia_sdm_ssp1 <- rast(here(HWC_data, "/Wallace SDM Rasters/asia/2011_2040/change_maps/change_2011_2040_126_gfdl.tif")) %>% 
+  terra::project(asia_s1confchange, method = "near") %>% 
+  terra::mask(., asia_s1confchange)
+
+#stack the corresponding conflict and sdm rasters
+
+asia_s1change_stack <- c(asia_s1confchange, asia_sdm_ssp1)
+
+#extract pixel values from the raster stack
+
+asia_s1changeext <- values(asia_s1change_stack, dataframe = TRUE, na.rm = TRUE)
+
+colnames(asia_s1changeext) = c("conflict_risk_change", "suitability_change")
+
+#summarize values
+
+asia_s1change_summary <- asia_s1changeext %>% 
+  group_by(conflict_risk_change, suitability_change) %>% 
+  summarize(n())
+
+colnames(asia_s1change_summary) = c("conflict_risk_change", "suitability_change", "count")
+
+#make a bubble plot
+ggplot(asia_s1change_summary, aes(x = suitability_change, y = conflict_risk_change, size = count)) +
+  geom_point(alpha=0.5)
+
+#make a heatmap
+ggplot(asia_s1change_summary, aes(x = suitability_change, y = conflict_risk_change, fill = count)) + 
+  geom_tile()
+
 ```
 
