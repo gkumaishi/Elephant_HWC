@@ -24,74 +24,125 @@ library(kableExtra)
 HWC_data <- "/Users/mia/Library/CloudStorage/GoogleDrive-mguarnieri@ucsb.edu/My Drive/Arnhold Project/HWC_data"
 ```
 
-#Reclass conflict layers to be binary inc/dec
+#Reclass conflict layers to be just increasing, decreasing, or no change
 
 ```{r}
 #reclassify function
 reclass_rast <- function(x){
   
-  rast <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters/", x))
+  rast <- x
   
-  rast[rast == 0] <- NA
+  rast[rast == 0] <- 0
   
   rast[rast > 0] <- 1
   
   rast[rast < 0] <- -1
   
-  writeRaster(rast, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters/binary_diffs/", name), overwrite = TRUE)
+  return (rast)
 
 }
 
-rast_list <- list.files(path = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters/"), pattern = '.tif')
 
-for (i in rast_list) {
-  
-  name <- paste0("binary_", i)
-  
-  reclass_rast(i)
-  
-}
+africa_bindiff_ssp1 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_conflict/differenced_rasters_africa/diff_SSP1_RCP26_2050.tif")) %>% 
+  reclass_rast()
+
+africa_bindiff_ssp3 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_conflict/differenced_rasters_africa/diff_SSP3_RCP70_2050.tif")) %>% 
+  reclass_rast()
 
 ```
 
 #Filter binary conflict layers and mask SDMs
 
-Load in SDMs
+Load in and reproject SDMs
+
 ```{r}
+#read in and reproject SDMs
+africa_sdm_ssp1 <- rast(here(HWC_data, "/Wallace SDM Rasters/LQ/2011_2040/126/change_maps/afel_change_2011_2040_126_gfdl.tif")) %>% 
+  project(africa_bindiff_ssp1)
+
+africa_sdm_ssp3 <- rast(here(HWC_data, "/Wallace SDM Rasters/LQ/2011_2040/370/change_maps/afel_change_2011_2040_gfdl_370.tif")) %>% 
+  project(africa_bindiff_ssp1)
+```
+
+
+Mask SDM by conflict change
+
+```{r}
+#ssp 1
+
+africa_sdm_masked_ssp1 <- mask(africa_sdm_ssp1, africa_bindiff_ssp1)
+
+#ssp 3
+
+africa_sdm_masked_ssp3 <- mask(africa_sdm_ssp3, africa_bindiff_ssp3)
 
 ```
 
 
 
-#Turn binary rasters into polygons
+##Polygonize masked SDM rasters
 
 ```{r}
-polygons <- function(ssp, rcp, year){
+polygons <- function(x){
   
-  file <- paste0(ssp, "_", rcp, "_", year, "_diff.tif")
-  
-  pol <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_rasters/binary_diffs/", file)) %>%
+  pol <- x %>%
     terra::as.polygons(trunc=TRUE, dissolve=TRUE, values=TRUE, na.rm=TRUE, na.all=FALSE, extent=FALSE)
   
-  name <- paste0(ssp, "_", rcp, "_", year, "_diff_polygon.shp")
+  name <- paste0(deparse(substitute(x)), ".shp")
  
-  writeVector(pol, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_polygons/binary_differenced_polygons", name), overwrite = TRUE)
+  writeVector(pol, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/sdm_exploration_polygons/africa", name), overwrite = TRUE)
   
 }
 
-
-ssp <- c("ssp1", "ssp2", "ssp3", "ssp4", "ssp5")
-rcp <- c("rcp26", "rcp45", "rcp70", "rcp60", "rcp85")
-year_vect <- c("2030", "2050", "2070")
-
-
-for (i in year_vect) {
-  
-  year <- i
-  
-  mapply(polygons(),
-       ssp, rcp)
-}
+polygons(africa_sdm_masked_ssp1)
+polygons(africa_sdm_masked_ssp3)
 
 ```
 
+#Percent area calculations
+
+1 = decreasing suitability
+2 = no change, not suitable
+3 = no change, suitable
+4 = increasing suitability
+
+```{r}
+
+#set up the function
+
+perc_area_table <- function(x){
+  
+  diff_pol <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/sdm_exploration_polygons/africa", x))
+  
+  colnames(diff_pol) = c("suitability_change", "geometry")
+  
+  table <- diff_pol %>% 
+    as.data.frame() %>% 
+    mutate(area = st_area(diff_pol, unit = "m")) %>% 
+    mutate(perc_area = (area/sum(area) * 100)) %>% 
+    select(suitability_change, perc_area)
+  
+  return(table)
+}
+
+#list all of the files
+
+sdm_pol_list <- list.files(path = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/sdm_exploration_polygons/africa"), pattern = '.shp')
+
+
+#apply the area function over the list
+
+sdm_area_list <- lapply(sdm_pol_list, perc_area_table)
+
+sdm_conf_change_table_pol <- sdm_area_list %>% reduce(full_join, by = "suitability_change") %>% 
+  units::drop_units()
+
+colnames(sdm_conf_change_table_pol) = c("suitability", sdm_pol_list)
+
+descriptor <- c("Decreasing Suitability", "No Change - Not Suitable", "No Change - Suitable", "Increasing")
+
+sdm_conf_change_table_pol$suitability <- descriptor
+
+write.csv(sdm_conf_change_table_pol, file = here(HWC_data, "Data/Di Minin HWC", "sdm_conf_change_table_africa.csv"), row.names=FALSE)
+
+```

@@ -21,9 +21,50 @@ library(ggplot2)
 HWC_data <- "/Users/mia/Library/CloudStorage/GoogleDrive-mguarnieri@ucsb.edu/My Drive/Arnhold Project/HWC_data"
 ```
 
+#Conflict Change Table
+
+```{r}
+africa_conf_change_table <- read_csv(here(HWC_data, "Data/Di Minin HWC", "conflict_change_polygons_byyear_africa.csv")) %>% 
+  janitor::clean_names() %>% 
+  arrange(conflict_change) %>% 
+  mutate("conflict_change" = c("Strong Decrease", "Moderate Decrease", "No Change", "Moderate Increase", "Strong Increase")) %>% 
+  select(conflict_change, ssp1_2050, ssp3_2050)
+
+
+asia_conf_change_table <- read_csv(here(HWC_data, "Data/Di Minin HWC", "conflict_change_polygons_byyear_asia.csv")) %>% 
+  janitor::clean_names() %>% 
+  arrange(conflict_change) %>% 
+  mutate("conflict_change" = c("Strong Decrease", "Moderate Decrease", "No Change", "Moderate Increase", "Strong Increase")) %>% 
+  select(conflict_change, ssp1_2050, ssp3_2050)
+
+combined_conf_change <- cbind(africa_conf_change_table, asia_conf_change_table[, 2:3])
+
+colnames(combined_conf_change) = c("Conflict Change", "SSP 1 - RCP 2.6", "SSP 3 - RCP 7.0", "SSP 1 - RCP 2.6", "SSP 3 - RCP 7.0")
+
+dec <- c(rep(2, each = 5))
+
+align <- c(rep("c", each = 5))
+
+conf_change_nicetable <- combined_conf_change %>%
+  kable(digits = dec,
+        escape = FALSE,
+        align = align) %>% 
+  kable_styling(full_width = FALSE, position = "center") %>% 
+  add_header_above(c(" ", "African Elephant" = 2, "Asian Elephant" = 2), background = c("#ffd3b6", "#a8e6cf")) %>% 
+  column_spec(2:3, background = "#a8e6cf") %>%
+  column_spec(4:5, background = "#ffd3b6")
+
+conf_change_nicetable
+
+library(magick)
+
+save_kable(conf_change_nicetable, file = here("/Users/mia/Desktop/Fellowships/Arnhold HWC/current_figures/combined_conf_change.jpeg"), zoom = 2.5)
+```
+
+
 #Africa
 
-#SDM Change vs Conflict Risk
+##SDM Change vs Conflict Risk
 
 ```{r}
 
@@ -52,6 +93,8 @@ asia_s1_stack <- c(asia_s1conf, asia_sdm_ssp1)
 
 asia_s1_ext <- values(asia_s1_stack, dataframe = TRUE, na.rm = TRUE)
 ```
+
+
 
 
 
@@ -112,6 +155,7 @@ ggplot(asia_s1_summary, aes(x = suitability_change, y = conflict_risk, fill = co
 
 asia_s1confchange <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_conflict/differenced_rasters_asia/diff_SSP1_RCP26_2050.tif"))
 
+asia_s3confchange <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_conflict/differenced_rasters_asia/diff_SSP3_RCP70_2050.tif"))
 
 #load in rasters of SDM change and mask by conflict rasters
 
@@ -119,9 +163,15 @@ asia_sdm_ssp1 <- rast(here(HWC_data, "/Wallace SDM Rasters/asia/2011_2040/change
   terra::project(asia_s1confchange, method = "near") %>% 
   terra::mask(., asia_s1confchange)
 
+asia_sdm_ssp3 <- rast(here(HWC_data, "/Wallace SDM Rasters/asia/2011_2040/change_maps/change_2011_2040_370_gfdl.tif")) %>% 
+  terra::project(asia_s3confchange, method = "near") %>% 
+  terra::mask(., asia_s3confchange)
+
 #stack the corresponding conflict and sdm rasters
 
 asia_s1change_stack <- c(asia_s1confchange, asia_sdm_ssp1)
+
+asia_s3change_stack <- c(asia_s3confchange, asia_sdm_ssp3)
 
 #extract pixel values from the raster stack
 
@@ -129,21 +179,93 @@ asia_s1changeext <- values(asia_s1change_stack, dataframe = TRUE, na.rm = TRUE)
 
 colnames(asia_s1changeext) = c("conflict_risk_change", "suitability_change")
 
-#summarize values
+asia_s3changeext <- values(asia_s3change_stack, dataframe = TRUE, na.rm = TRUE)
+
+colnames(asia_s3changeext) = c("conflict_risk_change", "suitability_change")
+
+#create summary tables for each ssp of counts/percentages
 
 asia_s1change_summary <- asia_s1changeext %>% 
   group_by(conflict_risk_change, suitability_change) %>% 
-  summarize(n())
+  summarize(count = n()) %>% 
+  mutate (percent = (count/sum(asia_s1change_summary$count))*100)
 
-colnames(asia_s1change_summary) = c("conflict_risk_change", "suitability_change", "count")
+colnames(asia_s1change_summary) = c("conflict_risk_change", "suitability_change", "count", "percent")
 
-#make a bubble plot
-ggplot(asia_s1change_summary, aes(x = suitability_change, y = conflict_risk_change, size = count)) +
-  geom_point(alpha=0.5)
+asia_s3change_summary <- asia_s3changeext %>% 
+  group_by(conflict_risk_change, suitability_change) %>% 
+  summarize(count = n()) %>% 
+  mutate (percent = (count/sum(asia_s3change_summary$count))*100)
 
-#make a heatmap
-ggplot(asia_s1change_summary, aes(x = suitability_change, y = conflict_risk_change, fill = count)) + 
-  geom_tile()
+colnames(asia_s3change_summary) = c("conflict_risk_change", "suitability_change", "count", "percent")
 
+#create wide tables of percentages only for joins and data vis
+
+asia_s1change_wide <- asia_s1change_summary %>% 
+  pivot_wider(
+    names_from = conflict_risk_change, 
+    values_from = c(count, percent)
+  ) %>% 
+  select(suitability_change, "percent_-1", percent_0, percent_1, percent_2)
+
+colnames(asia_s1change_wide) = c("suitability_change", "s1_mod_dec", "s1_nc", "s1_mod_inc", "s1_strong_inc")
+
+asia_s3change_wide <- asia_s3change_summary %>% 
+  pivot_wider(
+    names_from = conflict_risk_change, 
+    values_from = c(count, percent)
+  ) %>% 
+  select(suitability_change, "percent_-2", "percent_-1", percent_0, percent_1, percent_2)
+
+colnames(asia_s3change_wide) = c("suitability_change", "s3_strong_dec", "s3_mod_dec", "s3_nc", "s3_mod_inc", "s3_strong_inc")
+
+#join the tables
+
+asia_sdm_conf_change <- full_join(asia_s1change_wide, asia_s3change_wide, by = "suitability_change")
+
+descriptor <- c("Decreasing Suitability", "No Change - Not Suitable", "No Change - Suitable", "Increasing")
+
+asia_sdm_conf_change$suitability_change <- descriptor
+
+write.csv(asia_sdm_conf_change, file = here(HWC_data, "Data/Di Minin HWC", "sdm_conf_change_percentage_table_asia.csv"), row.names=FALSE)
+
+```
+
+```{r}
+
+asia_data <- read_csv(here(HWC_data, "Data/Di Minin HWC", "sdm_conf_change_percentage_table_asia.csv")) %>% 
+  mutate(across(where(is.numeric), round, digits = 2))
+
+asia_data_nums <- asia_data[1:4, ]
+
+align <- c(rep("c", each = 4))
+
+asia_data_nums[ ,2:10] <- lapply(asia_data_nums[ ,2:10], function(x) {
+  
+  cell_spec(x, 
+            bold = T,
+            font_size = spec_font_size(x, begin = 11),
+            color = spec_color(x, end = 0.6, direction = -1),
+            align = align)
+})
+
+asia_sdm_conf_change_nicetable <- asia_data_nums %>%
+  kable(escape = FALSE,
+        caption = "<center><strong>Percentage of Range Boundary Within Each Climatic Suitability Change and Conflict Risk Change Category for African Elephants</strong></center>",
+        col.names = c("Suitability Change", "Moderate Decrease", "No Change", "Moderate Increase", "Strong Increase", "Strong Decrease", "Moderate Decrease", "No Change", "Moderate Increase", "Strong Increase")) %>% 
+  kable_styling(full_width = FALSE, position = "center") %>% 
+  add_header_above(c(" ", "SSP1 - RCP 2.6" = 4, "SP3 - RCP 7.0" = 5)) %>% 
+  add_header_above(c(" ", "Conflict Risk Change" = 9)) %>% 
+  column_spec(5, border_right = TRUE) 
+
+#column_spec(6:10, background = "#ededed")
+
+#background = c("#ededed", "white"
+
+asia_sdm_conf_change_nicetable
+
+library(magick)
+
+save_kable(asia_sdm_conf_change_nicetable, file = here("/Users/mia/Desktop/Fellowships/Arnhold HWC/current_figures/asia_sdm_conf_change_nicetable.jpeg"), zoom = 2.5)
 ```
 
