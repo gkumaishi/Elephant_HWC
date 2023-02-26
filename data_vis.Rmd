@@ -62,45 +62,331 @@ save_kable(conf_change_nicetable, file = here("/Users/mia/Desktop/Fellowships/Ar
 ```
 
 
+
 #Africa
 
 ##SDM Change vs Conflict Risk
+
+Create the csv of values
 
 ```{r}
 
 #load in conflict risk rasters for ssp1 and ssp3 in 2050
 
-africa_s1conf <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundary_rasters/SSP1_RCP26_2050.tif"))
+africa_s1conf <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/conflict_boundary_rasters_africa/SSP1_RCP26_2050.tif"))
 
-asia_s3conf <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries_rasters_asia/SSP3_RCP70_2050.tif"))
+africa_s3conf <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/conflict_boundary_rasters_africa/SSP3_RCP70_2050.tif"))
 
 
 #load in rasters of SDM change and mask by conflict rasters
 
-asia_sdm_ssp1 <- rast(here(HWC_data, "/Wallace SDM Rasters/asia/2011_2040/change_maps/change_2011_2040_126_gfdl.tif")) %>% 
-  project(asia_s1conf) %>% 
-  mask(asia_s1conf)
+africa_sdm_ssp1 <- rast(here(HWC_data, "/Wallace SDM Rasters/LQ/2041_2070/126/change_maps/afel_change_2041_2070_126_gfdl.tif")) %>% 
+  project(africa_s1conf, method = "near") %>% 
+  mask(africa_s1conf)
 
-asia_sdm_ssp3 <- rast(here(HWC_data, "/Wallace SDM Rasters/asia/2011_2040/change_maps/change_2011_2040_370_gfdl.tif")) %>% 
-  project(asia_s3conf) %>% 
-  mask(asia_s3conf)
+africa_sdm_ssp3 <- rast(here(HWC_data, "/Wallace SDM Rasters/LQ/2041_2070/370/change_maps/afel_change_2041_2070_gfdl_370.tif")) %>% 
+  project(africa_s3conf, method = "near") %>% 
+  mask(africa_s3conf)
+
 
 #stack the corresponding conflict and sdm rasters
 
-asia_s1_stack <- c(asia_s1conf, asia_sdm_ssp1)
+africa_s1_stack <- c(africa_s1conf, africa_sdm_ssp1)
 
-#extract pixel values from the raster stack
+africa_s3_stack <- c(africa_s3conf, africa_sdm_ssp3)
 
-asia_s1_ext <- values(asia_s1_stack, dataframe = TRUE, na.rm = TRUE)
+
+#extract pixel values from the raster stack and set column names
+
+africa_s1_ext <- values(africa_s1_stack, dataframe = TRUE, na.rm = TRUE)
+
+colnames(africa_s1_ext) = c("conflict_risk", "suitability_change")
+
+africa_s3_ext <- values(africa_s3_stack, dataframe = TRUE, na.rm = TRUE)
+
+colnames(africa_s3_ext) = c("conflict_risk", "suitability_change")
+
+
+#create summary tables for each ssp of counts/percentages
+
+africa_s1change_summary <- africa_s1_ext %>% 
+  group_by(conflict_risk, suitability_change) %>% 
+  summarize(count = n()) %>% 
+  mutate (percent = (count/sum(africa_s1change_summary$count))*100)
+
+colnames(africa_s1change_summary) = c("conflict_risk", "suitability_change", "count", "percent")
+
+africa_s3change_summary <- africa_s3_ext %>% 
+  group_by(conflict_risk, suitability_change) %>% 
+  summarize(count = n()) %>% 
+  mutate (percent = (count/sum(africa_s3change_summary$count))*100)
+
+colnames(africa_s3change_summary) = c("conflict_risk", "suitability_change", "count", "percent")
+
+#create wide tables of percentages only for joins and data vis
+
+africa_s1change_wide <- africa_s1change_summary %>% 
+  pivot_wider(
+    names_from = conflict_risk, 
+    values_from = c(count, percent)
+  ) %>% 
+  select(suitability_change, percent_0, percent_1, percent_2) %>% 
+  mutate(total = rowSums(africa_s1change_wide[ ,2:4])) #have to run the rest of the functions first
+
+colnames(africa_s1change_wide) = c("suitability_change", "s1_0", "s1_1", "s1_2", "s1_total")
+
+africa_s3change_wide <- africa_s3change_summary %>% 
+  pivot_wider(
+    names_from = conflict_risk, 
+    values_from = c(count, percent)
+  ) %>% 
+  select(suitability_change, percent_0, percent_1, percent_2) %>% 
+  mutate(total = rowSums(africa_s3change_wide[ ,2:4])) #have to run the rest of the functions first
+
+colnames(africa_s3change_wide) = c("suitability_change", "s3_0", "s3_1", "s3_2", "s3_total")
+
+#join the tables
+
+africa_sdm_conf_change <- full_join(africa_s1change_wide, africa_s3change_wide, by = "suitability_change")
+
+descriptor <- c("Decreasing Suitability", "No Change - Not Suitable", "No Change - Suitable", "Increasing")
+
+africa_sdm_conf_change$suitability_change <- descriptor
+
+write.csv(africa_sdm_conf_change, file = here(HWC_data, "Data/Di Minin HWC", "sdm_conf_risk_percentage_table_africa.csv"), row.names=FALSE)
+
+```
+
+Turn the csv into a nice table
+
+```{r}
+
+library(kableExtra)
+
+africa_data <- read_csv(here(HWC_data, "Data/Di Minin HWC", "sdm_conf_risk_percentage_table_africa.csv")) %>% 
+  mutate(across(where(is.numeric), round, digits = 2))
+
+africa_data_nums <- africa_data[1:4, ]
+
+africa_data_nums[ ,2:4] <- lapply(africa_data_nums[ ,2:4], function(x) {
+  
+  cell_spec(x, 
+            bold = T,
+            color = spec_color(x, end = 0.6, direction = -1),
+            font_size = spec_font_size(x, begin = 13))
+})
+
+africa_data_nums[ ,6:8] <- lapply(africa_data_nums[ ,6:8], function(x) {
+  
+  cell_spec(x, 
+            bold = T,
+            color = spec_color(x, end = 0.6, direction = -1),
+            font_size = spec_font_size(x, begin = 13))
+})
+
+align <- c(rep("c", each = 9))
+
+africa_sdm_conf_change_nicetable <- africa_data_nums %>%
+  kable(escape = FALSE,
+        align = align,
+        caption = "<center><strong>Percentage of Range Boundary Within Each Climatic Suitability Change and Conflict Risk Category for African Elephants</strong></center>",
+        col.names = c("Suitability Change", "Low", "Medium", "High", "Total", "Low", "Medium", "High", "Total")) %>% 
+  kable_styling(full_width = FALSE, position = "center") %>% 
+  add_header_above(c(" ", "SSP1 - RCP 2.6" = 4, "SP3 - RCP 7.0" = 4)) %>% 
+  add_header_above(c(" ", "Conflict Risk" = 8)) %>% 
+  column_spec(5, border_right = TRUE) 
+
+#column_spec(6:10, background = "#ededed")
+
+#background = c("#ededed", "white"
+
+africa_sdm_conf_change_nicetable
+
+#library(magick)
+
+save_kable(africa_sdm_conf_change_nicetable, file = here("/Users/mia/Desktop/Fellowships/Arnhold HWC/current_figures/africa_sdm_conf_risk_nicetable.jpeg"), zoom = 2.5)
+
 ```
 
 
+```{r}
+#Applying the conditional formatting to the entire group rather than by conflict risk class
+
+library(kableExtra)
+
+africa_data <- read_csv(here(HWC_data, "Data/Di Minin HWC", "sdm_conf_risk_percentage_table_africa.csv")) %>% 
+  mutate(across(where(is.numeric), round, digits = 2))
+
+africa_rows <- africa_data[1:4, ]
+
+africa_rows[ , 2:4] <- africa_rows[ , 2:4] %>% 
+  mutate(across(where(is.numeric),function(x){cell_spec(x,
+                                      bold = T,
+                                      color = spec_color(x, end = 0.6, direction = -1),
+                                      font_size = spec_font_size(x, begin = 13))}))
+
+africa_rows[ , 6:8] <- africa_rows[ , 6:8] %>% 
+  mutate(across(where(is.numeric),function(x){cell_spec(x,
+                                      bold = T,
+                                      color = spec_color(x, end = 0.6, direction = -1),
+                                      font_size = spec_font_size(x, begin = 13))}))
+
+align <- c(rep("c", each = 9))
+
+africa_sdm_conf_change_nicetable <- africa_rows %>%
+  kable(escape = FALSE,
+        align = align,
+        caption = "<center><strong>Percentage of Range Boundary Within Each Climatic Suitability Change and Conflict Risk Category for African Elephants</strong></center>",
+        col.names = c("Suitability Change", "Low", "Medium", "High", "Total", "Low", "Medium", "High", "Total")) %>% 
+  kable_styling(full_width = FALSE, position = "center") %>% 
+  add_header_above(c(" ", "SSP1 - RCP 2.6" = 4, "SP3 - RCP 7.0" = 4)) %>% 
+  add_header_above(c(" ", "Conflict Risk" = 8)) %>% 
+  column_spec(5, border_right = TRUE) 
+
+#column_spec(6:10, background = "#ededed")
+
+#background = c("#ededed", "white"
+
+africa_sdm_conf_change_nicetable
+
+#library(magick)
+
+#save_kable(africa_sdm_conf_change_nicetable, file = here("/Users/mia/Desktop/Fellowships/Arnhold HWC/current_figures/africa_sdm_conf_risk_nicetable.jpeg"), zoom = 2.5)
+```
+
+
+
+##SDM Change vs Conflict Change
+
+Create the csv of values
+
+```{r}
+#load in conflict risk rasters for ssp1 and ssp3 in 2050
+
+africa_s1confchange <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_conflict/differenced_rasters_africa/diff_SSP1_RCP26_2050.tif"))
+
+africa_s3confchange <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_conflict/differenced_rasters_africa/diff_SSP3_RCP70_2050.tif"))
+
+#load in rasters of SDM change and mask by conflict rasters
+
+africa_sdm_ssp1 <- rast(here(HWC_data, "/Wallace SDM Rasters/LQ/2041_2070/126/change_maps/afel_change_2041_2070_126_gfdl.tif")) %>% 
+  project(africa_s1confchange, method = "near") %>% 
+  mask(africa_s1confchange)
+
+africa_sdm_ssp3 <- rast(here(HWC_data, "/Wallace SDM Rasters/LQ/2041_2070/370/change_maps/afel_change_2041_2070_gfdl_370.tif")) %>% 
+  project(africa_s3confchange, method = "near") %>% 
+  mask(africa_s3confchange)
+
+#stack the corresponding conflict and sdm rasters
+
+africa_s1change_stack <- c(africa_s1confchange, africa_sdm_ssp1)
+
+africa_s3change_stack <- c(africa_s3confchange, africa_sdm_ssp3)
+
+#extract pixel values from the raster stack
+
+africa_s1changeext <- values(africa_s1change_stack, dataframe = TRUE, na.rm = TRUE)
+
+colnames(africa_s1changeext) = c("conflict_risk_change", "suitability_change")
+
+africa_s3changeext <- values(africa_s3change_stack, dataframe = TRUE, na.rm = TRUE)
+
+colnames(africa_s3changeext) = c("conflict_risk_change", "suitability_change")
+
+#create summary tables for each ssp of counts/percentages
+
+africa_s1change_summary <- africa_s1changeext %>% 
+  group_by(conflict_risk_change, suitability_change) %>% 
+  summarize(count = n()) %>% 
+  mutate (percent = (count/sum(africa_s1change_summary$count))*100) #run the rest before this
+
+colnames(africa_s1change_summary) = c("conflict_risk_change", "suitability_change", "count", "percent")
+
+africa_s3change_summary <- africa_s3changeext %>% 
+  group_by(conflict_risk_change, suitability_change) %>% 
+  summarize(count = n()) %>% 
+  mutate (percent = (count/sum(africa_s3change_summary$count))*100) #run the rest before this
+
+colnames(africa_s3change_summary) = c("conflict_risk_change", "suitability_change", "count", "percent")
+
+#create wide tables of percentages only for joins and data vis
+
+africa_s1change_wide <- africa_s1change_summary %>% 
+  pivot_wider(
+    names_from = conflict_risk_change, 
+    values_from = c(count, percent)) %>% 
+  select(suitability_change, "percent_-1", percent_0, percent_1, percent_2)
+
+colnames(africa_s1change_wide) = c("suitability_change", "s1_mod_dec", "s1_nc", "s1_mod_inc", "s1_strong_inc")
+
+africa_s3change_wide <- africa_s3change_summary %>% 
+  pivot_wider(
+    names_from = conflict_risk_change, 
+    values_from = c(count, percent)) %>% 
+  select(suitability_change, "percent_-1", percent_0, percent_1, percent_2)
+
+colnames(africa_s3change_wide) = c("suitability_change", "s3_mod_dec", "s3_nc", "s3_mod_inc", "s3_strong_inc")
+
+#join the tables
+
+africa_sdm_conf_change <- full_join(africa_s1change_wide, africa_s3change_wide, by = "suitability_change")
+
+descriptor <- c("Decreasing Suitability", "No Change - Not Suitable", "No Change - Suitable", "Increasing")
+
+africa_sdm_conf_change$suitability_change <- descriptor
+
+write.csv(africa_sdm_conf_change, file = here(HWC_data, "Data/Di Minin HWC", "sdm_conf_change_percentage_table_africa.csv"), row.names=FALSE)
+
+```
+
+Turn the csv into a nice table
+
+```{r}
+
+asia_data <- read_csv(here(HWC_data, "Data/Di Minin HWC", "sdm_conf_change_percentage_table_asia.csv")) %>% 
+  mutate(across(where(is.numeric), round, digits = 2))
+
+asia_data_nums <- asia_data[1:4, ]
+
+
+asia_data_nums[ ,2:10] <- lapply(asia_data_nums[ ,2:10], function(x) {
+  
+  cell_spec(x, 
+            bold = T,
+            font_size = spec_font_size(x, begin = 13),
+            color = spec_color(x, end = 0.6, direction = -1))
+})
+
+align <- c(rep("c", each = 10))
+
+asia_sdm_conf_change_nicetable <- asia_data_nums %>%
+  kable(escape = FALSE,
+        align = align,
+        caption = "<center><strong>Percentage of Range Boundary Within Each Climatic Suitability Change and Conflict Risk Change Category for Asian Elephants</strong></center>",
+        col.names = c("Suitability Change", "Moderate Decrease", "No Change", "Moderate Increase", "Strong Increase", "Strong Decrease", "Moderate Decrease", "No Change", "Moderate Increase", "Strong Increase")) %>% 
+  kable_styling(full_width = FALSE, position = "center") %>% 
+  add_header_above(c(" ", "SSP1 - RCP 2.6" = 4, "SP3 - RCP 7.0" = 5)) %>% 
+  add_header_above(c(" ", "Conflict Risk Change" = 9)) %>% 
+  column_spec(5, border_right = TRUE) 
+
+#column_spec(6:10, background = "#ededed")
+
+#background = c("#ededed", "white"
+
+asia_sdm_conf_change_nicetable
+
+library(magick)
+
+save_kable(asia_sdm_conf_change_nicetable, file = here("/Users/mia/Desktop/Fellowships/Arnhold HWC/current_figures/asia_sdm_conf_change_nicetable.jpeg"), zoom = 2.5)
+```
 
 
 
 #Asia
 
-#SDM Change vs Conflict Risk
+##SDM Change vs Conflict Risk
+
+Create the csv of values
 
 ```{r}
 
@@ -118,12 +404,15 @@ asia_sdm_ssp1 <- rast(here(HWC_data, "/Wallace SDM Rasters/asia/2011_2040/change
   terra::mask(., asia_s1conf)
 
 asia_sdm_ssp3 <- rast(here(HWC_data, "/Wallace SDM Rasters/asia/2011_2040/change_maps/change_2011_2040_370_gfdl.tif")) %>% 
-  project(asia_s3conf) %>% 
+  project(asia_s3conf, method = "near") %>% 
   mask(asia_s3conf)
 
 #stack the corresponding conflict and sdm rasters
 
 asia_s1_stack <- c(asia_s1conf, asia_sdm_ssp1)
+
+asia_s3_stack <- c(asia_s3conf, asia_sdm_ssp3)
+
 
 #extract pixel values from the raster stack
 
@@ -131,24 +420,116 @@ asia_s1ext <- values(asia_s1_stack, dataframe = TRUE, na.rm = TRUE)
 
 colnames(asia_s1ext) = c("conflict_risk", "suitability_change")
 
-#summarize values
+asia_s3ext <- values(asia_s3_stack, dataframe = TRUE, na.rm = TRUE)
 
-asia_s1_summary <- asia_s1ext %>% 
+colnames(asia_s3ext) = c("conflict_risk", "suitability_change")
+
+
+#create summary tables for each ssp of counts/percentages
+
+asia_s1change_summary <- asia_s1ext %>% 
   group_by(conflict_risk, suitability_change) %>% 
-  summarize(n())
+  summarize(count = n()) %>% 
+  mutate (percent = (count/sum(asia_s1change_summary$count))*100) #need to run the rest before this one
 
-colnames(asia_s1_summary) = c("conflict_risk", "suitability_change", "count")
+colnames(asia_s1change_summary) = c("conflict_risk", "suitability_change", "count", "percent")
 
-#make a bubble plot
-ggplot(asia_s1_summary, aes(x = suitability_change, y = conflict_risk, size = count)) +
-  geom_point(alpha=0.5)
+asia_s3change_summary <- asia_s3ext %>% 
+  group_by(conflict_risk, suitability_change) %>% 
+  summarize(count = n()) %>% 
+  mutate (percent = (count/sum(asia_s3change_summary$count))*100) #need to run the rest before this one
 
-#make a heatmap
-ggplot(asia_s1_summary, aes(x = suitability_change, y = conflict_risk, fill = count)) + 
-  geom_tile()
+colnames(asia_s3change_summary) = c("conflict_risk", "suitability_change", "count", "percent")
+
+#create wide tables of percentages only for joins and data vis
+
+asia_s1change_wide <- asia_s1change_summary %>% 
+  pivot_wider(
+    names_from = conflict_risk, 
+    values_from = c(count, percent)
+  ) %>% 
+  select(suitability_change, percent_0, percent_1, percent_2) %>% 
+  mutate(total = rowSums(asia_s1change_wide[ ,2:4], na.rm = TRUE)) #need to run the rest before this line
+
+colnames(asia_s1change_wide) = c("suitability_change", "s1_0", "s1_1", "s1_2", "s1_total")
+
+asia_s3change_wide <- asia_s3change_summary %>% 
+  pivot_wider(
+    names_from = conflict_risk, 
+    values_from = c(count, percent)
+  ) %>% 
+  select(suitability_change, percent_0, percent_1, percent_2) %>% 
+  mutate(total = rowSums(asia_s3change_wide[ ,2:4]))  #need to run the rest before this line
+
+colnames(asia_s3change_wide) = c("suitability_change", "s3_0", "s3_1", "s3_2", "s3_total")
+
+#join the tables
+
+asia_sdm_conf_change <- full_join(asia_s1change_wide, asia_s3change_wide, by = "suitability_change")
+
+descriptor <- c("Decreasing Suitability", "No Change - Not Suitable", "No Change - Suitable", "Increasing")
+
+asia_sdm_conf_change$suitability_change <- descriptor
+
+write.csv(asia_sdm_conf_change, file = here(HWC_data, "Data/Di Minin HWC", "sdm_conf_risk_percentage_table_asia.csv"), row.names=FALSE)
+
 ```
 
-#SDM Change vs Conflict Change
+Turn the csv into a nice table
+
+```{r}
+
+library(kableExtra)
+
+asia_data <- read_csv(here(HWC_data, "Data/Di Minin HWC", "sdm_conf_risk_percentage_table_asia.csv")) %>% 
+  mutate(across(where(is.numeric), round, digits = 2))
+
+asia_data_nums <- asia_data[1:4, ]
+
+asia_data_nums[ ,2:4] <- lapply(asia_data_nums[ ,2:4], function(x) {
+  
+  cell_spec(x, 
+            bold = T,
+            color = spec_color(x, end = 0.6, direction = -1),
+            font_size = spec_font_size(x, begin = 13))
+})
+
+asia_data_nums[ ,6:8] <- lapply(asia_data_nums[ ,6:8], function(x) {
+  
+  cell_spec(x, 
+            bold = T,
+            color = spec_color(x, end = 0.6, direction = -1),
+            font_size = spec_font_size(x, begin = 13))
+})
+
+align <- c(rep("c", each = 9))
+
+asia_sdm_conf_change_nicetable <- asia_data_nums %>%
+  kable(escape = FALSE,
+        align = align,
+        caption = "<center><strong>Percentage of Range Boundary Within Each Climatic Suitability Change and Conflict Risk Category for Asian Elephants</strong></center>",
+        col.names = c("Suitability Change", "Low", "Medium", "High", "Total", "Low", "Medium", "High", "Total")) %>% 
+  kable_styling(full_width = FALSE, position = "center") %>% 
+  add_header_above(c(" ", "SSP1 - RCP 2.6" = 4, "SP3 - RCP 7.0" = 4)) %>% 
+  add_header_above(c(" ", "Conflict Risk" = 8)) %>% 
+  column_spec(5, border_right = TRUE) 
+
+#column_spec(6:10, background = "#ededed")
+
+#background = c("#ededed", "white"
+
+asia_sdm_conf_change_nicetable
+
+#library(magick)
+
+save_kable(asia_sdm_conf_change_nicetable, file = here("/Users/mia/Desktop/Fellowships/Arnhold HWC/current_figures/asia_sdm_conf_risk_nicetable.jpeg"), zoom = 2.5)
+
+```
+
+
+##SDM Change vs Conflict Change
+
+Create the csv of values
 
 ```{r}
 #load in conflict risk rasters for ssp1 and ssp3 in 2050
@@ -231,6 +612,8 @@ write.csv(asia_sdm_conf_change, file = here(HWC_data, "Data/Di Minin HWC", "sdm_
 
 ```
 
+Turn the csv into a nice table
+
 ```{r}
 
 asia_data <- read_csv(here(HWC_data, "Data/Di Minin HWC", "sdm_conf_change_percentage_table_asia.csv")) %>% 
@@ -238,20 +621,21 @@ asia_data <- read_csv(here(HWC_data, "Data/Di Minin HWC", "sdm_conf_change_perce
 
 asia_data_nums <- asia_data[1:4, ]
 
-align <- c(rep("c", each = 4))
 
 asia_data_nums[ ,2:10] <- lapply(asia_data_nums[ ,2:10], function(x) {
   
   cell_spec(x, 
             bold = T,
-            font_size = spec_font_size(x, begin = 11),
-            color = spec_color(x, end = 0.6, direction = -1),
-            align = align)
+            font_size = spec_font_size(x, begin = 13),
+            color = spec_color(x, end = 0.6, direction = -1))
 })
+
+align <- c(rep("c", each = 10))
 
 asia_sdm_conf_change_nicetable <- asia_data_nums %>%
   kable(escape = FALSE,
-        caption = "<center><strong>Percentage of Range Boundary Within Each Climatic Suitability Change and Conflict Risk Change Category for African Elephants</strong></center>",
+        align = align,
+        caption = "<center><strong>Percentage of Range Boundary Within Each Climatic Suitability Change and Conflict Risk Change Category for Asian Elephants</strong></center>",
         col.names = c("Suitability Change", "Moderate Decrease", "No Change", "Moderate Increase", "Strong Increase", "Strong Decrease", "Moderate Decrease", "No Change", "Moderate Increase", "Strong Increase")) %>% 
   kable_styling(full_width = FALSE, position = "center") %>% 
   add_header_above(c(" ", "SSP1 - RCP 2.6" = 4, "SP3 - RCP 7.0" = 5)) %>% 
@@ -267,5 +651,167 @@ asia_sdm_conf_change_nicetable
 library(magick)
 
 save_kable(asia_sdm_conf_change_nicetable, file = here("/Users/mia/Desktop/Fellowships/Arnhold HWC/current_figures/asia_sdm_conf_change_nicetable.jpeg"), zoom = 2.5)
+```
+
+
+
+#Combined tables
+
+##SDM change vs conflict risk
+
+```{r}
+library(kableExtra)
+
+#Combine the datasets
+africa_data <- read_csv(here(HWC_data, "Data/Di Minin HWC", "sdm_conf_risk_percentage_table_africa.csv")) %>% 
+  mutate(across(where(is.numeric), round, digits = 2))
+
+asia_data <- read_csv(here(HWC_data, "Data/Di Minin HWC", "sdm_conf_risk_percentage_table_asia.csv")) %>% 
+  mutate(across(where(is.numeric), round, digits = 2))
+
+combined_sdm_conf_risk <- full_join(africa_data, asia_data, by = "suitability_change")
+
+#rename the columns so they make sense
+colnames(combined_sdm_conf_risk) = c("suitability_change", "africa_s1_0", "africa_s1_1", "africa_s1_2", "africa_s1_total", "africa_s3_0", "africa_s3_1", "africa_s3_2", "africa_s3_total", "asia_s1_0", "asia_s1_1", "asia_s1_2", "asia_s1_total", "asia_s3_0", "asia_s3_1", "asia_s3_2", "asia_s3_total")
+
+#create conditional formatting within each ssp
+
+combined_data_nums <- combined_sdm_conf_risk[1:4, ]
+
+combined_data_nums[ ,2:4] <- lapply(combined_data_nums[ ,2:4], function(x) {
+  
+  cell_spec(x, 
+            bold = T,
+            color = spec_color(x, end = 0.6, direction = -1),
+            font_size = spec_font_size(x, begin = 13))
+})
+
+combined_data_nums[ ,6:8] <- lapply(combined_data_nums[ ,6:8], function(x) {
+  
+  cell_spec(x, 
+            bold = T,
+            color = spec_color(x, end = 0.6, direction = -1),
+            font_size = spec_font_size(x, begin = 13))
+})
+
+combined_data_nums[ ,10:12] <- lapply(combined_data_nums[ ,10:12], function(x) {
+  
+  cell_spec(x, 
+            bold = T,
+            color = spec_color(x, end = 0.6, direction = -1),
+            font_size = spec_font_size(x, begin = 13))
+})
+
+combined_data_nums[ ,14:16] <- lapply(combined_data_nums[ ,14:16], function(x) {
+  
+  cell_spec(x, 
+            bold = T,
+            color = spec_color(x, end = 0.6, direction = -1),
+            font_size = spec_font_size(x, begin = 13))
+})
+
+align <- c(rep("c", each = 17))
+
+combined_sdm_conf_risk_nicetable <- combined_data_nums %>%
+  kable(escape = FALSE,
+        align = align,
+        caption = "<center><strong>Percentage of Range Boundary Within Each Climatic Suitability Change and Conflict Risk Category for African and Asian Elephants</strong></center>",
+        col.names = c("Suitability Change", "Low", "Medium", "High", "Total", "Low", "Medium", "High", "Total", "Low", "Medium", "High", "Total", "Low", "Medium", "High", "Total")) %>% 
+  kable_styling(full_width = FALSE, position = "center") %>% 
+  add_header_above(c(" ", "SSP1 - RCP 2.6" = 4, "SP3 - RCP 7.0" = 4, "SSP1 - RCP 2.6" = 4, "SP3 - RCP 7.0" = 4)) %>% 
+  add_header_above(c(" ", "African Elephant" = 8, "Asian Elephant" = 8)) %>% 
+  add_header_above(c(" ", "Conflict Risk" = 16)) %>% 
+  column_spec(c(5, 9, 13), border_right = TRUE) 
+
+#column_spec(6:10, background = "#ededed")
+
+#background = c("#ededed", "white"
+
+combined_sdm_conf_risk_nicetable
+
+save_kable(combined_sdm_conf_risk_nicetable, file = here("/Users/mia/Desktop/Fellowships/Arnhold HWC/current_figures/combined_sdm_conf_risk_nicetable.jpeg"), zoom = 2.5)
+```
+
+#SDM change vs conflict risk change
+
+```{r}
+
+africa_change_data <- read_csv(here(HWC_data, "Data/Di Minin HWC", "sdm_conf_change_percentage_table_africa.csv")) %>%
+  mutate(across(where(is.numeric), round, digits = 2))
+
+asia_change_data <- read_csv(here(HWC_data, "Data/Di Minin HWC", "sdm_conf_change_percentage_table_asia.csv")) %>%
+  mutate(across(where(is.numeric), round, digits = 2))
+
+combined_sdm_conf_change <- full_join(africa_change_data, asia_change_data, by = "suitability_change")
+
+#rename the columns so they make sense
+colnames(combined_sdm_conf_change) = c("suitability_change", "africa_s1_mod_dec", "africa_s1_nc", "africa_s1_mod_inc", "africa_s1_strong_inc", "africa_s3_mod_dec", "africa_s3_nc", "africa_s3_mod_inc", "africa_s3_strong_inc", "asia_s1_mod_dec", "asia_s1_nc", "asia_s1_mod_inc", "asia_s1_strong_inc", "asia_s3_strong_dec", "asia_s3_mod_dec", "asia_s3_nc", "asia_s3_mod_inc", "asia_s3_strong_inc")
+
+#filter out no change
+combined_sdm_conf_changeonly <- combined_sdm_conf_change %>% 
+  select("suitability_change", "africa_s1_mod_dec", "africa_s1_mod_inc", "africa_s1_strong_inc", "africa_s3_mod_dec", "africa_s3_mod_inc", "africa_s3_strong_inc", "asia_s1_mod_dec", "asia_s1_mod_inc", "asia_s1_strong_inc", "asia_s3_strong_dec", "asia_s3_mod_dec", "asia_s3_mod_inc", "asia_s3_strong_inc")
+
+
+#create conditional formatting within each ssp
+
+combined_data_nums <- combined_sdm_conf_changeonly[1:4, ]
+
+combined_data_nums[ ,2:4] <- lapply(combined_data_nums[ ,2:4], function(x) {
+  
+  cell_spec(x, 
+            bold = T,
+            color = spec_color(x, end = 0.6, direction = -1),
+            font_size = spec_font_size(x, begin = 13))
+})
+
+combined_data_nums[ ,5:7] <- lapply(combined_data_nums[ ,5:7], function(x) {
+  
+  cell_spec(x, 
+            bold = T,
+            color = spec_color(x, end = 0.6, direction = -1),
+            font_size = spec_font_size(x, begin = 13))
+})
+
+combined_data_nums[ ,8:10] <- lapply(combined_data_nums[ ,8:10], function(x) {
+  
+  cell_spec(x, 
+            bold = T,
+            color = spec_color(x, end = 0.6, direction = -1),
+            font_size = spec_font_size(x, begin = 13))
+})
+
+combined_data_nums[ ,11:14] <- lapply(combined_data_nums[ ,11:14], function(x) {
+  
+  cell_spec(x, 
+            bold = T,
+            color = spec_color(x, end = 0.6, direction = -1),
+            font_size = spec_font_size(x, begin = 13))
+})
+
+align <- c(rep("c", each = 14))
+
+combined_sdm_conf_change_nicetable <- combined_data_nums %>%
+  kable(escape = FALSE,
+        align = align,
+        caption = "<center><strong>Percentage of Range Boundary Within Each Climatic Suitability Change and Conflict Risk Change Category for African and Asian Elephants</strong></center>",
+        col.names = c("Suitability Change", 
+                      "Moderate Decrease", "Moderate Increase", "Strong Increase", 
+                      "Moderate Decrease", "Moderate Increase", "Strong Increase", 
+                      "Moderate Decrease", "Moderate Increase", "Strong Increase", 
+                      "Strong Decrease", "Moderate Decrease", "Moderate Increase", "Strong Increase")) %>% 
+  kable_styling(full_width = FALSE, position = "center") %>% 
+  add_header_above(c(" ", "SSP1 - RCP 2.6" = 3, "SP3 - RCP 7.0" = 3, "SSP1 - RCP 2.6" = 3, "SP3 - RCP 7.0" = 4)) %>% 
+  add_header_above(c(" ", "African Elephant" = 6, "Asian Elephant" = 7)) %>% 
+  add_header_above(c(" ", "Conflict Risk Change" = 13)) %>% 
+  column_spec(c(4, 7, 10), border_right = TRUE) 
+
+#column_spec(6:10, background = "#ededed")
+
+#background = c("#ededed", "white"
+
+combined_sdm_conf_change_nicetable
+
+save_kable(combined_sdm_conf_change_nicetable, file = here("/Users/mia/Desktop/Fellowships/Arnhold HWC/current_figures/combined_sdm_conf_risk_change_nicetable.jpeg"), zoom = 2.5)
+
 ```
 

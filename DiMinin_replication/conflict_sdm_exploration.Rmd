@@ -57,10 +57,10 @@ Load in and reproject SDMs
 
 ```{r}
 #read in and reproject SDMs
-africa_sdm_ssp1 <- rast(here(HWC_data, "/Wallace SDM Rasters/LQ/2011_2040/126/change_maps/afel_change_2011_2040_126_gfdl.tif")) %>% 
+africa_sdm_ssp1 <- rast(here(HWC_data, "/Wallace SDM Rasters/LQ/2041_2070/126/change_maps/afel_change_2041_2070_126_gfdl.tif")) %>% 
   project(africa_bindiff_ssp1)
 
-africa_sdm_ssp3 <- rast(here(HWC_data, "/Wallace SDM Rasters/LQ/2011_2040/370/change_maps/afel_change_2011_2040_gfdl_370.tif")) %>% 
+africa_sdm_ssp3 <- rast(here(HWC_data, "/Wallace SDM Rasters/LQ/2041_2070/370/change_maps/afel_change_2041_2070_gfdl_370.tif")) %>% 
   project(africa_bindiff_ssp1)
 ```
 

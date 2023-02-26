@@ -58,10 +58,10 @@ Load in and reproject SDMs
 ```{r}
 
 #read in and reproject SDMs
-asia_sdm_ssp1 <- rast(here(HWC_data, "/Wallace SDM Rasters/asia/2011_2040/change_maps/change_2011_2040_126_gfdl.tif")) %>% 
+asia_sdm_ssp1 <- rast(here(HWC_data, "/Wallace SDM Rasters/asia/2041_2070/change_maps/change_2041_2070_126_gfdl.tif")) %>% 
   project(asia_bindiff_ssp1)
 
-asia_sdm_ssp3 <- rast(here(HWC_data, "/Wallace SDM Rasters/asia/2011_2040/change_maps/change_2011_2040_370_gfdl.tif")) %>% 
+asia_sdm_ssp3 <- rast(here(HWC_data, "/Wallace SDM Rasters/asia/2041_2070/change_maps/change_2041_2070_370_gfdl.tif")) %>% 
   project(asia_bindiff_ssp1)
 ```
 
