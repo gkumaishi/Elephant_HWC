@@ -507,7 +507,7 @@ writeRaster(conflict_int, filename = here(HWC_data, "/Geospatial Data/Diminin_Re
 ```{r}
 #read in the conflict boundaries and test plot
 
-current_cb <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/wp2010_current_day_cb_raster_asia.tif"))
+current_cb <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/conflict_boundary_rasters_asia/wp2010_current_day_cb_raster_asia.tif"))
 
 #create a basemap
 
@@ -534,23 +534,19 @@ plot(current_cb, add = TRUE, col = colors)
 
 #vectorize
 
-#first make it a spatvector
-current_cb_vect <- terra::as.polygons(current_cb, trunc = TRUE, dissolve = TRUE, values = TRUE,
-    na.rm = TRUE, extent = FALSE) # deleted `na.all = FALSE`
-
-#then turn that into a polyline
-current_cb_line <- st_as_sf(current_cb_vect) %>% 
-  st_cast("MULTILINESTRING")
+#make it a shapefile
+current_cb_vect <- terra::as.polygons(current_cb, dissolve = TRUE, values = TRUE) %>% 
+  st_as_sf()
 
 #plot conflict boundaries
 plot(basemap_asia_vect, col = "grey98")
-plot(current_cb_line, add = TRUE, pal = pal)
+plot(current_cb_vect, add = TRUE, values = colors)
 ```
 
 ```{r}
 #save the polyline shapefile
 
-st_write(current_cb_line, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/wp2010_current_day_cb_lines_asia.shp"))
+st_write(current_cb_vect, dsn = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/conflict_boundary_polygons_asia/asia_wp2010_current_day_cb_pol.shp"))
 ```
 
 ##Asessing validity

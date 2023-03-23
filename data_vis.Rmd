@@ -16,10 +16,90 @@ library(tmap)
 library(RColorBrewer)
 library(rnaturalearth)
 library(ggplot2)
+library(kableExtra)
 
 
 HWC_data <- "/Users/mia/Library/CloudStorage/GoogleDrive-mguarnieri@ucsb.edu/My Drive/Arnhold Project/HWC_data"
 ```
+
+#Baseline Conflict Table
+
+```{r}
+#function for perent area calculation
+perc_area_table <- function(x){
+  
+  pol <- x
+  
+  colnames(pol) = c("conflict_risk", "geometry")
+  
+  table <- pol %>% 
+    as.data.frame() %>% 
+    mutate(area = st_area(pol, unit = "m")) %>% 
+    mutate(perc_area = (area/sum(area) * 100)) %>% 
+    select(conflict_risk, perc_area)
+  
+  return(table)
+}
+
+#read in the polygons
+
+africa_conflict <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/conflict_boundary_polygons_africa/wp2010_current_day_cb_pols.shp"))
+
+asia_conflict <- read_sf(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/conflict_boundary_polygons_asia/asia_wp2010_current_day_cb_pol.shp"))
+
+#run the function on the polygons
+
+africa_conftable <- perc_area_table(africa_conflict)
+
+colnames(africa_conftable) = c("conflict_risk", "Africa")
+
+asia_conftable <- perc_area_table(asia_conflict)
+
+colnames(asia_conftable) = c("conflict_risk", "Asia")
+
+current_conftable <- full_join(africa_conftable, asia_conftable, by = "conflict_risk") %>%
+  mutate(across(where(is.numeric), round, digits = 2)) %>% 
+  units::drop_units()
+
+colnames(current_conftable) = c("Conflict Risk", "Africa", "Asia")
+
+#set font size to scale with value and bold font within each region
+
+current_conftable[ ,2] <- lapply(current_conftable[ ,2], function(x) {
+  
+  cell_spec(x, 
+            bold = T,
+            font_size = spec_font_size(x, 
+                               begin = 13),
+            color = spec_color(x, 
+                       end = 0.6, direction = -1))
+})
+
+current_conftable[ ,3] <- lapply(current_conftable[ ,3], function(x) {
+  
+  cell_spec(x, 
+            bold = T,
+            font_size = spec_font_size(x, 
+                               begin = 13),
+            color = spec_color(x, 
+                       end = 0.6, direction = -1))
+})
+
+
+#table
+
+current_conf_nicetable <- current_conftable %>%
+  kable(escape = FALSE,
+        align = c("c", "c", "c")) %>% 
+  kable_styling(full_width = FALSE, position = "center") %>%
+  column_spec(2, border_right = TRUE)
+ 
+current_conf_nicetable
+
+save_kable(current_conf_nicetable, file = here("/Users/mia/Desktop/Fellowships/Arnhold HWC/current_figures/current_conf_risk_nicetable.jpeg"), zoom = 2.5)
+
+```
+
 
 #Conflict Change Table
 
@@ -61,6 +141,26 @@ library(magick)
 save_kable(conf_change_nicetable, file = here("/Users/mia/Desktop/Fellowships/Arnhold HWC/current_figures/combined_conf_change.jpeg"), zoom = 2.5)
 ```
 
+Removing No Change category
+
+```{r}
+africa_conf_change_table <- read_csv(here(HWC_data, "Data/Di Minin HWC", "conflict_change_polygons_byyear_africa.csv")) %>% 
+  janitor::clean_names() %>% 
+  arrange(conflict_change) %>% 
+  filter(conflict_change != 0) %>% 
+  mutate("conflict_change" = c("Strong Decrease", "Moderate Decrease", "Moderate Increase", "Strong Increase")) %>% 
+  select(conflict_change, ssp1_2050, ssp3_2050)
+
+
+asia_conf_change_table <- read_csv(here(HWC_data, "Data/Di Minin HWC", "conflict_change_polygons_byyear_asia.csv")) %>% 
+  janitor::clean_names() %>% 
+  arrange(conflict_change) %>% 
+  filter(conflict_change != 0) %>% 
+  mutate("conflict_change" = c("Strong Decrease", "Moderate Decrease", "Moderate Increase", "Strong Increase")) %>% 
+  select(conflict_change, ssp1_2050, ssp3_2050)
+
+
+```
 
 
 #Africa
@@ -659,6 +759,8 @@ save_kable(asia_sdm_conf_change_nicetable, file = here("/Users/mia/Desktop/Fello
 
 ##SDM change vs conflict risk
 
+By column:
+
 ```{r}
 library(kableExtra)
 
@@ -731,6 +833,193 @@ combined_sdm_conf_risk_nicetable
 
 save_kable(combined_sdm_conf_risk_nicetable, file = here("/Users/mia/Desktop/Fellowships/Arnhold HWC/current_figures/combined_sdm_conf_risk_nicetable.jpeg"), zoom = 2.5)
 ```
+
+
+By SSP:
+
+```{r}
+library(kableExtra)
+
+#Combine the datasets
+africa_data <- read_csv(here(HWC_data, "Data/Di Minin HWC", "sdm_conf_risk_percentage_table_africa.csv")) %>% 
+  mutate(across(where(is.numeric), round, digits = 2))
+
+asia_data <- read_csv(here(HWC_data, "Data/Di Minin HWC", "sdm_conf_risk_percentage_table_asia.csv")) %>% 
+  mutate(across(where(is.numeric), round, digits = 2))
+
+combined_sdm_conf_risk <- full_join(africa_data, asia_data, by = "suitability_change")
+
+#rename the columns so they make sense
+colnames(combined_sdm_conf_risk) = c("suitability_change", "africa_s1_0", "africa_s1_1", "africa_s1_2", "africa_s1_total", "africa_s3_0", "africa_s3_1", "africa_s3_2", "africa_s3_total", "asia_s1_0", "asia_s1_1", "asia_s1_2", "asia_s1_total", "asia_s3_0", "asia_s3_1", "asia_s3_2", "asia_s3_total")
+
+#create conditional formatting within each ssp
+
+align <- c(rep("c", each = 17))
+
+# define df min and max to scale colors and text
+#africa
+af_s1_cols <- combined_sdm_conf_risk[ , 2:4]
+
+af_s1_min <- min(af_s1_cols)
+af_s1_max <- max(af_s1_cols)
+
+af_s3_cols <- combined_sdm_conf_risk[ , 6:8]
+
+af_s3_min <- min(af_s3_cols)
+af_s3_max <- max(af_s3_cols)
+
+#asia
+as_s1_cols <- combined_sdm_conf_risk[ , 10:12]
+as_s1_cols[is.na(as_s1_cols)] <- 0
+
+
+as_s1_min <- min(as_s1_cols)
+as_s1_max <- max(as_s1_cols)
+
+as_s3_cols <- combined_sdm_conf_risk[ , 14:16]
+
+as_s3_min <- min(as_s3_cols)
+as_s3_max <- max(as_s3_cols)
+
+
+
+#set font size to scale with value and bold font within each ssp
+
+combined_sdm_conf_risk[ ,2:4] <- lapply(combined_sdm_conf_risk[ ,2:4], function(x) {
+  
+  cell_spec(x, 
+            bold = T,
+            font_size = spec_font_size(x, 
+                               begin = 13,
+                               scale_from = c(af_s1_min, af_s1_max)),
+            color = spec_color(x, 
+                       end = 0.6, direction = -1,
+                       scale_from = c(af_s1_min, af_s1_max)))
+})
+
+combined_sdm_conf_risk[ ,6:8] <- lapply(combined_sdm_conf_risk[ ,6:8], function(x) {
+  
+  cell_spec(x, 
+            bold = T,
+            font_size = spec_font_size(x, 
+                               begin = 13,
+                               scale_from = c(af_s3_min, af_s3_max)),
+            color = spec_color(x, 
+                       end = 0.6, direction = -1,
+                       scale_from = c(af_s3_min, af_s3_max)))
+})
+
+combined_sdm_conf_risk[ ,10:12] <- lapply(combined_sdm_conf_risk[ ,10:12], function(x) {
+  
+  cell_spec(x, 
+            bold = T,
+            font_size = spec_font_size(x, 
+                               begin = 13,
+                               scale_from = c(as_s1_min, as_s1_max)),
+            color = spec_color(x, 
+                       end = 0.6, direction = -1,
+                       scale_from = c(as_s1_min, as_s1_max)))
+})
+
+combined_sdm_conf_risk[ ,14:16] <- lapply(combined_sdm_conf_risk[ ,14:16], function(x) {
+  
+  cell_spec(x, 
+            bold = T,
+            font_size = spec_font_size(x, 
+                               begin = 13,
+                               scale_from = c(as_s3_min, as_s3_max)),
+            color = spec_color(x, 
+                       end = 0.6, direction = -1,
+                       scale_from = c(as_s3_min, as_s3_max)))
+})
+
+
+
+#table
+
+combined_sdm_conf_risk_nicetable <- combined_sdm_conf_risk %>%
+  kable(escape = FALSE,
+        align = align,
+        caption = "<center><strong>Percentage of Range Boundary Within Each Climatic Suitability Change and Conflict Risk Category for African and Asian Elephants</strong></center>",
+        col.names = c("Suitability Change", "Low", "Medium", "High", "Total", "Low", "Medium", "High", "Total", "Low", "Medium", "High", "Total", "Low", "Medium", "High", "Total")) %>% 
+  kable_styling(full_width = FALSE, position = "center") %>%
+  
+  #scaling the color of the text within each ssp to the value of the number
+  # #af_s1 columns
+  # 
+  # column_spec(
+  #   column = 2, 
+  #   ) %>% 
+  # column_spec(
+  #   column = 3, 
+  #   color = spec_color(x = combined_sdm_conf_risk$africa_s1_1, 
+  #                      end = 0.6, direction = -1,
+  #                      scale_from = c(af_s1_min, af_s1_max))) %>% 
+  # column_spec(
+  #   column = 4, 
+  #   color = spec_color(x = combined_sdm_conf_risk$africa_s1_2, 
+  #                      end = 0.6, direction = -1,
+  #                      scale_from = c(af_s1_min, af_s1_max))) %>% 
+  
+  #af_s3 columns
+  
+  # column_spec(
+  #   column = 6, 
+  #   ) %>% 
+  # column_spec(
+  #   column = 7, 
+  #   color = spec_color(x = combined_sdm_conf_risk$africa_s3_1, 
+  #                      end = 0.6, direction = -1,
+  #                      scale_from = c(af_s3_min, af_s3_max))) %>% 
+  # column_spec(
+  #   column = 8, 
+  #   color = spec_color(x = combined_sdm_conf_risk$africa_s3_2, 
+  #                      end = 0.6, direction = -1,
+  #                      scale_from = c(af_s3_min, af_s3_max))) %>% 
+  
+  #as_s1 columns
+  
+  # column_spec(
+  #   column = 10, 
+  #   ) %>% 
+  # column_spec(
+  #   column = 11, 
+  #   color = spec_color(x = combined_sdm_conf_risk$asia_s1_1, 
+  #                      end = 0.6, direction = -1,
+  #                      scale_from = c(as_s1_min, as_s1_max))) %>% 
+  # column_spec(
+  #   column = 12, 
+  #   color = spec_color(x = combined_sdm_conf_risk$asia_s1_2, 
+  #                      end = 0.6, direction = -1,
+  #                      scale_from = c(as_s1_min, as_s1_max))) %>% 
+  
+  #as_s3 columns
+  
+  # column_spec(
+  #   column = 14, 
+  #   ) %>% 
+  # column_spec(
+  #   column = 15, 
+  #   color = spec_color(x = combined_sdm_conf_risk$asia_s3_1, 
+  #                      end = 0.6, direction = -1,
+  #                      scale_from = c(as_s3_min, as_s3_max))) %>% 
+  # column_spec(
+  #   column = 16, 
+  #   color = spec_color(x = combined_sdm_conf_risk$asia_s3_2, 
+  #                      end = 0.6, direction = -1,
+  #                      scale_from = c(as_s3_min, as_s3_max))) %>% 
+  add_header_above(c(" ", "SSP1 - RCP 2.6" = 4, "SP3 - RCP 7.0" = 4, "SSP1 - RCP 2.6" = 4, "SP3 - RCP 7.0" = 4)) %>% 
+  add_header_above(c(" ", "African Elephant" = 8, "Asian Elephant" = 8)) %>% 
+  add_header_above(c(" ", "Conflict Risk" = 16)) %>% 
+  column_spec(c(5, 9, 13), border_right = TRUE)
+ 
+
+combined_sdm_conf_risk_nicetable
+
+save_kable(combined_sdm_conf_risk_nicetable, file = here("/Users/mia/Desktop/Fellowships/Arnhold HWC/current_figures/combined_sdm_conf_risk_nicetable_byssp.jpeg"), zoom = 2.5)
+   
+```
+
 
 #SDM change vs conflict risk change
 

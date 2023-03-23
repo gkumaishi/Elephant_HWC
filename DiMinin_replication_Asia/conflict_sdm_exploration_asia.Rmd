@@ -59,10 +59,10 @@ Load in and reproject SDMs
 
 #read in and reproject SDMs
 asia_sdm_ssp1 <- rast(here(HWC_data, "/Wallace SDM Rasters/asia/2041_2070/change_maps/change_2041_2070_126_gfdl.tif")) %>% 
-  project(asia_bindiff_ssp1)
+  project(asia_bindiff_ssp1, method = "near")
 
 asia_sdm_ssp3 <- rast(here(HWC_data, "/Wallace SDM Rasters/asia/2041_2070/change_maps/change_2041_2070_370_gfdl.tif")) %>% 
-  project(asia_bindiff_ssp1)
+  project(asia_bindiff_ssp1, method = "near")
 ```
 
 
@@ -86,7 +86,7 @@ sdm_masked_ssp3 <- mask(asia_sdm_ssp3, asia_bindiff_ssp3)
 polygons <- function(x){
   
   pol <- x %>%
-    terra::as.polygons(trunc=TRUE, dissolve=TRUE, values=TRUE, na.rm=TRUE, na.all=FALSE, extent=FALSE)
+    terra::as.polygons(dissolve=TRUE, values=TRUE, na.rm=TRUE, na.all=FALSE, extent=FALSE)
   
   name <- paste0(deparse(substitute(x)), ".shp")
  
