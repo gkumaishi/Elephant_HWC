@@ -130,9 +130,11 @@ conf_change_nicetable <- combined_conf_change %>%
         escape = FALSE,
         align = align) %>% 
   kable_styling(full_width = FALSE, position = "center") %>% 
-  add_header_above(c(" ", "African Elephant" = 2, "Asian Elephant" = 2), background = c("#ffd3b6", "#a8e6cf")) %>% 
-  column_spec(2:3, background = "#a8e6cf") %>%
-  column_spec(4:5, background = "#ffd3b6")
+  add_header_above(c(" ", "African Elephant" = 2, "Asian Elephant" = 2)) %>% 
+  column_spec(3,border_right = TRUE)
+
+#old colors
+#background = c("#ffd3b6", "#a8e6cf")
 
 conf_change_nicetable
 
@@ -817,8 +819,8 @@ align <- c(rep("c", each = 17))
 combined_sdm_conf_risk_nicetable <- combined_data_nums %>%
   kable(escape = FALSE,
         align = align,
-        caption = "<center><strong>Percentage of Range Boundary Within Each Climatic Suitability Change and Conflict Risk Category for African and Asian Elephants</strong></center>",
-        col.names = c("Suitability Change", "Low", "Medium", "High", "Total", "Low", "Medium", "High", "Total", "Low", "Medium", "High", "Total", "Low", "Medium", "High", "Total")) %>% 
+        caption = "<center><strong>Percentage of Range Boundary Within Each Marginal Climatic Suitability Change and Conflict Risk Category for African and Asian Elephants</strong></center>",
+        col.names = c("Marginal Suitability Change", "Low", "Medium", "High", "Total", "Low", "Medium", "High", "Total", "Low", "Medium", "High", "Total", "Low", "Medium", "High", "Total")) %>% 
   kable_styling(full_width = FALSE, position = "center") %>% 
   add_header_above(c(" ", "SSP1 - RCP 2.6" = 4, "SP3 - RCP 7.0" = 4, "SSP1 - RCP 2.6" = 4, "SP3 - RCP 7.0" = 4)) %>% 
   add_header_above(c(" ", "African Elephant" = 8, "Asian Elephant" = 8)) %>% 
@@ -1083,7 +1085,7 @@ combined_sdm_conf_change_nicetable <- combined_data_nums %>%
   kable(escape = FALSE,
         align = align,
         caption = "<center><strong>Percentage of Range Boundary Within Each Climatic Suitability Change and Conflict Risk Change Category for African and Asian Elephants</strong></center>",
-        col.names = c("Suitability Change", 
+        col.names = c("Marginal Suitability Change", 
                       "Moderate Decrease", "Moderate Increase", "Strong Increase", 
                       "Moderate Decrease", "Moderate Increase", "Strong Increase", 
                       "Moderate Decrease", "Moderate Increase", "Strong Increase", 
