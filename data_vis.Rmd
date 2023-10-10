@@ -1106,3 +1106,43 @@ save_kable(combined_sdm_conf_change_nicetable, file = here("/Users/mia/Desktop/F
 
 ```
 
+
+
+#SDM baseline maps
+
+```{r}
+
+#read in conflict data for masking
+
+conf_africa <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/conflict_boundary_rasters_africa/wp2010_current_day_cb_raster.tif"))
+
+conf_asia <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/conflict_boundary_rasters_asia/wp2010_current_day_cb_raster_asia.tif"))
+
+#read in baseline SDMs for africa and asia and reproject to match conflict rasters
+
+base_africa_sdm <- rast(here(HWC_data, "/Wallace SDM Rasters/LQ/1981_2010/afel_historic_sdm.tif")) %>% 
+  project(conf_africa, method = "near")
+
+base_asia_sdm <- rast(here(HWC_data, "/Wallace SDM Rasters/asia/1981_2010/asian_elephant_historic_raw.tif")) %>% 
+  project(conf_asia, method = "near")
+
+#mask SDMs by conflict
+
+base_africa_sdm_masked <- mask(base_africa_sdm, conf_africa)
+
+base_asia_sdm_masked <- mask(base_asia_sdm, conf_asia)
+
+#polygonize for mapping and then save
+
+base_africa_sdm_masked_polygon <- base_africa_sdm_masked %>% 
+  terra::as.polygons(trunc=TRUE, dissolve=TRUE, values=TRUE, na.rm=TRUE, na.all=FALSE, extent=FALSE)
+
+writeVector(base_africa_sdm_masked_polygon, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/sdm_exploration_polygons/africa/africa_baseline_sdm_masked.shp"), overwrite = TRUE)
+
+base_asia_sdm_masked_polygon <- base_asia_sdm_masked %>% 
+  terra::as.polygons(trunc=TRUE, dissolve=TRUE, values=TRUE, na.rm=TRUE, na.all=FALSE, extent=FALSE)
+
+writeVector(base_asia_sdm_masked_polygon, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/sdm_exploration_polygons/asia/asia_baseline_sdm_masked.shp"), overwrite = TRUE)
+
+```
+
