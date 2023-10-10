@@ -471,7 +471,9 @@ colnames(conf_change_table_pol) = c(
   "SSP5 2070"
   )
 
-write.csv(as.data.frame(conf_change_table_pol), file = here(HWC_data, "Data/Di Minin HWC", "conflict_change_polygons_byssp_africa.csv"), row.names=FALSE)
+cftpol_df <- as.data.frame(conf_change_table_pol)
+
+write_csv(cftpol_df, file = here(HWC_data, "Data/Di Minin HWC", "conflict_change_polygons_byssp_africa.csv"))
 
 ```
 
