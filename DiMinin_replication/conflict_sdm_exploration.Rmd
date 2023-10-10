@@ -79,6 +79,12 @@ africa_sdm_masked_ssp3 <- mask(africa_sdm_ssp3, africa_bindiff_ssp3)
 ```
 
 
+##GRACE LOOK HERE
+- read in conflict raster, any raster
+- mask SDM by that conflict raster to get boundaries
+- then do the next part (polygonizing)
+- do that for each GCM for ssp1 and ssp3 in 2050
+
 
 ##Polygonize masked SDM rasters
 
@@ -143,6 +149,6 @@ descriptor <- c("Decreasing Suitability", "No Change - Not Suitable", "No Change
 
 sdm_conf_change_table_pol$suitability <- descriptor
 
-write.csv(sdm_conf_change_table_pol, file = here(HWC_data, "Data/Di Minin HWC", "sdm_conf_change_table_africa.csv"), row.names=FALSE)
+#write.csv(sdm_conf_change_table_pol, file = here(HWC_data, "Data/Di Minin HWC", "sdm_conf_change_table_africa.csv"), row.names=FALSE)
 
 ```

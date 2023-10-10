@@ -190,7 +190,6 @@ africa_sdm_ssp3 <- rast(here(HWC_data, "/Wallace SDM Rasters/LQ/2041_2070/370/ch
   project(africa_s3conf, method = "near") %>% 
   mask(africa_s3conf)
 
-
 #stack the corresponding conflict and sdm rasters
 
 africa_s1_stack <- c(africa_s1conf, africa_sdm_ssp1)
@@ -754,6 +753,7 @@ library(magick)
 
 save_kable(asia_sdm_conf_change_nicetable, file = here("/Users/mia/Desktop/Fellowships/Arnhold HWC/current_figures/asia_sdm_conf_change_nicetable.jpeg"), zoom = 2.5)
 ```
+
 
 
 
