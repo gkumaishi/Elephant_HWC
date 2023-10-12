@@ -21,34 +21,45 @@ library(kableExtra)
 
 #File path to the HWC_data folder
 
-HWC_data <- "/Users/mia/Library/CloudStorage/GoogleDrive-mguarnieri@ucsb.edu/My Drive/Arnhold Project/HWC_data"
+HWC_data <- "/Users/gracekumaishi/Library/CloudStorage/GoogleDrive-gkumaishi@ucsb.edu/My Drive/HWC_data"
 ```
 
 #Reclass conflict layers to be just increasing, decreasing, or no change
 
 ```{r}
 #reclassify function
-reclass_rast <- function(x){
+#reclass_rast <- function(x){
   
-  rast <- x
+#  rast <- x
   
-  rast[rast == 0] <- 0
+#  rast[rast == 0] <- 0
   
-  rast[rast > 0] <- 1
+#  rast[rast > 0] <- 1
   
-  rast[rast < 0] <- -1
+#  rast[rast < 0] <- -1
   
-  return (rast)
+#  return (rast)
 
-}
+#}
 
 
-africa_bindiff_ssp1 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_conflict/differenced_rasters_africa/diff_SSP1_RCP26_2050.tif")) %>% 
-  reclass_rast()
+#africa_bindiff_ssp1 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_conflict/differenced_rasters_africa/diff_SSP1_RCP26_2050.tif")) %>% 
+#  reclass_rast()
 
-africa_bindiff_ssp3 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_conflict/differenced_rasters_africa/diff_SSP3_RCP70_2050.tif")) %>% 
-  reclass_rast()
+#africa_bindiff_ssp3 <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_conflict/differenced_rasters_africa/diff_SSP3_RCP70_2050.tif")) %>% 
+#  reclass_rast()
 
+```
+
+##GRACE LOOK HERE
+- read in conflict raster, any raster
+- mask SDM by that conflict raster to get boundaries
+- then do the next part (polygonizing)
+- do that for each GCM for ssp1 and ssp3 in 2050
+
+# read in conflict raster
+```{r}
+conflict_raster <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_conflict/differenced_rasters_africa/diff_SSP1_RCP26_2050.tif"))
 ```
 
 #Filter binary conflict layers and mask SDMs
@@ -57,34 +68,103 @@ Load in and reproject SDMs
 
 ```{r}
 #read in and reproject SDMs
-africa_sdm_ssp1 <- rast(here(HWC_data, "/Wallace SDM Rasters/LQ/2041_2070/126/change_maps/afel_change_2041_2070_126_gfdl.tif")) %>% 
-  project(africa_bindiff_ssp1, method = "near")
 
-africa_sdm_ssp3 <- rast(here(HWC_data, "/Wallace SDM Rasters/LQ/2041_2070/370/change_maps/afel_change_2041_2070_gfdl_370.tif")) %>% 
-  project(africa_bindiff_ssp1, method = "near")
+########### GFDL ###########
+
+### SSP 1 ###
+africa_sdm_ssp1_gfdl <- rast(here(HWC_data, "/Wallace SDM Rasters/LQ/2041_2070/126/change_maps/afel_change_2041_2070_126_gfdl.tif")) %>% 
+  project(conflict_raster, method = "near")
+
+### SSP 3 ###
+africa_sdm_ssp3_gfdl <- rast(here(HWC_data, "/Wallace SDM Rasters/LQ/2041_2070/370/change_maps/afel_change_2041_2070_gfdl_370.tif")) %>% 
+  project(conflict_raster, method = "near")
+
+########### IPSL ###########
+
+### SSP 1 ###
+africa_sdm_ssp1_ipsl <- rast(here(HWC_data, "/Wallace SDM Rasters/LQ/2041_2070/126/change_maps/afel_change_2041_2070_126_ipsl.tif")) %>% 
+  project(conflict_raster, method = "near")
+
+### SSP 3 ###
+africa_sdm_ssp3_ipsl <- rast(here(HWC_data, "/Wallace SDM Rasters/LQ/2041_2070/370/change_maps/afel_change_2041_2070_ipsl_370.tif")) %>% 
+  project(conflict_raster, method = "near")
+
+########### MPI ###########
+
+### SSP 1 ###
+africa_sdm_ssp1_mpi <- rast(here(HWC_data, "/Wallace SDM Rasters/LQ/2041_2070/126/change_maps/afel_change_2041_2070_126_mpi.tif")) %>% 
+  project(conflict_raster, method = "near")
+
+### SSP 3 ###
+africa_sdm_ssp3_mpi <- rast(here(HWC_data, "/Wallace SDM Rasters/LQ/2041_2070/370/change_maps/afel_change_2041_2070_mpi_370.tif")) %>% 
+  project(conflict_raster, method = "near")
+
+########### MRI ###########
+
+### SSP 1 ###
+africa_sdm_ssp1_mri <- rast(here(HWC_data, "/Wallace SDM Rasters/LQ/2041_2070/126/change_maps/afel_change_2041_2070_126_mri.tif")) %>% 
+  project(conflict_raster, method = "near")
+
+### SSP 3 ###
+africa_sdm_ssp3_mri <- rast(here(HWC_data, "/Wallace SDM Rasters/LQ/2041_2070/370/change_maps/afel_change_2041_2070_mri_370.tif")) %>% 
+  project(conflict_raster, method = "near")
+
+########### UKESM ###########
+
+### SSP 1 ###
+africa_sdm_ssp1_ukesm <- rast(here(HWC_data, "/Wallace SDM Rasters/LQ/2041_2070/126/change_maps/afel_change_2041_2070_126_ukesm.tif")) %>% 
+  project(conflict_raster, method = "near")
+
+### SSP 3 ###
+africa_sdm_ssp3_ukesm <- rast(here(HWC_data, "/Wallace SDM Rasters/LQ/2041_2070/370/change_maps/afel_change_2041_2070_ukesm_370.tif")) %>% 
+  project(conflict_raster, method = "near")
 ```
 
 
 Mask SDM by conflict change
 
 ```{r}
-#ssp 1
+########### GFDL ###########
 
-africa_sdm_masked_ssp1 <- mask(africa_sdm_ssp1, africa_bindiff_ssp1)
+### SSP 1 ###
+africa_sdm_masked_ssp1_gfdl <- mask(africa_sdm_ssp1_gfdl, conflict_raster)
 
-#ssp 3
+### SSP 3 ###
+africa_sdm_masked_ssp3_gfdl <- mask(africa_sdm_ssp3_gfdl, conflict_raster)
 
-africa_sdm_masked_ssp3 <- mask(africa_sdm_ssp3, africa_bindiff_ssp3)
+########### IPSL ###########
+
+### SSP 1 ###
+africa_sdm_masked_ssp1_ipsl <- mask(africa_sdm_ssp1_ipsl, conflict_raster)
+
+### SSP 3 ###
+africa_sdm_masked_ssp3_ipsl <- mask(africa_sdm_ssp3_ipsl, conflict_raster)
+
+########### MPI ###########
+
+### SSP 1 ###
+africa_sdm_masked_ssp1_mpi <- mask(africa_sdm_ssp1_mpi, conflict_raster)
+
+### SSP 3 ###
+africa_sdm_masked_ssp3_mpi <- mask(africa_sdm_ssp3_mpi, conflict_raster)
+
+########### MRI ###########
+
+### SSP 1 ###
+africa_sdm_masked_ssp1_mri <- mask(africa_sdm_ssp1_mri, conflict_raster)
+
+### SSP 3 ###
+africa_sdm_masked_ssp3_mri <- mask(africa_sdm_ssp3_mri, conflict_raster)
+
+########### UKESM ###########
+
+### SSP 1 ###
+africa_sdm_masked_ssp1_ukesm <- mask(africa_sdm_ssp1_ukesm, conflict_raster)
+
+### SSP 3 ###
+africa_sdm_masked_ssp3_ukesm <- mask(africa_sdm_ssp3_ukesm, conflict_raster)
 
 ```
-
-
-##GRACE LOOK HERE
-- read in conflict raster, any raster
-- mask SDM by that conflict raster to get boundaries
-- then do the next part (polygonizing)
-- do that for each GCM for ssp1 and ssp3 in 2050
-
 
 ##Polygonize masked SDM rasters
 
@@ -92,7 +172,7 @@ africa_sdm_masked_ssp3 <- mask(africa_sdm_ssp3, africa_bindiff_ssp3)
 polygons <- function(x){
   
   pol <- x %>%
-    terra::as.polygons(trunc=TRUE, dissolve=TRUE, values=TRUE, na.rm=TRUE, na.all=FALSE, extent=FALSE)
+    terra::as.polygons(trunc=TRUE, dissolve=TRUE, values=TRUE, na.rm=TRUE, extent=FALSE) #removed na.all = False because it was causing an unused error
   
   name <- paste0(deparse(substitute(x)), ".shp")
  
@@ -100,8 +180,16 @@ polygons <- function(x){
   
 }
 
-polygons(africa_sdm_masked_ssp1)
-polygons(africa_sdm_masked_ssp3)
+polygons(africa_sdm_masked_ssp1_gfdl)
+polygons(africa_sdm_masked_ssp3_gfdl)
+polygons(africa_sdm_masked_ssp1_ipsl)
+polygons(africa_sdm_masked_ssp3_ipsl)
+polygons(africa_sdm_masked_ssp1_mpi)
+polygons(africa_sdm_masked_ssp3_mpi)
+polygons(africa_sdm_masked_ssp1_mri)
+polygons(africa_sdm_masked_ssp3_mri)
+polygons(africa_sdm_masked_ssp1_ukesm)
+polygons(africa_sdm_masked_ssp3_ukesm)
 
 ```
 
