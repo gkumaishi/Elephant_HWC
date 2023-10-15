@@ -1132,7 +1132,12 @@ base_africa_sdm_masked <- mask(base_africa_sdm, conf_africa)
 
 base_asia_sdm_masked <- mask(base_asia_sdm, conf_asia)
 
-#polygonize for mapping and then save
+#save cropped rasters for mapping
+writeRaster(base_africa_sdm_masked, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/sdm_exploration_polygons/africa/africa_baseline_sdm_masked.tif"))
+
+writeRaster(base_asia_sdm_masked, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/sdm_exploration_polygons/asia/asia_baseline_sdm_masked.tif"))
+
+#polygonize for calculations and then save
 
 base_africa_sdm_masked_polygon <- base_africa_sdm_masked %>% 
   terra::as.polygons(trunc=TRUE, dissolve=TRUE, values=TRUE, na.rm=TRUE, na.all=FALSE, extent=FALSE)

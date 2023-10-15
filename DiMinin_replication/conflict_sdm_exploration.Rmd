@@ -21,7 +21,7 @@ library(kableExtra)
 
 #File path to the HWC_data folder
 
-HWC_data <- "/Users/gracekumaishi/Library/CloudStorage/GoogleDrive-gkumaishi@ucsb.edu/My Drive/HWC_data"
+HWC_data <- "/Users/mia/Library/CloudStorage/GoogleDrive-mguarnieri@ucsb.edu/My Drive/Arnhold Project/HWC_data"
 ```
 
 #Reclass conflict layers to be just increasing, decreasing, or no change
@@ -221,8 +221,7 @@ perc_area_table <- function(x){
 
 #list all of the files
 
-sdm_pol_list <- list.files(path = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/sdm_exploration_polygons/africa"), pattern = '.shp')
-
+sdm_pol_list <- list.files(path = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/sdm_exploration_polygons/africa/"), pattern = '.shp')
 
 #apply the area function over the list
 
@@ -239,4 +238,25 @@ sdm_conf_change_table_pol$suitability <- descriptor
 
 #write.csv(sdm_conf_change_table_pol, file = here(HWC_data, "Data/Di Minin HWC", "sdm_conf_change_table_africa.csv"), row.names=FALSE)
 
+
+#write.csv(sdm_conf_change_table_pol, file = here(HWC_data, "Data/Di Minin HWC", "sdm_conf_change_table_africa_allgcms.csv"), row.names=FALSE)
+
 ```
+
+Adding a standard deviation column for each ssp
+
+```{r}
+sdm_gcms_ssp1_africa_sd <- sdm_conf_change_table_pol %>% 
+  select(suitability:africa_sdm_masked_ssp1_ukesm.shp) %>% 
+  mutate(row_sd = apply(., 1, FUN = sd, na.rm=TRUE))
+
+#write.csv(sdm_gcms_ssp1_africa_sd, file = here(HWC_data, "Data/Di Minin HWC", "sdm_gcms_ssp1_africa_sd.csv"), row.names=FALSE)
+
+sdm_gcms_ssp3_africa_sd <- sdm_conf_change_table_pol %>% 
+  select(suitability, africa_sdm_masked_ssp3_gfdl.shp:africa_sdm_masked_ssp3_ukesm.shp) %>% 
+  mutate(row_sd = apply(., 1, FUN = sd, na.rm=TRUE))
+
+#write.csv(sdm_gcms_ssp3_africa_sd, file = here(HWC_data, "Data/Di Minin HWC", "sdm_gcms_ssp3_africa_sd.csv"), row.names=FALSE)
+
+```
+
