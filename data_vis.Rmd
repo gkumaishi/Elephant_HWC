@@ -164,6 +164,23 @@ asia_conf_change_table <- read_csv(here(HWC_data, "Data/Di Minin HWC", "conflict
 
 ```
 
+Creating a table to show conflict change among different years
+
+```{r}
+africa_conf_change_table <- read_csv(here(HWC_data, "Data/Di Minin HWC", "conflict_change_polygons_byyear_africa.csv")) %>% 
+  janitor::clean_names() %>% 
+  arrange(conflict_change) %>% 
+  mutate("conflict_change" = c("Strong Decrease", "Moderate Decrease", "No Change", "Moderate Increase", "Strong Increase")) %>% 
+  select(conflict_change, ssp1_2030, ssp1_2050, ssp1_2070, ssp3_2030, ssp3_2050, ssp3_2070)
+
+
+asia_conf_change_table <- read_csv(here(HWC_data, "Data/Di Minin HWC", "conflict_change_polygons_byyear_asia.csv")) %>% 
+  janitor::clean_names() %>% 
+  arrange(conflict_change) %>% 
+  mutate("conflict_change" = c("Strong Decrease", "Moderate Decrease", "No Change", "Moderate Increase", "Strong Increase")) %>% 
+  select(conflict_change, ssp1_2030, ssp1_2050, ssp1_2070, ssp3_2030, ssp3_2050, ssp3_2070)
+```
+
 
 #Africa
 
