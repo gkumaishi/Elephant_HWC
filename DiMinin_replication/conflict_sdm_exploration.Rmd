@@ -228,7 +228,7 @@ sdm_pol_list <- list.files(path = here(HWC_data, "/Geospatial Data/Diminin_Repli
 sdm_area_list <- lapply(sdm_pol_list, perc_area_table)
 
 sdm_conf_change_table_pol <- sdm_area_list %>% reduce(full_join, by = "suitability_change") %>% 
-  units::drop_units()
+  units::drop_units()a
 
 colnames(sdm_conf_change_table_pol) = c("suitability", sdm_pol_list)
 
@@ -258,5 +258,62 @@ sdm_gcms_ssp3_africa_sd <- sdm_conf_change_table_pol %>%
 
 #write.csv(sdm_gcms_ssp3_africa_sd, file = here(HWC_data, "Data/Di Minin HWC", "sdm_gcms_ssp3_africa_sd.csv"), row.names=FALSE)
 
+```
+
+# Review analysis
+
+Read in baseline conflict rasters
+
+```{r}
+africa_base_conflict <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/conflict_boundary_rasters_africa/wp2010_current_day_cb_raster.tif"))
+
+asia_base_conflict <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/conflict_boundary_rasters_asia/wp2010_current_day_cb_raster_asia.tif"))
+```
+
+Load in and reproject baseline SDMs, filter only for suitable range
+- 0 is unsuitable
+- 1 is suitable
+
+```{r}
+#africa
+africa_base_sdm <- rast(here(HWC_data, "/Wallace SDM Rasters/LQ/1981_2010/afel_historic_20p_sdm.tif")) %>% 
+  project(africa_base_conflict, method = "near")
+
+africa_base_sdm[africa_base_sdm == 0] <- NA #remove unsuitable values, make NA
+africa_base_sdm[is.nan(africa_base_sdm)] <- NA #remove impossible values, make NA
+
+#asia
+asia_base_sdm <- rast(here(HWC_data, "/Wallace SDM Rasters/asia/1981_2010/asian_elephant_historic_10p_sdm.tif")) %>% 
+  project(asia_base_conflict, method = "near")
+
+asia_base_sdm[asia_base_sdm == 0] <- NA #remove unsuitable values, make NA
+asia_base_sdm[is.nan(asia_base_sdm)] <- NA #remove impossible values, make NA
+```
+
+Zonal statistics - area within the conflict boundary
+
+```{r}
+#africa
+
+africa_total_area <- expanse(africa_base_sdm, unit = "km") #total suitable area
+
+af_sdm_conf <- mask(africa_base_sdm, africa_base_conflict) #mask SDM to conflict boundaries only
+
+af_mask_exp <- expanse(af_sdm_conf, unit = "km") #suitable area within conflict boundaries
+
+af_perc_suit <- (af_mask_exp$area / africa_total_area$area) * 100
+#value: 5.44 percent
+
+
+#asia
+
+asia_total_area <- expanse(asia_base_sdm, unit = "km") #total suitable area
+
+as_sdm_conf <- mask(asia_base_sdm, asia_base_conflict) #mask SDM to conflict boundaries
+
+as_mask_exp <- expanse(as_sdm_conf, unit = "km")
+
+as_perc_suit <- (as_mask_exp$area / asia_total_area$area) * 100
+#value: 8.11 percent
 ```
 
