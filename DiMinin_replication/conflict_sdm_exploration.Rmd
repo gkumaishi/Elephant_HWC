@@ -51,11 +51,6 @@ HWC_data <- "/Users/mia/Library/CloudStorage/GoogleDrive-mguarnieri@ucsb.edu/My 
 
 ```
 
-##GRACE LOOK HERE
-- read in conflict raster, any raster
-- mask SDM by that conflict raster to get boundaries
-- then do the next part (polygonizing)
-- do that for each GCM for ssp1 and ssp3 in 2050
 
 # read in conflict raster
 ```{r}
@@ -262,6 +257,8 @@ sdm_gcms_ssp3_africa_sd <- sdm_conf_change_table_pol %>%
 
 # Review analysis
 
+## Suitable area within vs outside of extended range boundaries
+
 Read in baseline conflict rasters
 
 ```{r}
@@ -315,5 +312,508 @@ as_mask_exp <- expanse(as_sdm_conf, unit = "km")
 
 as_perc_suit <- (as_mask_exp$area / asia_total_area$area) * 100
 #value: 8.11 percent
+```
+
+
+## Baseline sdm and conflict risk intersections
+
+Read in baseline conflict rasters
+
+```{r}
+africa_base_conflict <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/conflict_boundary_rasters_africa/wp2010_current_day_cb_raster.tif"))
+
+asia_base_conflict <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/conflict_boundaries/conflict_boundary_rasters_asia/wp2010_current_day_cb_raster_asia.tif"))
+```
+
+Load in and reproject binary baseline SDM rasters, mask by conflict rasters
+- 0 is unsuitable
+- 1 is suitable
+
+```{r}
+#africa
+africa_base_sdm <- rast(here(HWC_data, "/Wallace SDM Rasters/LQ/1981_2010/afel_historic_20p_sdm.tif")) %>% 
+  project(africa_base_conflict, method = "near") %>% 
+  mask(., africa_base_conflict)
+
+#asia
+asia_base_sdm <- rast(here(HWC_data, "/Wallace SDM Rasters/asia/1981_2010/asian_elephant_historic_10p_sdm.tif")) %>% 
+  project(asia_base_conflict, method = "near") %>% 
+  mask(., asia_base_conflict)
+```
+
+Stack corresponding conflict and sdm rasters
+
+```{r}
+africa_stack <- c(africa_base_conflict, africa_base_sdm)
+
+asia_stack <- c(asia_base_conflict, asia_base_sdm)
+```
+
+Extract pixel values from the raster stack and set column names
+
+```{r}
+africa_ext <- values(africa_stack, dataframe = TRUE, na.rm = TRUE)
+
+colnames(africa_ext) = c("conflict_risk", "suitability_change")
+
+asia_ext <- values(asia_stack, dataframe = TRUE, na.rm = TRUE)
+
+colnames(asia_ext) = c("conflict_risk", "suitability_change")
+```
+
+Create summary tables of counts/percentages
+
+```{r}
+
+
+#create summary tables for each ssp of counts/percentages
+
+africa_s1change_summary <- africa_s1_ext %>% 
+  group_by(conflict_risk, suitability_change) %>% 
+  summarize(count = n()) %>% 
+  mutate (percent = (count/sum(africa_s1change_summary$count))*100)
+
+colnames(africa_s1change_summary) = c("conflict_risk", "suitability_change", "count", "percent")
+
+africa_s3change_summary <- africa_s3_ext %>% 
+  group_by(conflict_risk, suitability_change) %>% 
+  summarize(count = n()) %>% 
+  mutate (percent = (count/sum(africa_s3change_summary$count))*100)
+
+colnames(africa_s3change_summary) = c("conflict_risk", "suitability_change", "count", "percent")
+
+#create wide tables of percentages only for joins and data vis
+
+africa_s1change_wide <- africa_s1change_summary %>% 
+  pivot_wider(
+    names_from = conflict_risk, 
+    values_from = c(count, percent)
+  ) %>% 
+  select(suitability_change, percent_0, percent_1, percent_2) %>% 
+  mutate(total = rowSums(africa_s1change_wide[ ,2:4])) #have to run the rest of the functions first
+
+colnames(africa_s1change_wide) = c("suitability_change", "s1_0", "s1_1", "s1_2", "s1_total")
+
+africa_s3change_wide <- africa_s3change_summary %>% 
+  pivot_wider(
+    names_from = conflict_risk, 
+    values_from = c(count, percent)
+  ) %>% 
+  select(suitability_change, percent_0, percent_1, percent_2) %>% 
+  mutate(total = rowSums(africa_s3change_wide[ ,2:4])) #have to run the rest of the functions first
+
+colnames(africa_s3change_wide) = c("suitability_change", "s3_0", "s3_1", "s3_2", "s3_total")
+
+#join the tables
+
+africa_sdm_conf_change <- full_join(africa_s1change_wide, africa_s3change_wide, by = "suitability_change")
+
+descriptor <- c("Decreasing Suitability", "No Change - Not Suitable", "No Change - Suitable", "Increasing")
+
+africa_sdm_conf_change$suitability_change <- descriptor
+
+write.csv(africa_sdm_conf_change, file = here(HWC_data, "Data/Di Minin HWC", "sdm_conf_risk_percentage_table_africa.csv"), row.names=FALSE)
+
+```
+
+
+## Analysis of raw SDM tifs
+
+Read in baseline and projected tifs
+
+```{r}
+#africa
+
+africa_base_sdm <- rast(here(HWC_data, "/Wallace SDM Rasters/LQ/1981_2010/afel_historic_sdm.tif"))
+
+africa_sdm_ssp1 <- rast(here(HWC_data, "/Wallace SDM Rasters/LQ/2041_2070/126/afel_gfdl_2041_2070_126_sdm_correctbio3.tif"))
+
+africa_sdm_ssp3 <- rast(here(HWC_data, "/Wallace SDM Rasters/LQ/2041_2070/370/afel_gfdl_2041_2070_370_sdm_correctbio3.tif"))
+
+#asia
+
+asia_base_sdm <- rast(here(HWC_data, "/Wallace SDM Rasters/asia/1981_2010/asian_elephant_historic_raw.tif"))
+
+asia_sdm_ssp1 <- rast(here(HWC_data, "/Wallace SDM Rasters/asia/2041_2070/126/gfdl_2041_2070_126_sdm.tif"))
+
+asia_sdm_ssp3 <- rast(here(HWC_data, "/Wallace SDM Rasters/asia/2041_2070/370/gfdl_2041_2070_370_sdm.tif"))
+```
+
+Subtract projected tifs from baseline and save differenced tifs
+
+```{r}
+#africa
+
+africa_sdm_ssp1_diff <- africa_sdm_ssp1 - africa_base_sdm
+
+africa_sdm_ssp3_diff <- africa_sdm_ssp3 - africa_base_sdm
+
+#asia
+
+asia_sdm_ssp1_diff <- asia_sdm_ssp1 - asia_base_sdm
+
+asia_sdm_ssp3_diff <- asia_sdm_ssp3 - asia_base_sdm
+
+#save rasters
+writeRaster(africa_sdm_ssp1_diff, filename = here(HWC_data, "/Wallace SDM Rasters/differenced_rasters/africa/africa_sdm_ssp1_diff.tif"))
+
+writeRaster(africa_sdm_ssp3_diff, filename = here(HWC_data, "/Wallace SDM Rasters/differenced_rasters/africa/africa_sdm_ssp3_diff.tif"))
+
+writeRaster(asia_sdm_ssp1_diff, filename = here(HWC_data, "/Wallace SDM Rasters/differenced_rasters/asia/asia_sdm_ssp1_diff.tif"))
+
+writeRaster(asia_sdm_ssp3_diff, filename = here(HWC_data, "/Wallace SDM Rasters/differenced_rasters/asia/asia_sdm_ssp3_diff.tif"))
+```
+
+Reclassify raw differenced tifs to be only increasing, decreasing, or no change; reproject for masking
+
+```{r}
+#write reclassification function
+diff_reclass <- function(x){
+  
+  x[x > 0.0001] <- 1 #any values over 0.0001 become 1
+  
+  x[-0.0001 < x & x < 0.0001] <- 0 #change less than 0.0001 in either direction become 0
+  
+  x[x < -0.0001] <- -1 #any values less than -0.0001 become -1
+  
+  return(x) #return the reclassified raster
+}
+
+#read in conflict raster for masking
+africa_conflict <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_conflict/differenced_rasters_africa/diff_SSP1_RCP26_2050.tif"))
+
+asia_conflict <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_conflict/differenced_rasters_asia/diff_SSP1_RCP26_2030.tif"))
+
+#read in, reclassify, and reproject differenced rasters
+
+africa_sdm_ssp1_bindiff <- rast(here(HWC_data, "/Wallace SDM Rasters/differenced_rasters/africa/africa_sdm_ssp1_diff.tif")) %>% 
+  diff_reclass() %>% 
+  project(., africa_conflict, method = "near")
+
+africa_sdm_ssp3_bindiff <- rast(here(HWC_data, "/Wallace SDM Rasters/differenced_rasters/africa/africa_sdm_ssp3_diff.tif")) %>% 
+  diff_reclass() %>% 
+  project(., africa_conflict, method = "near")
+
+asia_sdm_ssp1_bindiff <- rast(here(HWC_data, "/Wallace SDM Rasters/differenced_rasters/asia/asia_sdm_ssp1_diff.tif")) %>% 
+  diff_reclass() %>% 
+  project(., asia_conflict, method = "near")
+
+asia_sdm_ssp3_bindiff <- rast(here(HWC_data, "/Wallace SDM Rasters/differenced_rasters/asia/asia_sdm_ssp3_diff.tif")) %>% 
+  diff_reclass() %>% 
+  project(., asia_conflict, method = "near")
+```
+
+Calculate percent area within the boundary of decreasing, increasing, or no change
+
+```{r}
+#mask binary sdm files
+africa_sdm_ssp1_bindiff_masked <- mask(africa_sdm_ssp1_bindiff, africa_conflict)
+
+africa_sdm_ssp3_bindiff_masked <- mask(africa_sdm_ssp3_bindiff, africa_conflict)
+
+asia_sdm_ssp1_bindiff_masked <- mask(asia_sdm_ssp1_bindiff, asia_conflict)
+
+asia_sdm_ssp3_bindiff_masked <- mask(asia_sdm_ssp3_bindiff, asia_conflict)
+
+#calculate the area within each class
+af_ssp1_bindiff_area <- expanse(africa_sdm_ssp1_bindiff_masked, zones = africa_sdm_ssp1_bindiff_masked, unit = "km") %>% 
+  mutate(af_ssp1 = (area / sum(area)) * 100) %>% 
+  select(zone, af_ssp1)
+
+af_ssp3_bindiff_area <- expanse(africa_sdm_ssp3_bindiff_masked, zones = africa_sdm_ssp3_bindiff_masked, unit = "km") %>% 
+  mutate(af_ssp3 = (area / sum(area)) * 100) %>% 
+  select(zone, af_ssp3)
+
+as_ssp1_bindiff_area <- expanse(asia_sdm_ssp1_bindiff_masked, zones = asia_sdm_ssp1_bindiff_masked, unit = "km") %>% 
+  mutate(as_ssp1 = (area / sum(area)) * 100) %>% 
+  select(zone, as_ssp1)
+
+as_ssp3_bindiff_area <- expanse(asia_sdm_ssp3_bindiff_masked, zones = asia_sdm_ssp3_bindiff_masked, unit = "km") %>% 
+  mutate(as_ssp3 = (area / sum(area)) * 100) %>% 
+  select(zone, as_ssp3)
+
+#join the tables
+cont_sdm_change_area <- full_join(as_ssp3_bindiff_area, full_join(as_ssp1_bindiff_area, full_join(af_ssp1_bindiff_area, af_ssp3_bindiff_area, by = "zone"), by = "zone"), by = "zone")
+```
+
+## CHELSA variable analysis
+
+Read in conflict rasters for masking
+
+```{r}
+africa_conflict <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_conflict/differenced_rasters_africa/diff_SSP1_RCP26_2050.tif"))
+
+asia_conflict <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/differenced_conflict/differenced_rasters_asia/diff_SSP1_RCP26_2030.tif"))
+```
+
+Read in the CHELSA data and mask it to each range boundary
+
+- bio5: Mean daily maximum air temperature of the warmest month (°C)
+- bio12: Annual precipitation amount (kg m-2)
+- bio13: Precipitation amount of the wettest month (kg m-2)
+- bio14: Precipitation amount of the driest month  (kg m-2)
+
+```{r}
+#read in the data
+
+##historic data
+bio5_hist <- rast(here(HWC_data, "/Data/Chelsa_Data/uncropped_data/historic/CHELSA_bio5_1981-2010_V.2.1.tif"))
+
+bio12_hist <- rast(here(HWC_data, "/Data/Chelsa_Data/uncropped_data/historic/CHELSA_bio12_1981-2010_V.2.1.tif"))
+
+bio13_hist <- rast(here(HWC_data, "/Data/Chelsa_Data/uncropped_data/historic/CHELSA_bio13_1981-2010_V.2.1.tif"))
+
+bio14_hist <- rast(here(HWC_data, "/Data/Chelsa_Data/uncropped_data/historic/CHELSA_bio14_1981-2010_V.2.1.tif"))
+
+##2050 SSP1
+bio5_ssp1 <- rast(here(HWC_data, "/Data/Chelsa_Data/uncropped_data/projected/ssp126/CHELSA_bio5_2041-2070_gfdl-esm4_ssp126_V.2.1.tif"))
+
+bio12_ssp1 <- rast(here(HWC_data, "/Data/Chelsa_Data/uncropped_data/projected/ssp126/CHELSA_bio12_2041-2070_gfdl-esm4_ssp126_V.2.1.tif"))
+
+bio13_ssp1 <- rast(here(HWC_data, "/Data/Chelsa_Data/uncropped_data/projected/ssp126/CHELSA_bio13_2041-2070_gfdl-esm4_ssp126_V.2.1.tif"))
+
+bio14_ssp1 <- rast(here(HWC_data, "/Data/Chelsa_Data/uncropped_data/projected/ssp126/CHELSA_bio14_2041-2070_gfdl-esm4_ssp126_V.2.1.tif"))
+
+##2050 SSP3
+bio5_ssp3 <- rast(here(HWC_data, "/Data/Chelsa_Data/uncropped_data/projected/ssp370/CHELSA_bio5_2041-2070_gfdl-esm4_ssp370_V.2.1.tif"))
+
+bio12_ssp3 <- rast(here(HWC_data, "/Data/Chelsa_Data/uncropped_data/projected/ssp370/CHELSA_bio12_2041-2070_gfdl-esm4_ssp370_V.2.1.tif"))
+
+bio13_ssp3 <- rast(here(HWC_data, "/Data/Chelsa_Data/uncropped_data/projected/ssp370/CHELSA_bio13_2041-2070_gfdl-esm4_ssp370_V.2.1.tif"))
+
+bio14_ssp3 <- rast(here(HWC_data, "/Data/Chelsa_Data/uncropped_data/projected/ssp370/CHELSA_bio14_2041-2070_gfdl-esm4_ssp370_V.2.1.tif"))
+```
+
+Mask and resave rasters for within the boundary zones
+
+African elephant
+- bio5
+- bio12
+- bio13
+
+Asian elephant
+- bio12
+- bio14
+
+```{r}
+#africa
+
+##historic
+af_b5_hist <- terra::project(bio5_hist, africa_conflict) %>% 
+  mask(africa_conflict)
+
+af_b12_hist <- terra::project(bio12_hist, africa_conflict) %>% 
+  mask(., africa_conflict)
+
+af_b13_hist <- terra::project(bio13_hist, africa_conflict) %>% 
+  mask(., africa_conflict)
+
+
+##ssp1
+af_b5_ssp1 <- terra::project(bio5_ssp1, africa_conflict) %>% 
+  mask(africa_conflict)
+
+af_b12_ssp1 <- terra::project(bio12_ssp1, africa_conflict) %>% 
+  mask(., africa_conflict)
+
+af_b13_ssp1 <- terra::project(bio13_ssp1, africa_conflict) %>% 
+  mask(., africa_conflict)
+
+
+##ssp3
+af_b5_ssp3 <- terra::project(bio5_ssp3, africa_conflict) %>% 
+  mask(africa_conflict)
+
+af_b12_ssp3 <- terra::project(bio12_ssp3, africa_conflict) %>% 
+  mask(., africa_conflict)
+
+af_b13_ssp3 <- terra::project(bio13_ssp3, africa_conflict) %>% 
+  mask(., africa_conflict)
+
+##save rasters
+writeRaster(af_b5_hist, filename = here(HWC_data, "/Data/Chelsa_Data/africa/historic/africa_bio5_historic.tif"))
+writeRaster(af_b12_hist, filename = here(HWC_data, "/Data/Chelsa_Data/africa/historic/africa_bio12_historic.tif"))
+writeRaster(af_b13_hist, filename = here(HWC_data, "/Data/Chelsa_Data/africa/historic/africa_bio13_historic.tif"))
+
+writeRaster(af_b5_ssp1, filename = here(HWC_data, "/Data/Chelsa_Data/africa/projected/africa_bio5_ssp1_2041_2070.tif"))
+writeRaster(af_b12_ssp1, filename = here(HWC_data, "/Data/Chelsa_Data/africa/projected/africa_bio12_ssp1_2041_2070.tif"))
+writeRaster(af_b13_ssp1, filename = here(HWC_data, "/Data/Chelsa_Data/africa/projected/africa_bio13_ssp1_2041_2070.tif"))
+
+writeRaster(af_b5_ssp3, filename = here(HWC_data, "/Data/Chelsa_Data/africa/projected/africa_bio5_ssp3_2041_2070.tif"))
+writeRaster(af_b12_ssp3, filename = here(HWC_data, "/Data/Chelsa_Data/africa/projected/africa_bio12_ssp3_2041_2070.tif"))
+writeRaster(af_b13_ssp3, filename = here(HWC_data, "/Data/Chelsa_Data/africa/projected/africa_bio13_ssp3_2041_2070.tif"))
+
+
+#asia
+as_b12_hist <- terra::project(bio12_hist, asia_conflict) %>% 
+  mask(asia_conflict)
+
+as_b14_hist <- terra::project(bio14_hist, asia_conflict) %>% 
+  mask(asia_conflict)
+
+##ssp1
+as_b12_ssp1 <- terra::project(bio12_ssp1, asia_conflict) %>% 
+  mask(asia_conflict)
+
+as_b14_ssp1 <- terra::project(bio14_ssp1, asia_conflict) %>% 
+  mask(asia_conflict)
+
+##ssp3
+as_b12_ssp3 <- terra::project(bio12_ssp3, asia_conflict) %>% 
+  mask(asia_conflict)
+
+as_b14_ssp3 <- terra::project(bio14_ssp3, asia_conflict) %>% 
+  mask(asia_conflict)
+
+##save rasters
+writeRaster(as_b12_hist, filename = here(HWC_data, "/Data/Chelsa_Data/asia/historic/asia_bio12_historic.tif"))
+writeRaster(as_b14_hist, filename = here(HWC_data, "/Data/Chelsa_Data/asia/historic/asia_bio14_historic.tif"))
+
+writeRaster(as_b12_ssp1, filename = here(HWC_data, "/Data/Chelsa_Data/asia/projected/asia_bio12_ssp1_2041_2070.tif"))
+writeRaster(as_b14_ssp1, filename = here(HWC_data, "/Data/Chelsa_Data/asia/projected/asia_bio14_ssp1_2041_2070.tif"))
+
+writeRaster(as_b12_ssp3, filename = here(HWC_data, "/Data/Chelsa_Data/asia/projected/asia_bio12_ssp3_2041_2070.tif"))
+writeRaster(as_b14_ssp3, filename = here(HWC_data, "/Data/Chelsa_Data/asia/projected/asia_bio14_ssp3_2041_2070.tif"))
+```
+
+
+Read in masked rasters and difference projected and historical values to get change
+
+```{r}
+#read in the rasters
+
+##africa
+af_b5_hist <- rast(here(HWC_data, "/Data/Chelsa_Data/africa/historic/africa_bio5_historic.tif"))
+af_b12_hist <- rast(here(HWC_data, "/Data/Chelsa_Data/africa/historic/africa_bio12_historic.tif"))
+af_b13_hist <- rast(here(HWC_data, "/Data/Chelsa_Data/africa/historic/africa_bio13_historic.tif"))
+
+af_b5_ssp1 <- rast(here(HWC_data, "/Data/Chelsa_Data/africa/projected/africa_bio5_ssp1_2041_2070.tif"))
+af_b12_ssp1 <- rast(here(HWC_data, "/Data/Chelsa_Data/africa/projected/africa_bio12_ssp1_2041_2070.tif"))
+af_b13_ssp1 <- rast(here(HWC_data, "/Data/Chelsa_Data/africa/projected/africa_bio13_ssp1_2041_2070.tif"))
+
+af_b5_ssp3 <- rast(here(HWC_data, "/Data/Chelsa_Data/africa/projected/africa_bio5_ssp3_2041_2070.tif"))
+af_b12_ssp3 <- rast(here(HWC_data, "/Data/Chelsa_Data/africa/projected/africa_bio12_ssp3_2041_2070.tif"))
+af_b13_ssp3 <- rast(here(HWC_data, "/Data/Chelsa_Data/africa/projected/africa_bio13_ssp3_2041_2070.tif"))
+
+##asia
+as_b12_hist <- rast(here(HWC_data, "/Data/Chelsa_Data/asia/historic/asia_bio12_historic.tif"))
+as_b14_hist <- rast(here(HWC_data, "/Data/Chelsa_Data/asia/historic/asia_bio14_historic.tif"))
+
+as_b12_ssp1 <- rast(here(HWC_data, "/Data/Chelsa_Data/asia/projected/asia_bio12_ssp1_2041_2070.tif"))
+as_b14_ssp1 <- rast(here(HWC_data, "/Data/Chelsa_Data/asia/projected/asia_bio14_ssp1_2041_2070.tif"))
+
+as_b12_ssp3 <- rast(here(HWC_data, "/Data/Chelsa_Data/asia/projected/asia_bio12_ssp3_2041_2070.tif"))
+as_b14_ssp3 <- rast(here(HWC_data, "/Data/Chelsa_Data/asia/projected/asia_bio14_ssp3_2041_2070.tif"))
+
+
+#difference the projected and historical rasters
+
+##africa
+af_b5_diff_ssp1 <- af_b5_ssp1 - af_b5_hist
+af_b5_diff_ssp3 <- af_b5_ssp3 - af_b5_hist
+
+af_b12_diff_ssp1 <- af_b12_ssp1 - af_b12_hist
+af_b12_diff_ssp3 <- af_b12_ssp3 - af_b12_hist
+
+af_b13_diff_ssp1 <- af_b13_ssp1 - af_b13_hist
+af_b13_diff_ssp3 <- af_b13_ssp3 - af_b13_hist
+
+##asia
+as_b12_diff_ssp1 <- as_b12_ssp1 - as_b12_hist
+as_b12_diff_ssp3 <- as_b12_ssp3 - as_b12_hist
+
+as_b14_diff_ssp1 <- as_b14_ssp1 - as_b14_hist
+as_b14_diff_ssp3 <- as_b14_ssp3 - as_b14_hist
+```
+
+Reclassify to be only increasing/decreasing/no change and calculate area within each class
+
+```{r}
+#write reclassification function
+diff_reclass <- function(x){
+  
+  x[x > 0.0001] <- 1 #any values over 0.0001 become 1
+  
+  x[-0.0001 < x & x < 0.0001] <- 0 #change less than 0.0001 in either direction become 0
+  
+  x[x < -0.0001] <- -1 #any values less than -0.0001 become -1
+  
+  return(x) #return the reclassified raster
+}
+
+#africa
+
+##bio5
+af_b5_bindiff_ssp1_area <- diff_reclass(af_b5_diff_ssp1) %>% 
+  expanse(., zones = ., unit = "km") %>% 
+  mutate(af_b5_ssp1 = (area / sum(area)) * 100) %>% 
+  select(zone, af_b5_ssp1)
+
+af_b5_bindiff_ssp3_area <- diff_reclass(af_b5_diff_ssp3) %>% 
+  expanse(., zones = ., unit = "km") %>% 
+  mutate(af_b5_ssp3 = (area / sum(area)) * 100) %>% 
+  select(zone, af_b5_ssp3)
+
+##bio12
+af_b12_bindiff_ssp1_area <- diff_reclass(af_b12_diff_ssp1) %>% 
+  expanse(., zones = ., unit = "km") %>% 
+  mutate(af_b12_ssp1 = (area / sum(area)) * 100) %>% 
+  select(zone, af_b12_ssp1)
+
+af_b12_bindiff_ssp3_area <- diff_reclass(af_b12_diff_ssp3) %>% 
+  expanse(., zones = ., unit = "km") %>% 
+  mutate(af_b12_ssp3 = (area / sum(area)) * 100) %>% 
+  select(zone, af_b12_ssp3)
+
+##bio13
+af_b13_bindiff_ssp1_area <- diff_reclass(af_b13_diff_ssp1) %>% 
+  expanse(., zones = ., unit = "km") %>% 
+  mutate(af_b13_ssp1 = (area / sum(area)) * 100) %>% 
+  select(zone, af_b13_ssp1)
+
+af_b13_bindiff_ssp3_area <- diff_reclass(af_b13_diff_ssp3) %>% 
+  expanse(., zones = ., unit = "km") %>% 
+  mutate(af_b13_ssp3 = (area / sum(area)) * 100) %>% 
+  select(zone, af_b13_ssp3)
+
+
+
+#asia
+
+##bio12
+as_b12_bindiff_ssp1_area <- diff_reclass(as_b12_diff_ssp1) %>% 
+  expanse(., zones = ., unit = "km") %>% 
+  mutate(as_b12_ssp1 = (area / sum(area)) * 100) %>% 
+  select(zone, as_b12_ssp1)
+
+as_b12_bindiff_ssp3_area <- diff_reclass(as_b12_diff_ssp3) %>% 
+  expanse(., zones = ., unit = "km") %>% 
+  mutate(as_b12_ssp3 = (area / sum(area)) * 100) %>% 
+  select(zone, as_b12_ssp3)
+
+##bio14
+as_b14_bindiff_ssp1_area <- diff_reclass(as_b14_diff_ssp1) %>% 
+  expanse(., zones = ., unit = "km") %>% 
+  mutate(as_b14_ssp1 = (area / sum(area)) * 100) %>% 
+  select(zone, as_b14_ssp1)
+
+as_b14_bindiff_ssp3_area <- diff_reclass(as_b14_diff_ssp3) %>% 
+  expanse(., zones = ., unit = "km") %>% 
+  mutate(as_b14_ssp3 = (area / sum(area)) * 100) %>% 
+  select(zone, as_b14_ssp3)
+```
+
+- bio5: Mean daily maximum air temperature of the warmest month (°C)
+- bio12: Annual precipitation amount (kg m-2)
+- bio13: Precipitation amount of the wettest month (kg m-2)
+- bio14: Precipitation amount of the driest month  (kg m-2)
+
+List and combine area calculations
+
+```{r}
+chelsa_area_list <- list(af_b5_bindiff_ssp1_area, af_b5_bindiff_ssp3_area, af_b12_bindiff_ssp1_area, af_b12_bindiff_ssp3_area, af_b13_bindiff_ssp1_area, af_b13_bindiff_ssp3_area, as_b12_bindiff_ssp1_area, as_b12_bindiff_ssp3_area, as_b14_bindiff_ssp1_area, as_b14_bindiff_ssp3_area)
+
+
+chelsa_bindiff_all <- reduce(chelsa_area_list, full_join, by = "zone")
 ```
 
