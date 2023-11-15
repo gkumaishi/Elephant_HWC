@@ -223,7 +223,7 @@ sdm_pol_list <- list.files(path = here(HWC_data, "/Geospatial Data/Diminin_Repli
 sdm_area_list <- lapply(sdm_pol_list, perc_area_table)
 
 sdm_conf_change_table_pol <- sdm_area_list %>% reduce(full_join, by = "suitability_change") %>% 
-  units::drop_units()a
+  units::drop_units()
 
 colnames(sdm_conf_change_table_pol) = c("suitability", sdm_pol_list)
 
@@ -419,24 +419,59 @@ write.csv(africa_sdm_conf_change, file = here(HWC_data, "Data/Di Minin HWC", "sd
 
 ## Analysis of raw SDM tifs
 
-Read in baseline and projected tifs
+Read in baseline and projected tifs for all GCMs
 
 ```{r}
 #africa
 
 africa_base_sdm <- rast(here(HWC_data, "/Wallace SDM Rasters/LQ/1981_2010/afel_historic_sdm.tif"))
 
-africa_sdm_ssp1 <- rast(here(HWC_data, "/Wallace SDM Rasters/LQ/2041_2070/126/afel_gfdl_2041_2070_126_sdm_correctbio3.tif"))
+###GFDL
+africa_sdm_ssp1_gfdl <- rast(here(HWC_data, "/Wallace SDM Rasters/LQ/2041_2070/126/afel_gfdl_2041_2070_126_sdm_correctbio3.tif"))
+africa_sdm_ssp3_gfdl <- rast(here(HWC_data, "/Wallace SDM Rasters/LQ/2041_2070/370/afel_gfdl_2041_2070_370_sdm_correctbio3.tif"))
 
-africa_sdm_ssp3 <- rast(here(HWC_data, "/Wallace SDM Rasters/LQ/2041_2070/370/afel_gfdl_2041_2070_370_sdm_correctbio3.tif"))
+###IPSL
+africa_sdm_ssp1_ipsl <- rast(here(HWC_data, "/Wallace SDM Rasters/LQ/2041_2070/126/afel_ipsl_2041_2070_126_sdm_correctbio3.tif"))
+africa_sdm_ssp3_ipsl <- rast(here(HWC_data, "/Wallace SDM Rasters/LQ/2041_2070/370/afel_ipsl_2041_2070_370_sdm_correctbio3.tif")) 
+
+###MPI
+africa_sdm_ssp1_mpi <- rast(here(HWC_data, "/Wallace SDM Rasters/LQ/2041_2070/126/afel_mpi_2041_2070_126_sdm_correctbio3.tif")) 
+africa_sdm_ssp3_mpi <- rast(here(HWC_data, "/Wallace SDM Rasters/LQ/2041_2070/370/afel_mpi_2041_2070_370_sdm_correctbio3.tif")) 
+
+###MRI
+africa_sdm_ssp1_mri <- rast(here(HWC_data, "/Wallace SDM Rasters/LQ/2041_2070/126/afel_mri_2041_2070_126_sdm_correctbio3.tif")) 
+africa_sdm_ssp3_mri <- rast(here(HWC_data, "/Wallace SDM Rasters/LQ/2041_2070/370/afel_mri_2041_2070_370_sdm_correctbio3.tif"))
+
+##UKESM
+africa_sdm_ssp1_ukesm <- rast(here(HWC_data, "/Wallace SDM Rasters/LQ/2041_2070/126/afel_ukesm_2041_2070_126_sdm_correctbio3.tif"))
+africa_sdm_ssp3_ukesm <- rast(here(HWC_data, "/Wallace SDM Rasters/LQ/2041_2070/370/afel_ukesm_2041_2070_370_sdm_correctbio3.tif"))
+
+
 
 #asia
 
 asia_base_sdm <- rast(here(HWC_data, "/Wallace SDM Rasters/asia/1981_2010/asian_elephant_historic_raw.tif"))
 
-asia_sdm_ssp1 <- rast(here(HWC_data, "/Wallace SDM Rasters/asia/2041_2070/126/gfdl_2041_2070_126_sdm.tif"))
+###GFDL
+asia_sdm_ssp1_gfdl <- rast(here(HWC_data, "/Wallace SDM Rasters/asia/2041_2070/126/gfdl_2041_2070_126_sdm.tif"))
+asia_sdm_ssp3_gfdl <- rast(here(HWC_data, "/Wallace SDM Rasters/asia/2041_2070/370/gfdl_2041_2070_370_sdm.tif"))
 
-asia_sdm_ssp3 <- rast(here(HWC_data, "/Wallace SDM Rasters/asia/2041_2070/370/gfdl_2041_2070_370_sdm.tif"))
+###IPSL
+asia_sdm_ssp1_ipsl <- rast(here(HWC_data, "/Wallace SDM Rasters/asia/2041_2070/126/ipsl_2041_2070_126_sdm.tif"))
+asia_sdm_ssp3_ipsl <- rast(here(HWC_data, "/Wallace SDM Rasters/asia/2041_2070/370/ipsl_2041_2070_370_sdm.tif"))
+
+###MPI
+asia_sdm_ssp1_mpi <- rast(here(HWC_data, "/Wallace SDM Rasters/asia/2041_2070/126/mpi_2041_2070_126_sdm.tif"))
+asia_sdm_ssp3_mpi <- rast(here(HWC_data, "/Wallace SDM Rasters/asia/2041_2070/370/mpi_2041_2070_370_sdm.tif"))
+
+###MRI
+asia_sdm_ssp1_mri <- rast(here(HWC_data, "/Wallace SDM Rasters/asia/2041_2070/126/mri_2041_2070_126_sdm.tif"))
+asia_sdm_ssp3_mri <- rast(here(HWC_data, "/Wallace SDM Rasters/asia/2041_2070/370/mri_2041_2070_370_sdm.tif"))
+
+##UKESM
+asia_sdm_ssp1_ukesm <- rast(here(HWC_data, "/Wallace SDM Rasters/asia/2041_2070/126/ukesm_2041_2070_126_sdm.tif"))
+asia_sdm_ssp3_ukesm <- rast(here(HWC_data, "/Wallace SDM Rasters/asia/2041_2070/370/ukesm_2041_2070_370_sdm.tif"))
+
 ```
 
 Subtract projected tifs from baseline and save differenced tifs
@@ -444,24 +479,97 @@ Subtract projected tifs from baseline and save differenced tifs
 ```{r}
 #africa
 
-africa_sdm_ssp1_diff <- africa_sdm_ssp1 - africa_base_sdm
+###GFDL
+africa_sdm_ssp1_diff_gfdl <- africa_sdm_ssp1_gfdl - africa_base_sdm
+africa_sdm_ssp3_diff_gfdl <- africa_sdm_ssp3_gfdl - africa_base_sdm
 
-africa_sdm_ssp3_diff <- africa_sdm_ssp3 - africa_base_sdm
+###IPSL
+africa_sdm_ssp1_diff_ipsl <- africa_sdm_ssp1_ipsl - africa_base_sdm
+africa_sdm_ssp3_diff_ipsl <- africa_sdm_ssp3_ipsl - africa_base_sdm
+
+###MPI
+africa_sdm_ssp1_diff_mpi <- africa_sdm_ssp1_mpi - africa_base_sdm
+africa_sdm_ssp3_diff_mpi <- africa_sdm_ssp3_mpi - africa_base_sdm
+
+###MRI
+africa_sdm_ssp1_diff_mri <- africa_sdm_ssp1_mri - africa_base_sdm
+africa_sdm_ssp3_diff_mri <- africa_sdm_ssp3_mri - africa_base_sdm
+
+##UKESM
+africa_sdm_ssp1_diff_ukesm <- africa_sdm_ssp1_ukesm - africa_base_sdm
+africa_sdm_ssp3_diff_ukesm <- africa_sdm_ssp3_ukesm - africa_base_sdm
+
+
 
 #asia
 
-asia_sdm_ssp1_diff <- asia_sdm_ssp1 - asia_base_sdm
+###GFDL
+asia_sdm_ssp1_diff_gfdl <- asia_sdm_ssp1_gfdl - asia_base_sdm
+asia_sdm_ssp3_diff_gfdl <- asia_sdm_ssp3_gfdl - asia_base_sdm
 
-asia_sdm_ssp3_diff <- asia_sdm_ssp3 - asia_base_sdm
+###IPSL
+asia_sdm_ssp1_diff_ipsl <- asia_sdm_ssp1_ipsl - asia_base_sdm
+asia_sdm_ssp3_diff_ipsl <- asia_sdm_ssp3_ipsl - asia_base_sdm
+
+###MPI
+asia_sdm_ssp1_diff_mpi <- asia_sdm_ssp1_mpi - asia_base_sdm
+asia_sdm_ssp3_diff_mpi <- asia_sdm_ssp3_mpi - asia_base_sdm
+
+###MRI
+asia_sdm_ssp1_diff_mri <- asia_sdm_ssp1_mri - asia_base_sdm
+asia_sdm_ssp3_diff_mri <- asia_sdm_ssp3_mri - asia_base_sdm
+
+##UKESM
+asia_sdm_ssp1_diff_ukesm <- asia_sdm_ssp1_ukesm - asia_base_sdm
+asia_sdm_ssp3_diff_ukesm <- asia_sdm_ssp3_ukesm - asia_base_sdm
+
 
 #save rasters
-writeRaster(africa_sdm_ssp1_diff, filename = here(HWC_data, "/Wallace SDM Rasters/differenced_rasters/africa/africa_sdm_ssp1_diff.tif"))
 
-writeRaster(africa_sdm_ssp3_diff, filename = here(HWC_data, "/Wallace SDM Rasters/differenced_rasters/africa/africa_sdm_ssp3_diff.tif"))
+##africa
 
-writeRaster(asia_sdm_ssp1_diff, filename = here(HWC_data, "/Wallace SDM Rasters/differenced_rasters/asia/asia_sdm_ssp1_diff.tif"))
+##GFDL
+writeRaster(africa_sdm_ssp1_diff_gfdl, filename = here(HWC_data, "/Wallace SDM Rasters/differenced_rasters/africa/africa_sdm_ssp1_diff_gfdl.tif"))
+writeRaster(africa_sdm_ssp3_diff_gfdl, filename = here(HWC_data, "/Wallace SDM Rasters/differenced_rasters/africa/africa_sdm_ssp3_diff_gfdl.tif"))
 
-writeRaster(asia_sdm_ssp3_diff, filename = here(HWC_data, "/Wallace SDM Rasters/differenced_rasters/asia/asia_sdm_ssp3_diff.tif"))
+###IPSL
+writeRaster(africa_sdm_ssp1_diff_ipsl, filename = here(HWC_data, "/Wallace SDM Rasters/differenced_rasters/africa/africa_sdm_ssp1_diff_ipsl.tif"))
+writeRaster(africa_sdm_ssp3_diff_ipsl, filename = here(HWC_data, "/Wallace SDM Rasters/differenced_rasters/africa/africa_sdm_ssp3_diff_ipsl.tif"))
+
+###MPI
+writeRaster(africa_sdm_ssp1_diff_mpi, filename = here(HWC_data, "/Wallace SDM Rasters/differenced_rasters/africa/africa_sdm_ssp1_diff_mpi.tif"))
+writeRaster(africa_sdm_ssp3_diff_mpi, filename = here(HWC_data, "/Wallace SDM Rasters/differenced_rasters/africa/africa_sdm_ssp3_diff_mpi.tif"))
+
+###MRI
+writeRaster(africa_sdm_ssp1_diff_mri, filename = here(HWC_data, "/Wallace SDM Rasters/differenced_rasters/africa/africa_sdm_ssp1_diff_mri.tif"))
+writeRaster(africa_sdm_ssp3_diff_mri, filename = here(HWC_data, "/Wallace SDM Rasters/differenced_rasters/africa/africa_sdm_ssp3_diff_mri.tif"))
+
+##UKESM
+writeRaster(africa_sdm_ssp1_diff_ukesm, filename = here(HWC_data, "/Wallace SDM Rasters/differenced_rasters/africa/africa_sdm_ssp1_diff_ukesm.tif"))
+writeRaster(africa_sdm_ssp3_diff_ukesm, filename = here(HWC_data, "/Wallace SDM Rasters/differenced_rasters/africa/africa_sdm_ssp3_diff_ukesm.tif"))
+
+
+##asia
+
+###GFDL
+writeRaster(asia_sdm_ssp1_diff_gfdl, filename = here(HWC_data, "/Wallace SDM Rasters/differenced_rasters/asia/asia_sdm_ssp1_diff_gfdl.tif"))
+writeRaster(asia_sdm_ssp3_diff_gfdl, filename = here(HWC_data, "/Wallace SDM Rasters/differenced_rasters/asia/asia_sdm_ssp3_diff_gfdl.tif"))
+
+###IPSL
+writeRaster(asia_sdm_ssp1_diff_ipsl, filename = here(HWC_data, "/Wallace SDM Rasters/differenced_rasters/asia/asia_sdm_ssp1_diff_ipsl.tif"))
+writeRaster(asia_sdm_ssp3_diff_ipsl, filename = here(HWC_data, "/Wallace SDM Rasters/differenced_rasters/asia/asia_sdm_ssp3_diff_ipsl.tif"))
+
+###MPI
+writeRaster(asia_sdm_ssp1_diff_mpi, filename = here(HWC_data, "/Wallace SDM Rasters/differenced_rasters/asia/asia_sdm_ssp1_diff_mpi.tif"))
+writeRaster(asia_sdm_ssp3_diff_mpi, filename = here(HWC_data, "/Wallace SDM Rasters/differenced_rasters/asia/asia_sdm_ssp3_diff_mpi.tif"))
+
+###MRI
+writeRaster(asia_sdm_ssp1_diff_mri, filename = here(HWC_data, "/Wallace SDM Rasters/differenced_rasters/asia/asia_sdm_ssp1_diff_mri.tif"))
+writeRaster(asia_sdm_ssp3_diff_mri, filename = here(HWC_data, "/Wallace SDM Rasters/differenced_rasters/asia/asia_sdm_ssp3_diff_mri.tif"))
+
+##UKESM
+writeRaster(asia_sdm_ssp1_diff_ukesm, filename = here(HWC_data, "/Wallace SDM Rasters/differenced_rasters/asia/asia_sdm_ssp1_diff_ukesm.tif"))
+writeRaster(asia_sdm_ssp3_diff_ukesm, filename = here(HWC_data, "/Wallace SDM Rasters/differenced_rasters/asia/asia_sdm_ssp3_diff_ukesm.tif"))
 ```
 
 Reclassify raw differenced tifs to be only increasing, decreasing, or no change; reproject for masking
@@ -486,54 +594,94 @@ asia_conflict <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/
 
 #read in, reclassify, and reproject differenced rasters
 
-africa_sdm_ssp1_bindiff <- rast(here(HWC_data, "/Wallace SDM Rasters/differenced_rasters/africa/africa_sdm_ssp1_diff.tif")) %>% 
-  diff_reclass() %>% 
-  project(., africa_conflict, method = "near")
+##africa
 
-africa_sdm_ssp3_bindiff <- rast(here(HWC_data, "/Wallace SDM Rasters/differenced_rasters/africa/africa_sdm_ssp3_diff.tif")) %>% 
-  diff_reclass() %>% 
-  project(., africa_conflict, method = "near")
+africa_sdm_diff_list <- list.files(path = here(HWC_data, "/Wallace SDM Rasters/differenced_rasters/africa"))
 
-asia_sdm_ssp1_bindiff <- rast(here(HWC_data, "/Wallace SDM Rasters/differenced_rasters/asia/asia_sdm_ssp1_diff.tif")) %>% 
-  diff_reclass() %>% 
-  project(., asia_conflict, method = "near")
+africa_bindiff <- function(x) {
+  
+  xrast <- rast(here(HWC_data, "/Wallace SDM Rasters/differenced_rasters/africa/", x))
+  
+  xdiff <- diff_reclass(xrast)
+  
+  xproj <- project(xdiff, africa_conflict, method = "near")
+}
 
-asia_sdm_ssp3_bindiff <- rast(here(HWC_data, "/Wallace SDM Rasters/differenced_rasters/asia/asia_sdm_ssp3_diff.tif")) %>% 
-  diff_reclass() %>% 
-  project(., asia_conflict, method = "near")
+africa_bindiff_list <- lapply(africa_sdm_diff_list, africa_bindiff)
+
+
+##asia
+
+asia_sdm_diff_list <- list.files(path = here(HWC_data, "/Wallace SDM Rasters/differenced_rasters/asia"))
+
+asia_bindiff <- function(x) {
+  
+  xrast <- rast(here(HWC_data, "/Wallace SDM Rasters/differenced_rasters/asia/", x))
+  
+  xdiff <- diff_reclass(xrast)
+  
+  xproj <- project(xdiff, asia_conflict, method = "near")
+}
+
+asia_bindiff_list <- lapply(asia_sdm_diff_list, asia_bindiff)
+
 ```
 
 Calculate percent area within the boundary of decreasing, increasing, or no change
 
 ```{r}
 #mask binary sdm files
-africa_sdm_ssp1_bindiff_masked <- mask(africa_sdm_ssp1_bindiff, africa_conflict)
+africa_bindifflist_masked <- rast(africa_bindiff_list) %>% 
+  mask(., africa_conflict)
 
-africa_sdm_ssp3_bindiff_masked <- mask(africa_sdm_ssp3_bindiff, africa_conflict)
+asia_bindifflist_masked <- rast(asia_bindiff_list) %>% 
+  mask(., asia_conflict)
 
-asia_sdm_ssp1_bindiff_masked <- mask(asia_sdm_ssp1_bindiff, asia_conflict)
-
-asia_sdm_ssp3_bindiff_masked <- mask(asia_sdm_ssp3_bindiff, asia_conflict)
 
 #calculate the area within each class
-af_ssp1_bindiff_area <- expanse(africa_sdm_ssp1_bindiff_masked, zones = africa_sdm_ssp1_bindiff_masked, unit = "km") %>% 
-  mutate(af_ssp1 = (area / sum(area)) * 100) %>% 
-  select(zone, af_ssp1)
 
-af_ssp3_bindiff_area <- expanse(africa_sdm_ssp3_bindiff_masked, zones = africa_sdm_ssp3_bindiff_masked, unit = "km") %>% 
-  mutate(af_ssp3 = (area / sum(area)) * 100) %>% 
-  select(zone, af_ssp3)
+##africa
 
-as_ssp1_bindiff_area <- expanse(asia_sdm_ssp1_bindiff_masked, zones = asia_sdm_ssp1_bindiff_masked, unit = "km") %>% 
-  mutate(as_ssp1 = (area / sum(area)) * 100) %>% 
-  select(zone, as_ssp1)
+africa_bindiff_area <- expanse(africa_bindifflist_masked, byValue = TRUE, unit = "km") %>% 
+  mutate(layer = case_when(
+    layer == 1 ~ names(africa_bindifflist_masked)[[1]],
+    layer == 2 ~ names(africa_bindifflist_masked)[[2]],
+    layer == 3 ~ names(africa_bindifflist_masked)[[3]],
+    layer == 4 ~ names(africa_bindifflist_masked)[[4]],     #rename the layers so we can see what they are not their position
+    layer == 5 ~ names(africa_bindifflist_masked)[[5]],
+    layer == 6 ~ names(africa_bindifflist_masked)[[6]],
+    layer == 7 ~ names(africa_bindifflist_masked)[[7]],
+    layer == 8 ~ names(africa_bindifflist_masked)[[8]],
+    layer == 9 ~ names(africa_bindifflist_masked)[[9]],
+    layer == 10 ~ names(africa_bindifflist_masked)[[10]],
+  )) %>% 
+  pivot_wider(names_from = layer,
+              values_from = area) #show layers as their own columns not values within a column
 
-as_ssp3_bindiff_area <- expanse(asia_sdm_ssp3_bindiff_masked, zones = asia_sdm_ssp3_bindiff_masked, unit = "km") %>% 
-  mutate(as_ssp3 = (area / sum(area)) * 100) %>% 
-  select(zone, as_ssp3)
+africa_bindiff_area_prop <- janitor::adorn_percentages(africa_bindiff_area, denominator = "col") %>% 
+  janitor::adorn_pct_formatting(digits = 2, affix_sign = FALSE)
 
-#join the tables
-cont_sdm_change_area <- full_join(as_ssp3_bindiff_area, full_join(as_ssp1_bindiff_area, full_join(af_ssp1_bindiff_area, af_ssp3_bindiff_area, by = "zone"), by = "zone"), by = "zone")
+
+##asia
+
+asia_bindiff_area <- expanse(asia_bindifflist_masked, byValue = TRUE, unit = "km") %>% 
+  mutate(layer = case_when(
+    layer == 1 ~ names(asia_bindifflist_masked)[[1]],
+    layer == 2 ~ names(asia_bindifflist_masked)[[2]],
+    layer == 3 ~ names(asia_bindifflist_masked)[[3]],
+    layer == 4 ~ names(asia_bindifflist_masked)[[4]],     #rename the layers so we can see what they are not their position
+    layer == 5 ~ names(asia_bindifflist_masked)[[5]],
+    layer == 6 ~ names(asia_bindifflist_masked)[[6]],
+    layer == 7 ~ names(asia_bindifflist_masked)[[7]],
+    layer == 8 ~ names(asia_bindifflist_masked)[[8]],
+    layer == 9 ~ names(asia_bindifflist_masked)[[9]],
+    layer == 10 ~ names(asia_bindifflist_masked)[[10]],
+  )) %>% 
+  pivot_wider(names_from = layer,
+              values_from = area) #show layers as their own columns not values within a column
+
+asia_bindiff_area_prop <- janitor::adorn_percentages(asia_bindiff_area, denominator = "col") %>% 
+  janitor::adorn_pct_formatting(digits = 2, affix_sign = FALSE)
 ```
 
 ## CHELSA variable analysis
