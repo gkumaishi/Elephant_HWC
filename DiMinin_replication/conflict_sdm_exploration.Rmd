@@ -696,183 +696,414 @@ asia_conflict <- rast(here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/
 
 Read in the CHELSA data and mask it to each range boundary
 
+- bio1: Mean annual air temperature (°C)
 - bio5: Mean daily maximum air temperature of the warmest month (°C)
 - bio12: Annual precipitation amount (kg m-2)
 - bio13: Precipitation amount of the wettest month (kg m-2)
 - bio14: Precipitation amount of the driest month  (kg m-2)
 
 ```{r}
-#read in the data
+#read in the data and mask it to africa or asia
+
+#mask function
+
+mask_files <- function(x, path, maskfile, pref, saveto) {
+  
+  xrast <- rast(here(HWC_data, path, x))
+  
+  xproj <- project(xrast, maskfile)
+  
+  xmask <- mask(xproj, maskfile)
+  
+  name <- paste0(pref, x)
+  
+  writeRaster(xmask, filename = here(HWC_data, saveto, name))
+}
+
 
 ##historic data
-bio5_hist <- rast(here(HWC_data, "/Data/Chelsa_Data/uncropped_data/historic/CHELSA_bio5_1981-2010_V.2.1.tif"))
 
-bio12_hist <- rast(here(HWC_data, "/Data/Chelsa_Data/uncropped_data/historic/CHELSA_bio12_1981-2010_V.2.1.tif"))
+bio_hist_list <- list.files(path = here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/uncropped_data/historic"))
 
-bio13_hist <- rast(here(HWC_data, "/Data/Chelsa_Data/uncropped_data/historic/CHELSA_bio13_1981-2010_V.2.1.tif"))
+###mask to africa
+africa_bio_hist <- lapply(bio_hist_list, mask_files,
+  path = "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/uncropped_data/historic",
+  maskfile = africa_conflict,
+  pref = "africa_",
+  saveto = "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/africa/historic")
 
-bio14_hist <- rast(here(HWC_data, "/Data/Chelsa_Data/uncropped_data/historic/CHELSA_bio14_1981-2010_V.2.1.tif"))
-
-##2050 SSP1
-bio5_ssp1 <- rast(here(HWC_data, "/Data/Chelsa_Data/uncropped_data/projected/ssp126/CHELSA_bio5_2041-2070_gfdl-esm4_ssp126_V.2.1.tif"))
-
-bio12_ssp1 <- rast(here(HWC_data, "/Data/Chelsa_Data/uncropped_data/projected/ssp126/CHELSA_bio12_2041-2070_gfdl-esm4_ssp126_V.2.1.tif"))
-
-bio13_ssp1 <- rast(here(HWC_data, "/Data/Chelsa_Data/uncropped_data/projected/ssp126/CHELSA_bio13_2041-2070_gfdl-esm4_ssp126_V.2.1.tif"))
-
-bio14_ssp1 <- rast(here(HWC_data, "/Data/Chelsa_Data/uncropped_data/projected/ssp126/CHELSA_bio14_2041-2070_gfdl-esm4_ssp126_V.2.1.tif"))
-
-##2050 SSP3
-bio5_ssp3 <- rast(here(HWC_data, "/Data/Chelsa_Data/uncropped_data/projected/ssp370/CHELSA_bio5_2041-2070_gfdl-esm4_ssp370_V.2.1.tif"))
-
-bio12_ssp3 <- rast(here(HWC_data, "/Data/Chelsa_Data/uncropped_data/projected/ssp370/CHELSA_bio12_2041-2070_gfdl-esm4_ssp370_V.2.1.tif"))
-
-bio13_ssp3 <- rast(here(HWC_data, "/Data/Chelsa_Data/uncropped_data/projected/ssp370/CHELSA_bio13_2041-2070_gfdl-esm4_ssp370_V.2.1.tif"))
-
-bio14_ssp3 <- rast(here(HWC_data, "/Data/Chelsa_Data/uncropped_data/projected/ssp370/CHELSA_bio14_2041-2070_gfdl-esm4_ssp370_V.2.1.tif"))
-```
-
-Mask and resave rasters for within the boundary zones
-
-African elephant
-- bio5
-- bio12
-- bio13
-
-Asian elephant
-- bio12
-- bio14
-
-```{r}
-#africa
-
-##historic
-af_b5_hist <- terra::project(bio5_hist, africa_conflict) %>% 
-  mask(africa_conflict)
-
-af_b12_hist <- terra::project(bio12_hist, africa_conflict) %>% 
-  mask(., africa_conflict)
-
-af_b13_hist <- terra::project(bio13_hist, africa_conflict) %>% 
-  mask(., africa_conflict)
+###mask to asia
+asia_bio_hist <- lapply(bio_hist_list, mask_files,
+  path = "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/uncropped_data/historic",
+  maskfile = asia_conflict,
+  pref = "asia_",
+  saveto = "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/asia/historic")
 
 
-##ssp1
-af_b5_ssp1 <- terra::project(bio5_ssp1, africa_conflict) %>% 
-  mask(africa_conflict)
 
-af_b12_ssp1 <- terra::project(bio12_ssp1, africa_conflict) %>% 
-  mask(., africa_conflict)
+###########GFDL#############
 
-af_b13_ssp1 <- terra::project(bio13_ssp1, africa_conflict) %>% 
-  mask(., africa_conflict)
+###ssp1
+
+blist_gfdl_ssp1 <- list.files(path = here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/uncropped_data/projected/ssp126/gfdl"))
+
+####mask to africa
+africa_bio_gfdl_ssp1 <- lapply(blist_gfdl_ssp1, mask_files,
+  path = "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/uncropped_data/projected/ssp126/gfdl",
+  maskfile = africa_conflict,
+  pref = "africa_",
+  saveto = "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/africa/projected/ssp126/gfdl")
+
+####mask to asia
+asia_bio_gfdl_ssp1 <- lapply(blist_gfdl_ssp1, mask_files,
+  path = "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/uncropped_data/projected/ssp126/gfdl",
+  maskfile = asia_conflict,
+  pref = "asia_",
+  saveto = "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/asia/projected/ssp126/gfdl")
+
+###ssp3
+
+blist_gfdl_ssp3 <- list.files(path = here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/uncropped_data/projected/ssp370/gfdl"))
+
+####mask to africa
+africa_bio_gfdl_ssp3 <- lapply(blist_gfdl_ssp3, mask_files,
+  path = "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/uncropped_data/projected/ssp370/gfdl",
+  maskfile = africa_conflict,
+  pref = "africa_",
+  saveto = "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/africa/projected/ssp370/gfdl")
+
+####mask to asia
+asia_bio_gfdl_ssp3 <- lapply(blist_gfdl_ssp3, mask_files,
+  path = "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/uncropped_data/projected/ssp370/gfdl",
+  maskfile = asia_conflict,
+  pref = "asia_",
+  saveto = "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/asia/projected/ssp370/gfdl")
 
 
-##ssp3
-af_b5_ssp3 <- terra::project(bio5_ssp3, africa_conflict) %>% 
-  mask(africa_conflict)
-
-af_b12_ssp3 <- terra::project(bio12_ssp3, africa_conflict) %>% 
-  mask(., africa_conflict)
-
-af_b13_ssp3 <- terra::project(bio13_ssp3, africa_conflict) %>% 
-  mask(., africa_conflict)
-
-##save rasters
-writeRaster(af_b5_hist, filename = here(HWC_data, "/Data/Chelsa_Data/africa/historic/africa_bio5_historic.tif"))
-writeRaster(af_b12_hist, filename = here(HWC_data, "/Data/Chelsa_Data/africa/historic/africa_bio12_historic.tif"))
-writeRaster(af_b13_hist, filename = here(HWC_data, "/Data/Chelsa_Data/africa/historic/africa_bio13_historic.tif"))
-
-writeRaster(af_b5_ssp1, filename = here(HWC_data, "/Data/Chelsa_Data/africa/projected/africa_bio5_ssp1_2041_2070.tif"))
-writeRaster(af_b12_ssp1, filename = here(HWC_data, "/Data/Chelsa_Data/africa/projected/africa_bio12_ssp1_2041_2070.tif"))
-writeRaster(af_b13_ssp1, filename = here(HWC_data, "/Data/Chelsa_Data/africa/projected/africa_bio13_ssp1_2041_2070.tif"))
-
-writeRaster(af_b5_ssp3, filename = here(HWC_data, "/Data/Chelsa_Data/africa/projected/africa_bio5_ssp3_2041_2070.tif"))
-writeRaster(af_b12_ssp3, filename = here(HWC_data, "/Data/Chelsa_Data/africa/projected/africa_bio12_ssp3_2041_2070.tif"))
-writeRaster(af_b13_ssp3, filename = here(HWC_data, "/Data/Chelsa_Data/africa/projected/africa_bio13_ssp3_2041_2070.tif"))
 
 
-#asia
-as_b12_hist <- terra::project(bio12_hist, asia_conflict) %>% 
-  mask(asia_conflict)
 
-as_b14_hist <- terra::project(bio14_hist, asia_conflict) %>% 
-  mask(asia_conflict)
+###########IPSL#############
 
-##ssp1
-as_b12_ssp1 <- terra::project(bio12_ssp1, asia_conflict) %>% 
-  mask(asia_conflict)
+###ssp1
 
-as_b14_ssp1 <- terra::project(bio14_ssp1, asia_conflict) %>% 
-  mask(asia_conflict)
+blist_ipsl_ssp1 <- list.files(path = here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/uncropped_data/projected/ssp126/ipsl"))
 
-##ssp3
-as_b12_ssp3 <- terra::project(bio12_ssp3, asia_conflict) %>% 
-  mask(asia_conflict)
+####mask to africa
+africa_bio_ipsl_ssp1 <- lapply(blist_ipsl_ssp1, mask_files,
+  path = "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/uncropped_data/projected/ssp126/ipsl",
+  maskfile = africa_conflict,
+  pref = "africa_",
+  saveto = "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/africa/projected/ssp126/ipsl")
 
-as_b14_ssp3 <- terra::project(bio14_ssp3, asia_conflict) %>% 
-  mask(asia_conflict)
+####mask to asia
+asia_bio_ipsl_ssp1 <- lapply(blist_ipsl_ssp1, mask_files,
+  path = "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/uncropped_data/projected/ssp126/ipsl",
+  maskfile = asia_conflict,
+  pref = "asia_",
+  saveto = "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/asia/projected/ssp126/ipsl")
 
-##save rasters
-writeRaster(as_b12_hist, filename = here(HWC_data, "/Data/Chelsa_Data/asia/historic/asia_bio12_historic.tif"))
-writeRaster(as_b14_hist, filename = here(HWC_data, "/Data/Chelsa_Data/asia/historic/asia_bio14_historic.tif"))
 
-writeRaster(as_b12_ssp1, filename = here(HWC_data, "/Data/Chelsa_Data/asia/projected/asia_bio12_ssp1_2041_2070.tif"))
-writeRaster(as_b14_ssp1, filename = here(HWC_data, "/Data/Chelsa_Data/asia/projected/asia_bio14_ssp1_2041_2070.tif"))
+###ssp3
 
-writeRaster(as_b12_ssp3, filename = here(HWC_data, "/Data/Chelsa_Data/asia/projected/asia_bio12_ssp3_2041_2070.tif"))
-writeRaster(as_b14_ssp3, filename = here(HWC_data, "/Data/Chelsa_Data/asia/projected/asia_bio14_ssp3_2041_2070.tif"))
+blist_ipsl_ssp3 <- list.files(path = here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/uncropped_data/projected/ssp370/ipsl"))
+
+####mask to africa
+africa_bio_ipsl_ssp3 <- lapply(blist_ipsl_ssp3, mask_files,
+  path = "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/uncropped_data/projected/ssp370/ipsl",
+  maskfile = africa_conflict,
+  pref = "africa_",
+  saveto = "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/africa/projected/ssp370/ipsl")
+
+####mask to asia
+asia_bio_ipsl_ssp3 <- lapply(blist_ipsl_ssp3, mask_files,
+  path = "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/uncropped_data/projected/ssp370/ipsl",
+  maskfile = asia_conflict,
+  pref = "asia_",
+  saveto = "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/asia/projected/ssp370/ipsl")
+
+
+
+
+
+###########MPI#############
+
+###ssp1
+
+blist_mpi_ssp1 <- list.files(path = here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/uncropped_data/projected/ssp126/mpi"))
+
+####mask to africa
+africa_bio_mpi_ssp1 <- lapply(blist_mpi_ssp1, mask_files,
+  path = "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/uncropped_data/projected/ssp126/mpi",
+  maskfile = africa_conflict,
+  pref = "africa_",
+  saveto = "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/africa/projected/ssp126/mpi")
+
+####mask to asia
+asia_bio_mpi_ssp1 <- lapply(blist_mpi_ssp1, mask_files,
+  path = "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/uncropped_data/projected/ssp126/mpi",
+  maskfile = asia_conflict,
+  pref = "asia_",
+  saveto = "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/asia/projected/ssp126/mpi")
+
+
+###ssp3
+
+blist_mpi_ssp3 <- list.files(path = here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/uncropped_data/projected/ssp370/mpi"))
+
+####mask to africa
+africa_bio_mpi_ssp3 <- lapply(blist_mpi_ssp3, mask_files,
+  path = "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/uncropped_data/projected/ssp370/mpi",
+  maskfile = africa_conflict,
+  pref = "africa_",
+  saveto = "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/africa/projected/ssp370/mpi")
+
+####mask to asia
+asia_bio_mpi_ssp3 <- lapply(blist_mpi_ssp3, mask_files,
+  path = "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/uncropped_data/projected/ssp370/mpi",
+  maskfile = asia_conflict,
+  pref = "asia_",
+  saveto = "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/asia/projected/ssp370/mpi")
+
+
+
+
+
+###########MRI#############
+
+###ssp1
+
+blist_mri_ssp1 <- list.files(path = here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/uncropped_data/projected/ssp126/mri"))
+
+####mask to africa
+africa_bio_mri_ssp1 <- lapply(blist_mri_ssp1, mask_files,
+  path = "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/uncropped_data/projected/ssp126/mri",
+  maskfile = africa_conflict,
+  pref = "africa_",
+  saveto = "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/africa/projected/ssp126/mri")
+
+####mask to asia
+asia_bio_mri_ssp1 <- lapply(blist_mri_ssp1, mask_files,
+  path = "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/uncropped_data/projected/ssp126/mri",
+  maskfile = asia_conflict,
+  pref = "asia_",
+  saveto = "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/asia/projected/ssp126/mri")
+
+
+###ssp3
+
+blist_mri_ssp3 <- list.files(path = here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/uncropped_data/projected/ssp370/mri"))
+
+####mask to africa
+africa_bio_mri_ssp3 <- lapply(blist_mri_ssp3, mask_files,
+  path = "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/uncropped_data/projected/ssp370/mri",
+  maskfile = africa_conflict,
+  pref = "africa_",
+  saveto = "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/africa/projected/ssp370/mri")
+
+####mask to asia
+asia_bio_mri_ssp3 <- lapply(blist_mri_ssp3, mask_files,
+  path = "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/uncropped_data/projected/ssp370/mri",
+  maskfile = asia_conflict,
+  pref = "asia_",
+  saveto = "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/asia/projected/ssp370/mri")
+
+
+
+
+
+###########UKESM#############
+
+
+###ssp1
+
+blist_ukesm_ssp1 <- list.files(path = here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/uncropped_data/projected/ssp126/ukesm"))
+
+####mask to africa
+africa_bio_ukesm_ssp1 <- lapply(blist_ukesm_ssp1, mask_files,
+  path = "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/uncropped_data/projected/ssp126/ukesm",
+  maskfile = africa_conflict,
+  pref = "africa_",
+  saveto = "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/africa/projected/ssp126/ukesm")
+
+####mask to asia
+asia_bio_ukesm_ssp1 <- lapply(blist_ukesm_ssp1, mask_files,
+  path = "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/uncropped_data/projected/ssp126/ukesm",
+  maskfile = asia_conflict,
+  pref = "asia_",
+  saveto = "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/asia/projected/ssp126/ukesm")
+
+
+###ssp3
+
+blist_ukesm_ssp3 <- list.files(path = here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/uncropped_data/projected/ssp370/ukesm"))
+
+####mask to africa
+africa_bio_ukesm_ssp3 <- lapply(blist_ukesm_ssp3, mask_files,
+  path = "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/uncropped_data/projected/ssp370/ukesm",
+  maskfile = africa_conflict,
+  pref = "africa_",
+  saveto = "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/africa/projected/ssp370/ukesm")
+
+####mask to asia
+asia_bio_ukesm_ssp3 <- lapply(blist_ukesm_ssp3, mask_files,
+  path = "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/uncropped_data/projected/ssp370/ukesm",
+  maskfile = asia_conflict,
+  pref = "asia_",
+  saveto = "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/asia/projected/ssp370/ukesm")
 ```
 
 
 Read in masked rasters and difference projected and historical values to get change
 
 ```{r}
-#read in the rasters
 
-##africa
-af_b5_hist <- rast(here(HWC_data, "/Data/Chelsa_Data/africa/historic/africa_bio5_historic.tif"))
-af_b12_hist <- rast(here(HWC_data, "/Data/Chelsa_Data/africa/historic/africa_bio12_historic.tif"))
-af_b13_hist <- rast(here(HWC_data, "/Data/Chelsa_Data/africa/historic/africa_bio13_historic.tif"))
+#africa
 
-af_b5_ssp1 <- rast(here(HWC_data, "/Data/Chelsa_Data/africa/projected/africa_bio5_ssp1_2041_2070.tif"))
-af_b12_ssp1 <- rast(here(HWC_data, "/Data/Chelsa_Data/africa/projected/africa_bio12_ssp1_2041_2070.tif"))
-af_b13_ssp1 <- rast(here(HWC_data, "/Data/Chelsa_Data/africa/projected/africa_bio13_ssp1_2041_2070.tif"))
+##historical
+africa_bio_hist <- rast(here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/africa/historic",list.files(here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/africa/historic"))))
 
-af_b5_ssp3 <- rast(here(HWC_data, "/Data/Chelsa_Data/africa/projected/africa_bio5_ssp3_2041_2070.tif"))
-af_b12_ssp3 <- rast(here(HWC_data, "/Data/Chelsa_Data/africa/projected/africa_bio12_ssp3_2041_2070.tif"))
-af_b13_ssp3 <- rast(here(HWC_data, "/Data/Chelsa_Data/africa/projected/africa_bio13_ssp3_2041_2070.tif"))
-
-##asia
-as_b12_hist <- rast(here(HWC_data, "/Data/Chelsa_Data/asia/historic/asia_bio12_historic.tif"))
-as_b14_hist <- rast(here(HWC_data, "/Data/Chelsa_Data/asia/historic/asia_bio14_historic.tif"))
-
-as_b12_ssp1 <- rast(here(HWC_data, "/Data/Chelsa_Data/asia/projected/asia_bio12_ssp1_2041_2070.tif"))
-as_b14_ssp1 <- rast(here(HWC_data, "/Data/Chelsa_Data/asia/projected/asia_bio14_ssp1_2041_2070.tif"))
-
-as_b12_ssp3 <- rast(here(HWC_data, "/Data/Chelsa_Data/asia/projected/asia_bio12_ssp3_2041_2070.tif"))
-as_b14_ssp3 <- rast(here(HWC_data, "/Data/Chelsa_Data/asia/projected/asia_bio14_ssp3_2041_2070.tif"))
+asia_bio_hist <- rast(here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/asia/historic",list.files(here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/asia/historic"))))
 
 
-#difference the projected and historical rasters
+###########GFDL#############
 
-##africa
-af_b5_diff_ssp1 <- af_b5_ssp1 - af_b5_hist
-af_b5_diff_ssp3 <- af_b5_ssp3 - af_b5_hist
+#ssp1
 
-af_b12_diff_ssp1 <- af_b12_ssp1 - af_b12_hist
-af_b12_diff_ssp3 <- af_b12_ssp3 - af_b12_hist
+africa_bio_gfdl_ssp1 <- rast(here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/africa/projected/ssp126/gfdl",list.files(here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/africa/projected/ssp126/gfdl"))))
 
-af_b13_diff_ssp1 <- af_b13_ssp1 - af_b13_hist
-af_b13_diff_ssp3 <- af_b13_ssp3 - af_b13_hist
+africa_biodiff_gfdl_ssp1 <- africa_bio_gfdl_ssp1 - africa_bio_hist
 
-##asia
-as_b12_diff_ssp1 <- as_b12_ssp1 - as_b12_hist
-as_b12_diff_ssp3 <- as_b12_ssp3 - as_b12_hist
 
-as_b14_diff_ssp1 <- as_b14_ssp1 - as_b14_hist
-as_b14_diff_ssp3 <- as_b14_ssp3 - as_b14_hist
+asia_bio_gfdl_ssp1 <- rast(here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/asia/projected/ssp126/gfdl",list.files(here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/asia/projected/ssp126/gfdl"))))
+
+asia_biodiff_gfdl_ssp1 <- asia_bio_gfdl_ssp1 - asia_bio_hist
+
+
+#ssp3
+
+africa_bio_gfdl_ssp3 <- rast(here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/africa/projected/ssp370/gfdl",list.files(here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/africa/projected/ssp370/gfdl"))))
+
+africa_biodiff_gfdl_ssp3 <- africa_bio_gfdl_ssp3 - africa_bio_hist
+
+
+asia_bio_gfdl_ssp3 <- rast(here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/asia/projected/ssp370/gfdl",list.files(here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/asia/projected/ssp370/gfdl"))))
+
+asia_biodiff_gfdl_ssp3 <- asia_bio_gfdl_ssp3 - asia_bio_hist
+
+
+
+###########IPSL#############
+
+#ssp1
+
+africa_bio_ipsl_ssp1 <- rast(here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/africa/projected/ssp126/ipsl",list.files(here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/africa/projected/ssp126/ipsl"))))
+
+africa_biodiff_ipsl_ssp1 <- africa_bio_ipsl_ssp1 - africa_bio_hist
+
+
+asia_bio_ipsl_ssp1 <- rast(here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/asia/projected/ssp126/ipsl",list.files(here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/asia/projected/ssp126/ipsl"))))
+
+asia_biodiff_ipsl_ssp1 <- asia_bio_ipsl_ssp1 - asia_bio_hist
+
+
+#ssp3
+
+africa_bio_ipsl_ssp3 <- rast(here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/africa/projected/ssp370/ipsl",list.files(here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/africa/projected/ssp370/ipsl"))))
+
+africa_biodiff_ipsl_ssp3 <- africa_bio_ipsl_ssp3 - africa_bio_hist
+
+
+asia_bio_ipsl_ssp3 <- rast(here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/asia/projected/ssp370/ipsl",list.files(here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/asia/projected/ssp370/ipsl"))))
+
+asia_biodiff_ipsl_ssp3 <- asia_bio_ipsl_ssp3 - asia_bio_hist
+
+
+
+
+###########MPI#############
+
+#ssp1
+
+africa_bio_mpi_ssp1 <- rast(here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/africa/projected/ssp126/mpi",list.files(here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/africa/projected/ssp126/mpi"))))
+
+africa_biodiff_mpi_ssp1 <- africa_bio_mpi_ssp1 - africa_bio_hist
+
+
+asia_bio_mpi_ssp1 <- rast(here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/asia/projected/ssp126/mpi",list.files(here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/asia/projected/ssp126/mpi"))))
+
+asia_biodiff_mpi_ssp1 <- asia_bio_mpi_ssp1 - asia_bio_hist
+
+
+#ssp3
+
+africa_bio_mpi_ssp3 <- rast(here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/africa/projected/ssp370/mpi",list.files(here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/africa/projected/ssp370/mpi"))))
+
+africa_biodiff_mpi_ssp3 <- africa_bio_mpi_ssp3 - africa_bio_hist
+
+
+asia_bio_mpi_ssp3 <- rast(here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/asia/projected/ssp370/mpi",list.files(here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/asia/projected/ssp370/mpi"))))
+
+asia_biodiff_mpi_ssp3 <- asia_bio_mpi_ssp3 - asia_bio_hist
+
+
+
+
+###########MRI#############
+
+#ssp1
+
+africa_bio_mri_ssp1 <- rast(here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/africa/projected/ssp126/mri",list.files(here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/africa/projected/ssp126/mri"))))
+
+africa_biodiff_mri_ssp1 <- africa_bio_mri_ssp1 - africa_bio_hist
+
+
+asia_bio_mri_ssp1 <- rast(here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/asia/projected/ssp126/mri",list.files(here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/asia/projected/ssp126/mri"))))
+
+asia_biodiff_mri_ssp1 <- asia_bio_mri_ssp1 - asia_bio_hist
+
+
+#ssp3
+
+africa_bio_mri_ssp3 <- rast(here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/africa/projected/ssp370/mri",list.files(here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/africa/projected/ssp370/mri"))))
+
+africa_biodiff_mri_ssp3 <- africa_bio_mri_ssp3 - africa_bio_hist
+
+
+asia_bio_mri_ssp3 <- rast(here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/asia/projected/ssp370/mri",list.files(here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/asia/projected/ssp370/mri"))))
+
+asia_biodiff_mri_ssp3 <- asia_bio_mri_ssp3 - asia_bio_hist
+
+
+
+
+###########UKESM#############
+
+#ssp1
+
+africa_bio_ukesm_ssp1 <- rast(here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/africa/projected/ssp126/ukesm",list.files(here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/africa/projected/ssp126/ukesm"))))
+
+africa_biodiff_ukesm_ssp1 <- africa_bio_ukesm_ssp1 - africa_bio_hist
+
+
+asia_bio_ukesm_ssp1 <- rast(here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/asia/projected/ssp126/ukesm",list.files(here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/asia/projected/ssp126/ukesm"))))
+
+asia_biodiff_ukesm_ssp1 <- asia_bio_ukesm_ssp1 - asia_bio_hist
+
+
+#ssp3
+
+africa_bio_ukesm_ssp3 <- rast(here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/africa/projected/ssp370/ukesm",list.files(here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/africa/projected/ssp370/ukesm"))))
+
+africa_biodiff_ukesm_ssp3 <- africa_bio_ukesm_ssp3 - africa_bio_hist
+
+
+asia_bio_ukesm_ssp3 <- rast(here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/asia/projected/ssp370/ukesm",list.files(here(HWC_data, "/Wallace Data/CHELSA variables/Analysis_Chelsa_Data/asia/projected/ssp370/ukesm"))))
+
+asia_biodiff_ukesm_ssp3 <- asia_bio_ukesm_ssp3 - asia_bio_hist
+
 ```
+
 
 Reclassify to be only increasing/decreasing/no change and calculate area within each class
 
@@ -889,79 +1120,347 @@ diff_reclass <- function(x){
   return(x) #return the reclassified raster
 }
 
-#africa
+####africa####
 
-##bio5
-af_b5_bindiff_ssp1_area <- diff_reclass(af_b5_diff_ssp1) %>% 
-  expanse(., zones = ., unit = "km") %>% 
-  mutate(af_b5_ssp1 = (area / sum(area)) * 100) %>% 
-  select(zone, af_b5_ssp1)
+#####ssp1#####
 
-af_b5_bindiff_ssp3_area <- diff_reclass(af_b5_diff_ssp3) %>% 
-  expanse(., zones = ., unit = "km") %>% 
-  mutate(af_b5_ssp3 = (area / sum(area)) * 100) %>% 
-  select(zone, af_b5_ssp3)
-
-##bio12
-af_b12_bindiff_ssp1_area <- diff_reclass(af_b12_diff_ssp1) %>% 
-  expanse(., zones = ., unit = "km") %>% 
-  mutate(af_b12_ssp1 = (area / sum(area)) * 100) %>% 
-  select(zone, af_b12_ssp1)
-
-af_b12_bindiff_ssp3_area <- diff_reclass(af_b12_diff_ssp3) %>% 
-  expanse(., zones = ., unit = "km") %>% 
-  mutate(af_b12_ssp3 = (area / sum(area)) * 100) %>% 
-  select(zone, af_b12_ssp3)
-
-##bio13
-af_b13_bindiff_ssp1_area <- diff_reclass(af_b13_diff_ssp1) %>% 
-  expanse(., zones = ., unit = "km") %>% 
-  mutate(af_b13_ssp1 = (area / sum(area)) * 100) %>% 
-  select(zone, af_b13_ssp1)
-
-af_b13_bindiff_ssp3_area <- diff_reclass(af_b13_diff_ssp3) %>% 
-  expanse(., zones = ., unit = "km") %>% 
-  mutate(af_b13_ssp3 = (area / sum(area)) * 100) %>% 
-  select(zone, af_b13_ssp3)
+af_binbiodiff_gfdl_ssp1 <- diff_reclass(africa_biodiff_gfdl_ssp1) %>% 
+  expanse(., byValue = TRUE, unit = "km") %>% 
+  mutate(layer = case_when(
+    layer == 1 ~ names(africa_biodiff_gfdl_ssp1)[[1]],
+    layer == 2 ~ names(africa_biodiff_gfdl_ssp1)[[2]],
+    layer == 3 ~ names(africa_biodiff_gfdl_ssp1)[[3]],
+    layer == 4 ~ names(africa_biodiff_gfdl_ssp1)[[4]],     #rename the layers so we can see what they are not their position
+    layer == 5 ~ names(africa_biodiff_gfdl_ssp1)[[5]]
+  )) %>% 
+  pivot_wider(names_from = value,
+              values_from = area,
+              names_sort = TRUE) %>%  #show layers as their own columns not values within a column
+  janitor::adorn_percentages(denominator = "row") %>% 
+  janitor::adorn_pct_formatting(digits = 2, affix_sign = FALSE)
 
 
 
-#asia
+af_binbiodiff_ipsl_ssp1 <- diff_reclass(africa_biodiff_ipsl_ssp1) %>% 
+  expanse(., byValue = TRUE, unit = "km") %>% 
+  mutate(layer = case_when(
+    layer == 1 ~ names(africa_biodiff_ipsl_ssp1)[[1]],
+    layer == 2 ~ names(africa_biodiff_ipsl_ssp1)[[2]],
+    layer == 3 ~ names(africa_biodiff_ipsl_ssp1)[[3]],
+    layer == 4 ~ names(africa_biodiff_ipsl_ssp1)[[4]],    
+    layer == 5 ~ names(africa_biodiff_ipsl_ssp1)[[5]]
+  )) %>% 
+  pivot_wider(names_from = value,
+              values_from = area,
+              names_sort = TRUE) %>%  
+  janitor::adorn_percentages(denominator = "row") %>% 
+  janitor::adorn_pct_formatting(digits = 2, affix_sign = FALSE)
 
-##bio12
-as_b12_bindiff_ssp1_area <- diff_reclass(as_b12_diff_ssp1) %>% 
-  expanse(., zones = ., unit = "km") %>% 
-  mutate(as_b12_ssp1 = (area / sum(area)) * 100) %>% 
-  select(zone, as_b12_ssp1)
 
-as_b12_bindiff_ssp3_area <- diff_reclass(as_b12_diff_ssp3) %>% 
-  expanse(., zones = ., unit = "km") %>% 
-  mutate(as_b12_ssp3 = (area / sum(area)) * 100) %>% 
-  select(zone, as_b12_ssp3)
 
-##bio14
-as_b14_bindiff_ssp1_area <- diff_reclass(as_b14_diff_ssp1) %>% 
-  expanse(., zones = ., unit = "km") %>% 
-  mutate(as_b14_ssp1 = (area / sum(area)) * 100) %>% 
-  select(zone, as_b14_ssp1)
+af_binbiodiff_mpi_ssp1 <- diff_reclass(africa_biodiff_mpi_ssp1) %>% 
+  expanse(., byValue = TRUE, unit = "km") %>% 
+  mutate(layer = case_when(
+    layer == 1 ~ names(africa_biodiff_mpi_ssp1)[[1]],
+    layer == 2 ~ names(africa_biodiff_mpi_ssp1)[[2]],
+    layer == 3 ~ names(africa_biodiff_mpi_ssp1)[[3]],
+    layer == 4 ~ names(africa_biodiff_mpi_ssp1)[[4]],    
+    layer == 5 ~ names(africa_biodiff_mpi_ssp1)[[5]]
+  )) %>% 
+  pivot_wider(names_from = value,
+              values_from = area,
+              names_sort = TRUE) %>%  
+  janitor::adorn_percentages(denominator = "row") %>% 
+  janitor::adorn_pct_formatting(digits = 2, affix_sign = FALSE)
 
-as_b14_bindiff_ssp3_area <- diff_reclass(as_b14_diff_ssp3) %>% 
-  expanse(., zones = ., unit = "km") %>% 
-  mutate(as_b14_ssp3 = (area / sum(area)) * 100) %>% 
-  select(zone, as_b14_ssp3)
+
+
+af_binbiodiff_mri_ssp1 <- diff_reclass(africa_biodiff_mri_ssp1) %>% 
+  expanse(., byValue = TRUE, unit = "km") %>% 
+  mutate(layer = case_when(
+    layer == 1 ~ names(africa_biodiff_mri_ssp1)[[1]],
+    layer == 2 ~ names(africa_biodiff_mri_ssp1)[[2]],
+    layer == 3 ~ names(africa_biodiff_mri_ssp1)[[3]],
+    layer == 4 ~ names(africa_biodiff_mri_ssp1)[[4]],    
+    layer == 5 ~ names(africa_biodiff_mri_ssp1)[[5]]
+  )) %>% 
+  pivot_wider(names_from = value,
+              values_from = area,
+              names_sort = TRUE) %>%  
+  janitor::adorn_percentages(denominator = "row") %>% 
+  janitor::adorn_pct_formatting(digits = 2, affix_sign = FALSE)
+
+
+
+af_binbiodiff_ukesm_ssp1 <- diff_reclass(africa_biodiff_ukesm_ssp1) %>% 
+  expanse(., byValue = TRUE, unit = "km") %>% 
+  mutate(layer = case_when(
+    layer == 1 ~ names(africa_biodiff_ukesm_ssp1)[[1]],
+    layer == 2 ~ names(africa_biodiff_ukesm_ssp1)[[2]],
+    layer == 3 ~ names(africa_biodiff_ukesm_ssp1)[[3]],
+    layer == 4 ~ names(africa_biodiff_ukesm_ssp1)[[4]],    
+    layer == 5 ~ names(africa_biodiff_ukesm_ssp1)[[5]]
+  )) %>% 
+  pivot_wider(names_from = value,
+              values_from = area,
+              names_sort = TRUE) %>%  
+  janitor::adorn_percentages(denominator = "row") %>% 
+  janitor::adorn_pct_formatting(digits = 2, affix_sign = FALSE)
+
+
+
+#####ssp3#####
+
+af_binbiodiff_gfdl_ssp3 <- diff_reclass(africa_biodiff_gfdl_ssp3) %>% 
+  expanse(., byValue = TRUE, unit = "km") %>% 
+  mutate(layer = case_when(
+    layer == 1 ~ names(africa_biodiff_gfdl_ssp3)[[1]],
+    layer == 2 ~ names(africa_biodiff_gfdl_ssp3)[[2]],
+    layer == 3 ~ names(africa_biodiff_gfdl_ssp3)[[3]],
+    layer == 4 ~ names(africa_biodiff_gfdl_ssp3)[[4]],     #rename the layers so we can see what they are not their position
+    layer == 5 ~ names(africa_biodiff_gfdl_ssp3)[[5]]
+  )) %>% 
+  pivot_wider(names_from = value,
+              values_from = area,
+              names_sort = TRUE) %>%  #show layers as their own columns not values within a column
+  janitor::adorn_percentages(denominator = "row") %>% 
+  janitor::adorn_pct_formatting(digits = 2, affix_sign = FALSE)
+
+
+
+af_binbiodiff_ipsl_ssp3 <- diff_reclass(africa_biodiff_ipsl_ssp3) %>% 
+  expanse(., byValue = TRUE, unit = "km") %>% 
+  mutate(layer = case_when(
+    layer == 1 ~ names(africa_biodiff_ipsl_ssp3)[[1]],
+    layer == 2 ~ names(africa_biodiff_ipsl_ssp3)[[2]],
+    layer == 3 ~ names(africa_biodiff_ipsl_ssp3)[[3]],
+    layer == 4 ~ names(africa_biodiff_ipsl_ssp3)[[4]],    
+    layer == 5 ~ names(africa_biodiff_ipsl_ssp3)[[5]]
+  )) %>% 
+  pivot_wider(names_from = value,
+              values_from = area,
+              names_sort = TRUE) %>%  
+  janitor::adorn_percentages(denominator = "row") %>% 
+  janitor::adorn_pct_formatting(digits = 2, affix_sign = FALSE)
+
+
+
+af_binbiodiff_mpi_ssp3 <- diff_reclass(africa_biodiff_mpi_ssp3) %>% 
+  expanse(., byValue = TRUE, unit = "km") %>% 
+  mutate(layer = case_when(
+    layer == 1 ~ names(africa_biodiff_mpi_ssp3)[[1]],
+    layer == 2 ~ names(africa_biodiff_mpi_ssp3)[[2]],
+    layer == 3 ~ names(africa_biodiff_mpi_ssp3)[[3]],
+    layer == 4 ~ names(africa_biodiff_mpi_ssp3)[[4]],    
+    layer == 5 ~ names(africa_biodiff_mpi_ssp3)[[5]]
+  )) %>% 
+  pivot_wider(names_from = value,
+              values_from = area,
+              names_sort = TRUE) %>%  
+  janitor::adorn_percentages(denominator = "row") %>% 
+  janitor::adorn_pct_formatting(digits = 2, affix_sign = FALSE)
+
+
+
+af_binbiodiff_mri_ssp3 <- diff_reclass(africa_biodiff_mri_ssp3) %>% 
+  expanse(., byValue = TRUE, unit = "km") %>% 
+  mutate(layer = case_when(
+    layer == 1 ~ names(africa_biodiff_mri_ssp3)[[1]],
+    layer == 2 ~ names(africa_biodiff_mri_ssp3)[[2]],
+    layer == 3 ~ names(africa_biodiff_mri_ssp3)[[3]],
+    layer == 4 ~ names(africa_biodiff_mri_ssp3)[[4]],    
+    layer == 5 ~ names(africa_biodiff_mri_ssp3)[[5]]
+  )) %>% 
+  pivot_wider(names_from = value,
+              values_from = area,
+              names_sort = TRUE) %>%  
+  janitor::adorn_percentages(denominator = "row") %>% 
+  janitor::adorn_pct_formatting(digits = 2, affix_sign = FALSE)
+
+
+
+af_binbiodiff_ukesm_ssp3 <- diff_reclass(africa_biodiff_ukesm_ssp3) %>% 
+  expanse(., byValue = TRUE, unit = "km") %>% 
+  mutate(layer = case_when(
+    layer == 1 ~ names(africa_biodiff_ukesm_ssp3)[[1]],
+    layer == 2 ~ names(africa_biodiff_ukesm_ssp3)[[2]],
+    layer == 3 ~ names(africa_biodiff_ukesm_ssp3)[[3]],
+    layer == 4 ~ names(africa_biodiff_ukesm_ssp3)[[4]],    
+    layer == 5 ~ names(africa_biodiff_ukesm_ssp3)[[5]]
+  )) %>% 
+  pivot_wider(names_from = value,
+              values_from = area,
+              names_sort = TRUE) %>%  
+  janitor::adorn_percentages(denominator = "row") %>% 
+  janitor::adorn_pct_formatting(digits = 2, affix_sign = FALSE)
+
+
+
+
+####asia####
+
+#####ssp1#####
+
+as_binbiodiff_gfdl_ssp1 <- diff_reclass(asia_biodiff_gfdl_ssp1) %>% 
+  expanse(., byValue = TRUE, unit = "km") %>% 
+  mutate(layer = case_when(
+    layer == 1 ~ names(asia_biodiff_gfdl_ssp1)[[1]],
+    layer == 2 ~ names(asia_biodiff_gfdl_ssp1)[[2]],
+    layer == 3 ~ names(asia_biodiff_gfdl_ssp1)[[3]],
+    layer == 4 ~ names(asia_biodiff_gfdl_ssp1)[[4]],  
+    layer == 5 ~ names(asia_biodiff_gfdl_ssp1)[[5]]
+  )) %>% 
+  pivot_wider(names_from = value,
+              values_from = area,
+              names_sort = TRUE) %>%  #show layers as their own columns not values within a column
+  janitor::adorn_percentages(denominator = "row") %>% 
+  janitor::adorn_pct_formatting(digits = 2, affix_sign = FALSE)
+
+
+as_binbiodiff_ipsl_ssp1 <- diff_reclass(asia_biodiff_ipsl_ssp1) %>% 
+  expanse(., byValue = TRUE, unit = "km") %>% 
+  mutate(layer = case_when(
+    layer == 1 ~ names(asia_biodiff_ipsl_ssp1)[[1]],
+    layer == 2 ~ names(asia_biodiff_ipsl_ssp1)[[2]],
+    layer == 3 ~ names(asia_biodiff_ipsl_ssp1)[[3]],
+    layer == 4 ~ names(asia_biodiff_ipsl_ssp1)[[4]],  
+    layer == 5 ~ names(asia_biodiff_ipsl_ssp1)[[5]]
+  )) %>% 
+  pivot_wider(names_from = value,
+              values_from = area,
+              names_sort = TRUE) %>%  #show layers as their own columns not values within a column
+  janitor::adorn_percentages(denominator = "row") %>% 
+  janitor::adorn_pct_formatting(digits = 2, affix_sign = FALSE)
+
+
+as_binbiodiff_mpi_ssp1 <- diff_reclass(asia_biodiff_mpi_ssp1) %>% 
+  expanse(., byValue = TRUE, unit = "km") %>% 
+  mutate(layer = case_when(
+    layer == 1 ~ names(asia_biodiff_mpi_ssp1)[[1]],
+    layer == 2 ~ names(asia_biodiff_mpi_ssp1)[[2]],
+    layer == 3 ~ names(asia_biodiff_mpi_ssp1)[[3]],
+    layer == 4 ~ names(asia_biodiff_mpi_ssp1)[[4]],  
+    layer == 5 ~ names(asia_biodiff_mpi_ssp1)[[5]]
+  )) %>% 
+  pivot_wider(names_from = value,
+              values_from = area,
+              names_sort = TRUE) %>%  #show layers as their own columns not values within a column
+  janitor::adorn_percentages(denominator = "row") %>% 
+  janitor::adorn_pct_formatting(digits = 2, affix_sign = FALSE)
+
+
+as_binbiodiff_mri_ssp1 <- diff_reclass(asia_biodiff_mri_ssp1) %>% 
+  expanse(., byValue = TRUE, unit = "km") %>% 
+  mutate(layer = case_when(
+    layer == 1 ~ names(asia_biodiff_mri_ssp1)[[1]],
+    layer == 2 ~ names(asia_biodiff_mri_ssp1)[[2]],
+    layer == 3 ~ names(asia_biodiff_mri_ssp1)[[3]],
+    layer == 4 ~ names(asia_biodiff_mri_ssp1)[[4]],  
+    layer == 5 ~ names(asia_biodiff_mri_ssp1)[[5]]
+  )) %>% 
+  pivot_wider(names_from = value,
+              values_from = area,
+              names_sort = TRUE) %>%  #show layers as their own columns not values within a column
+  janitor::adorn_percentages(denominator = "row") %>% 
+  janitor::adorn_pct_formatting(digits = 2, affix_sign = FALSE)
+
+
+as_binbiodiff_ukesm_ssp1 <- diff_reclass(asia_biodiff_ukesm_ssp1) %>% 
+  expanse(., byValue = TRUE, unit = "km") %>% 
+  mutate(layer = case_when(
+    layer == 1 ~ names(asia_biodiff_ukesm_ssp1)[[1]],
+    layer == 2 ~ names(asia_biodiff_ukesm_ssp1)[[2]],
+    layer == 3 ~ names(asia_biodiff_ukesm_ssp1)[[3]],
+    layer == 4 ~ names(asia_biodiff_ukesm_ssp1)[[4]],  
+    layer == 5 ~ names(asia_biodiff_ukesm_ssp1)[[5]]
+  )) %>% 
+  pivot_wider(names_from = value,
+              values_from = area,
+              names_sort = TRUE) %>%  #show layers as their own columns not values within a column
+  janitor::adorn_percentages(denominator = "row") %>% 
+  janitor::adorn_pct_formatting(digits = 2, affix_sign = FALSE)
+
+
+
+#####ssp3#####
+
+as_binbiodiff_gfdl_ssp3 <- diff_reclass(asia_biodiff_gfdl_ssp3) %>% 
+  expanse(., byValue = TRUE, unit = "km") %>% 
+  mutate(layer = case_when(
+    layer == 1 ~ names(asia_biodiff_gfdl_ssp3)[[1]],
+    layer == 2 ~ names(asia_biodiff_gfdl_ssp3)[[2]],
+    layer == 3 ~ names(asia_biodiff_gfdl_ssp3)[[3]],
+    layer == 4 ~ names(asia_biodiff_gfdl_ssp3)[[4]],  
+    layer == 5 ~ names(asia_biodiff_gfdl_ssp3)[[5]]
+  )) %>% 
+  pivot_wider(names_from = value,
+              values_from = area,
+              names_sort = TRUE) %>%  #show layers as their own columns not values within a column
+  janitor::adorn_percentages(denominator = "row") %>% 
+  janitor::adorn_pct_formatting(digits = 2, affix_sign = FALSE)
+
+
+as_binbiodiff_ipsl_ssp3 <- diff_reclass(asia_biodiff_ipsl_ssp3) %>% 
+  expanse(., byValue = TRUE, unit = "km") %>% 
+  mutate(layer = case_when(
+    layer == 1 ~ names(asia_biodiff_ipsl_ssp3)[[1]],
+    layer == 2 ~ names(asia_biodiff_ipsl_ssp3)[[2]],
+    layer == 3 ~ names(asia_biodiff_ipsl_ssp3)[[3]],
+    layer == 4 ~ names(asia_biodiff_ipsl_ssp3)[[4]],  
+    layer == 5 ~ names(asia_biodiff_ipsl_ssp3)[[5]]
+  )) %>% 
+  pivot_wider(names_from = value,
+              values_from = area,
+              names_sort = TRUE) %>%  #show layers as their own columns not values within a column
+  janitor::adorn_percentages(denominator = "row") %>% 
+  janitor::adorn_pct_formatting(digits = 2, affix_sign = FALSE)
+
+
+as_binbiodiff_mpi_ssp3 <- diff_reclass(asia_biodiff_mpi_ssp3) %>% 
+  expanse(., byValue = TRUE, unit = "km") %>% 
+  mutate(layer = case_when(
+    layer == 1 ~ names(asia_biodiff_mpi_ssp3)[[1]],
+    layer == 2 ~ names(asia_biodiff_mpi_ssp3)[[2]],
+    layer == 3 ~ names(asia_biodiff_mpi_ssp3)[[3]],
+    layer == 4 ~ names(asia_biodiff_mpi_ssp3)[[4]],  
+    layer == 5 ~ names(asia_biodiff_mpi_ssp3)[[5]]
+  )) %>% 
+  pivot_wider(names_from = value,
+              values_from = area,
+              names_sort = TRUE) %>%  #show layers as their own columns not values within a column
+  janitor::adorn_percentages(denominator = "row") %>% 
+  janitor::adorn_pct_formatting(digits = 2, affix_sign = FALSE)
+
+
+as_binbiodiff_mri_ssp3 <- diff_reclass(asia_biodiff_mri_ssp3) %>% 
+  expanse(., byValue = TRUE, unit = "km") %>% 
+  mutate(layer = case_when(
+    layer == 1 ~ names(asia_biodiff_mri_ssp3)[[1]],
+    layer == 2 ~ names(asia_biodiff_mri_ssp3)[[2]],
+    layer == 3 ~ names(asia_biodiff_mri_ssp3)[[3]],
+    layer == 4 ~ names(asia_biodiff_mri_ssp3)[[4]],  
+    layer == 5 ~ names(asia_biodiff_mri_ssp3)[[5]]
+  )) %>% 
+  pivot_wider(names_from = value,
+              values_from = area,
+              names_sort = TRUE) %>%  #show layers as their own columns not values within a column
+  janitor::adorn_percentages(denominator = "row") %>% 
+  janitor::adorn_pct_formatting(digits = 2, affix_sign = FALSE)
+
+
+as_binbiodiff_ukesm_ssp3 <- diff_reclass(asia_biodiff_ukesm_ssp3) %>% 
+  expanse(., byValue = TRUE, unit = "km") %>% 
+  mutate(layer = case_when(
+    layer == 1 ~ names(asia_biodiff_ukesm_ssp3)[[1]],
+    layer == 2 ~ names(asia_biodiff_ukesm_ssp3)[[2]],
+    layer == 3 ~ names(asia_biodiff_ukesm_ssp3)[[3]],
+    layer == 4 ~ names(asia_biodiff_ukesm_ssp3)[[4]],  
+    layer == 5 ~ names(asia_biodiff_ukesm_ssp3)[[5]]
+  )) %>% 
+  pivot_wider(names_from = value,
+              values_from = area,
+              names_sort = TRUE) %>%  #show layers as their own columns not values within a column
+  janitor::adorn_percentages(denominator = "row") %>% 
+  janitor::adorn_pct_formatting(digits = 2, affix_sign = FALSE)
+
 ```
-
-- bio5: Mean daily maximum air temperature of the warmest month (°C)
-- bio12: Annual precipitation amount (kg m-2)
-- bio13: Precipitation amount of the wettest month (kg m-2)
-- bio14: Precipitation amount of the driest month  (kg m-2)
-
-List and combine area calculations
-
-```{r}
-chelsa_area_list <- list(af_b5_bindiff_ssp1_area, af_b5_bindiff_ssp3_area, af_b12_bindiff_ssp1_area, af_b12_bindiff_ssp3_area, af_b13_bindiff_ssp1_area, af_b13_bindiff_ssp3_area, as_b12_bindiff_ssp1_area, as_b12_bindiff_ssp3_area, as_b14_bindiff_ssp1_area, as_b14_bindiff_ssp3_area)
-
-
-chelsa_bindiff_all <- reduce(chelsa_area_list, full_join, by = "zone")
-```
-
