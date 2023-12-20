@@ -21,7 +21,7 @@ library(kableExtra)
 
 #File path to the HWC_data folder
 
-HWC_data <- "/Users/gracekumaishi/Library/CloudStorage/GoogleDrive-gkumaishi@ucsb.edu/My Drive/HWC_data"
+HWC_data <- "/Users/mia/Library/CloudStorage/GoogleDrive-mguarnieri@ucsb.edu/My Drive/Arnhold Project/HWC_data"
 ```
 
 #Reclass conflict layers to be just increasing, decreasing, or no change
@@ -222,23 +222,43 @@ perc_area_table <- function(x){
 
 sdm_pol_list <- list.files(path = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/sdm_exploration_polygons/asia"), pattern = '.shp')
 
-
 #apply the area function over the list
 
 sdm_area_list <- lapply(sdm_pol_list, perc_area_table)
 
-sdm_conf_change_table_pol <- sdm_area_list %>% reduce(full_join, by = "suitability_change") %>% 
+sdm_conf_change_table_pol_asia <- sdm_area_list %>% reduce(full_join, by = "suitability_change") %>% 
   units::drop_units()
 
-colnames(sdm_conf_change_table_pol) = c("suitability", sdm_pol_list)
+colnames(sdm_conf_change_table_pol_asia) = c("suitability", sdm_pol_list)
 
 descriptor <- c("Decreasing Suitability", "No Change - Not Suitable", "No Change - Suitable", "Increasing")
 
-sdm_conf_change_table_pol$suitability <- descriptor
+sdm_conf_change_table_pol_asia$suitability <- descriptor
 
-write.csv(sdm_conf_change_table_pol, file = here(HWC_data, "Data/Di Minin HWC", "sdm_conf_change_table_asia.csv"), row.names=FALSE)
+#write.csv(sdm_conf_change_table_pol_asia, file = here(HWC_data, "Data/Di Minin HWC", "sdm_conf_change_table_asia.csv"), row.names=FALSE)
+
+#write.csv(sdm_conf_change_table_pol_asia, file = here(HWC_data, "Data/Di Minin HWC", "sdm_conf_change_table_asia_allgcms.csv"), row.names=FALSE)
 
 ```
+
+
+Adding a standard deviation column for each ssp
+
+```{r}
+sdm_gcms_ssp1_asia_sd <- sdm_conf_change_table_pol_asia %>% 
+  select(suitability:sdm_masked_ssp1_ukesm.shp) %>% 
+  mutate(row_sd = apply(., 1, FUN = sd, na.rm=TRUE))
+
+#write.csv(sdm_gcms_ssp1_asia_sd, file = here(HWC_data, "Data/Di Minin HWC", "sdm_gcms_ssp1_asia_sd.csv"), row.names=FALSE)
+
+sdm_gcms_ssp3_asia_sd <- sdm_conf_change_table_pol_asia %>% 
+  select(suitability, sdm_masked_ssp3_gfdl.shp:sdm_masked_ssp3_ukesm.shp) %>% 
+  mutate(row_sd = apply(., 1, FUN = sd, na.rm=TRUE))
+
+#write.csv(sdm_gcms_ssp3_asia_sd, file = here(HWC_data, "Data/Di Minin HWC", "sdm_gcms_ssp3_asia_sd.csv"), row.names=FALSE)
+
+```
+
 
 #Make a nice table
 

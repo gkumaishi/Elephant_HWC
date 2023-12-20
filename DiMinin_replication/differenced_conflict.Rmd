@@ -204,7 +204,7 @@ for (i in diff_rasts) {
 
 ##Read in the polyline and polygon files
 
-Polylines - no longer using, maybe delete?
+Polylines - OUTDATED, no longer using
 
 ```{r polylines}
 #Polylines
@@ -309,7 +309,7 @@ perc_length_table <- function(x){
 
 ##Run calculations
 
-###Lines - outdated, maybe remove
+###Lines - OUTDATED, no longer using
 
 ```{r}
 

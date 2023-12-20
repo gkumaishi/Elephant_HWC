@@ -164,6 +164,23 @@ asia_conf_change_table <- read_csv(here(HWC_data, "Data/Di Minin HWC", "conflict
 
 ```
 
+Creating a table to show conflict change among different years
+
+```{r}
+africa_conf_change_table <- read_csv(here(HWC_data, "Data/Di Minin HWC", "conflict_change_polygons_byyear_africa.csv")) %>% 
+  janitor::clean_names() %>% 
+  arrange(conflict_change) %>% 
+  mutate("conflict_change" = c("Strong Decrease", "Moderate Decrease", "No Change", "Moderate Increase", "Strong Increase")) %>% 
+  select(conflict_change, ssp1_2030, ssp1_2050, ssp1_2070, ssp3_2030, ssp3_2050, ssp3_2070)
+
+
+asia_conf_change_table <- read_csv(here(HWC_data, "Data/Di Minin HWC", "conflict_change_polygons_byyear_asia.csv")) %>% 
+  janitor::clean_names() %>% 
+  arrange(conflict_change) %>% 
+  mutate("conflict_change" = c("Strong Decrease", "Moderate Decrease", "No Change", "Moderate Increase", "Strong Increase")) %>% 
+  select(conflict_change, ssp1_2030, ssp1_2050, ssp1_2070, ssp3_2030, ssp3_2050, ssp3_2070)
+```
+
 
 #Africa
 
@@ -1132,7 +1149,12 @@ base_africa_sdm_masked <- mask(base_africa_sdm, conf_africa)
 
 base_asia_sdm_masked <- mask(base_asia_sdm, conf_asia)
 
-#polygonize for mapping and then save
+#save cropped rasters for mapping
+writeRaster(base_africa_sdm_masked, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/sdm_exploration_polygons/africa/africa_baseline_sdm_masked.tif"))
+
+writeRaster(base_asia_sdm_masked, filename = here(HWC_data, "/Geospatial Data/Diminin_Replication_Data/sdm_exploration_polygons/asia/asia_baseline_sdm_masked.tif"))
+
+#polygonize for calculations and then save
 
 base_africa_sdm_masked_polygon <- base_africa_sdm_masked %>% 
   terra::as.polygons(trunc=TRUE, dissolve=TRUE, values=TRUE, na.rm=TRUE, na.all=FALSE, extent=FALSE)
